@@ -2,7 +2,7 @@ import type { PropsWithChildren } from 'react'
 
 export function PageShell({ children }: PropsWithChildren) {
   return (
-    <div className="min-h-svh bg-[var(--color-page)] text-[var(--color-text)] transition-colors duration-300">
+    <div className="min-h-svh bg-(--color-page) text-(--color-text) transition-colors duration-300">
       {children}
     </div>
   )

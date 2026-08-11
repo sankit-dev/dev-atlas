@@ -44,14 +44,14 @@ export function Library() {
 
   return (
     <Wrap>
-      <section className="py-[110px] max-[760px]:py-20" id="library">
+      <section className="py-27.5 max-[760px]:py-20" id="library">
         <div className="library-panel">
           <div className="library-panel__intro">
             <p className="kicker">The library</p>
             <h2 className="library-panel__title">
               A cleaner path through backend fundamentals.
             </h2>
-            <p className="m-0 mt-5 max-w-[650px] text-base leading-[1.75] text-[var(--color-muted)]">
+            <p className="m-0 mt-5 max-w-162.5 text-base leading-[1.75] text-(--color-muted)">
               Search, pick a track, and start reading real Markdown notes in the
               order they are meant to be learned.
             </p>
