@@ -4,6 +4,18 @@ type MarkdownRendererProps = {
   markdown: string
 }
 
+type MermaidFlowStep = {
+  from: string
+  label: string | undefined
+  to: string
+}
+
+type MermaidSequenceStep = {
+  from: string
+  to: string
+  message: string
+}
+
 function renderInline(text: string): ReactNode[] {
   const nodes: ReactNode[] = []
   const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g
@@ -91,8 +103,136 @@ function parseNotionTable(lines: string[], index: number) {
   }
 }
 
+function getMermaidNodeLabel(node: string, labels: Map<string, string>) {
+  const trimmed = node.trim()
+  const id = trimmed.match(/^([A-Za-z][\w-]*)/)?.[1]
+  const quotedLabel = trimmed.match(/["']([^"']+)["']/)?.[1]
+  const plainLabel = trimmed
+    .replace(/^[A-Za-z][\w-]*/, '')
+    .replace(/^[{[(]+/, '')
+    .replace(/[})\]]+$/, '')
+    .replace(/^["']|["']$/g, '')
+    .trim()
+
+  if (id && quotedLabel) {
+    labels.set(id, quotedLabel)
+    return quotedLabel
+  }
+
+  if (id && plainLabel) {
+    labels.set(id, plainLabel)
+    return plainLabel
+  }
+
+  if (id && labels.has(id)) {
+    return labels.get(id) ?? id
+  }
+
+  return quotedLabel || plainLabel || id || trimmed
+}
+
+function parseMermaidFlowchart(code: string): MermaidFlowStep[] {
+  const labels = new Map<string, string>()
+  const steps: MermaidFlowStep[] = []
+
+  code
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !/^flowchart|^graph/i.test(line))
+    .forEach((line) => {
+      const transition = line.match(
+        /^(.+?)\s*-->\s*(?:\|([^|]+)\|\s*)?(.+)$/,
+      )
+
+      if (!transition) {
+        return
+      }
+
+      steps.push({
+        from: getMermaidNodeLabel(transition[1], labels),
+        label: transition[2]?.trim(),
+        to: getMermaidNodeLabel(transition[3], labels),
+      })
+    })
+
+  return steps
+}
+
+function parseMermaidSequence(code: string): MermaidSequenceStep[] {
+  const participants = new Map<string, string>()
+
+  return code
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !/^sequenceDiagram/i.test(line))
+    .map((line) => {
+      const participant = line.match(/^participant\s+(\w+)\s+as\s+(.+)$/i)
+
+      if (participant) {
+        participants.set(participant[1], participant[2])
+        return null
+      }
+
+      const message = line.match(/^(\w+)\s*-{1,2}>>\s*(\w+):\s*(.+)$/)
+
+      if (!message) {
+        return null
+      }
+
+      return {
+        from: participants.get(message[1]) ?? message[1],
+        to: participants.get(message[2]) ?? message[2],
+        message: message[3],
+      }
+    })
+    .filter((step): step is MermaidSequenceStep => step !== null)
+}
+
+function MermaidDiagram({ code }: { code: string }) {
+  const normalizedCode = code.trim()
+
+  if (/^sequenceDiagram/m.test(normalizedCode)) {
+    const steps = parseMermaidSequence(normalizedCode)
+
+    return (
+      <div className="markdown-diagram">
+        <span className="markdown-diagram__label">Flow</span>
+        <ol className="markdown-diagram__sequence">
+          {steps.map((step, stepIndex) => (
+            <li key={`${step.from}-${step.to}-${stepIndex}`}>
+              <span>{step.from}</span>
+              <span>→</span>
+              <span>{step.to}</span>
+              <p>{renderInline(step.message)}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    )
+  }
+
+  const steps = parseMermaidFlowchart(normalizedCode)
+
+  return (
+    <div className="markdown-diagram">
+      <span className="markdown-diagram__label">Flow</span>
+      <ol className="markdown-diagram__flow">
+        {steps.map((step, stepIndex) => (
+          <li key={`${step.from}-${step.to}-${stepIndex}`}>
+            <span>{renderInline(step.from)}</span>
+            <span className="markdown-diagram__arrow">
+              {step.label ? `→ ${step.label} →` : '→'}
+            </span>
+            <span>{renderInline(step.to)}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
 function isInterviewHeading(content: string) {
-  return /\binterview (?:tip|questions?|answers?|points?)\b/i.test(content)
+  return /\binterview\b/i.test(content)
 }
 
 function getInterviewQuestion(line: string) {
@@ -113,19 +253,41 @@ function getInterviewAnswer(line: string) {
   return shortAnswerMatch?.[1]
 }
 
-function startsMarkdownBlock(line: string) {
-  return /^(```|#{1,4}\s|[-*]\s|\d+\.\s|> |---$|<table)/.test(line)
-}
-
-function introducesInterviewQuestion(lines: string[], index: number) {
-  let nextIndex = index + 1
+function getNextMeaningfulLineIndex(lines: string[], index: number) {
+  let nextIndex = index
 
   while (nextIndex < lines.length && !lines[nextIndex].trim()) {
     nextIndex += 1
   }
 
+  return nextIndex
+}
+
+function startsMarkdownBlock(line: string) {
+  return /^(```|#{1,4}\s|[-*]\s|\d+\.\s|> |---$|<table)/.test(line)
+}
+
+function isParagraphAnswerStart(lines: string[], index: number) {
+  const line = lines[index] ?? ''
+
+  return Boolean(
+    line.trim() &&
+      !startsMarkdownBlock(line) &&
+      !isTable(lines, index) &&
+      !getInterviewQuestion(line),
+  )
+}
+
+function introducesInterviewQuestion(lines: string[], index: number) {
+  let nextIndex = getNextMeaningfulLineIndex(lines, index + 1)
+
   if (getInterviewQuestion(lines[nextIndex] ?? '')) {
-    return getInterviewAnswer(lines[nextIndex + 1] ?? '') !== undefined
+    const answerIndex = getNextMeaningfulLineIndex(lines, nextIndex + 1)
+
+    return (
+      getInterviewAnswer(lines[answerIndex] ?? '') !== undefined ||
+      isParagraphAnswerStart(lines, answerIndex)
+    )
   }
 
   while (
@@ -138,7 +300,15 @@ function introducesInterviewQuestion(lines: string[], index: number) {
 
   return (
     getInterviewQuestion(lines[nextIndex] ?? '') !== undefined &&
-    getInterviewAnswer(lines[nextIndex + 1] ?? '') !== undefined
+    (
+      getInterviewAnswer(
+        lines[getNextMeaningfulLineIndex(lines, nextIndex + 1)] ?? '',
+      ) !== undefined ||
+      isParagraphAnswerStart(
+        lines,
+        getNextMeaningfulLineIndex(lines, nextIndex + 1),
+      )
+    )
   )
 }
 
@@ -165,11 +335,16 @@ export function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
         index += 1
       }
 
-      nodes.push(
-        <pre key={index}>
-          <code data-language={language}>{codeLines.join('\n')}</code>
-        </pre>,
-      )
+      if (language === 'mermaid') {
+        nodes.push(<MermaidDiagram code={codeLines.join('\n')} key={index} />)
+      } else {
+        nodes.push(
+          <pre key={index}>
+            <code data-language={language}>{codeLines.join('\n')}</code>
+          </pre>,
+        )
+      }
+
       index += 1
       continue
     }
@@ -253,16 +428,53 @@ export function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
     const question = getInterviewQuestion(line)
 
     if (question) {
-      const answerStart = getInterviewAnswer(lines[index + 1] ?? '')
+      const answerIndex = getNextMeaningfulLineIndex(lines, index + 1)
+      const answerStart = getInterviewAnswer(lines[answerIndex] ?? '')
 
       if (answerStart !== undefined) {
         const answerLines = answerStart ? [answerStart] : []
-        index += 2
+        index = answerIndex + 1
+
+        while (index < lines.length && !lines[index].trim()) {
+          index += 1
+        }
 
         while (
           index < lines.length &&
           lines[index].trim() &&
           !startsMarkdownBlock(lines[index]) &&
+          !getInterviewQuestion(lines[index])
+        ) {
+          answerLines.push(lines[index])
+          index += 1
+        }
+
+        nodes.push(
+          <section className="markdown-interview-question" key={index}>
+            <span className="markdown-interview-question__label">
+              Interview question
+            </span>
+            <p className="markdown-interview-question__prompt">
+              {renderInline(question)}
+            </p>
+            <div className="markdown-interview-question__answer">
+              <span>Answer</span>
+              <p>{renderInline(answerLines.join(' '))}</p>
+            </div>
+          </section>,
+        )
+        continue
+      }
+
+      if (isParagraphAnswerStart(lines, answerIndex)) {
+        const answerLines = [lines[answerIndex]]
+        index = answerIndex + 1
+
+        while (
+          index < lines.length &&
+          lines[index].trim() &&
+          !startsMarkdownBlock(lines[index]) &&
+          !isTable(lines, index) &&
           !getInterviewQuestion(lines[index])
         ) {
           answerLines.push(lines[index])

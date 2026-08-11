@@ -684,6 +684,7 @@ button {
 }
 
 .library-card:not(.is-expanded) .library-topic-list {
+  max-height: none;
   overflow: visible;
 }
 
@@ -1069,6 +1070,78 @@ button {
   margin: 5px 0 0;
 }
 
+.markdown-body .markdown-diagram {
+  margin: 18px 0 28px;
+  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 42%, var(--color-line));
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      circle at top left,
+      color-mix(in srgb, var(--color-accent-strong) 14%, transparent),
+      transparent 32%
+    ),
+    color-mix(in srgb, var(--color-surface) 92%, #000);
+  padding: 18px;
+}
+
+.markdown-body .markdown-diagram__label {
+  display: block;
+  margin-bottom: 14px;
+  color: var(--color-accent-strong);
+  font-family: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.markdown-body .markdown-diagram__flow,
+.markdown-body .markdown-diagram__sequence {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.markdown-body .markdown-diagram__flow li,
+.markdown-body .markdown-diagram__sequence li {
+  display: grid;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 20%, var(--color-line));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+  padding: 12px 14px;
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.markdown-body .markdown-diagram__flow li {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 12px;
+}
+
+.markdown-body .markdown-diagram__sequence li {
+  grid-template-columns: auto auto auto minmax(0, 1fr);
+  gap: 10px;
+}
+
+.markdown-body .markdown-diagram__arrow,
+.markdown-body .markdown-diagram__sequence li > span:nth-child(2) {
+  color: #ff755f;
+  font-family: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.markdown-body .markdown-diagram__sequence p {
+  max-width: none;
+  margin: 0;
+  color: var(--color-muted);
+}
+
 .markdown-body p,
 .markdown-body li,
 .markdown-body blockquote {
@@ -1300,6 +1373,15 @@ button {
 
   .library-topic-list li {
     grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .library-topic-list {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .library-card__toggle {
+    margin-top: 14px;
   }
 
   .library-topic-list__badge {
