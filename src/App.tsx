@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import type { Note } from './data/tracks'
 import { Contribute } from './components/Contribute'
 import { Footer } from './components/Footer'
@@ -200,6 +201,7 @@ function App() {
           <div className="note-route-transition__title">{transitionTitle}</div>
         </div>
       )}
+      <SpeedInsights />
     </PageShell>
   )
 }
