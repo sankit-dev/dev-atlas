@@ -1,121 +1,206 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useRef, useState } from 'react'
+import type { Note } from './data/tracks'
+import { Contribute } from './components/Contribute'
+import { Footer } from './components/Footer'
+import { Header } from './components/Header'
+import { Hero } from './components/Hero'
+import { Library } from './components/Library'
+import { NoteReader } from './components/NoteReader'
+import { PageShell } from './components/PageShell'
+import { Roadmap } from './components/Roadmap'
+import { Statement } from './components/Statement'
+import { tracks } from './data/tracks'
+
+export type Theme = 'light' | 'dark'
+
+const themeStorageKey = 'learning-atlas-theme'
+
+function getHashRoute() {
+  if (typeof window === 'undefined') {
+    return ''
+  }
+
+  return window.location.hash
+}
+
+function getInitialTheme(): Theme {
+  if (typeof window === 'undefined') {
+    return 'light'
+  }
+
+  const savedTheme = window.localStorage.getItem(themeStorageKey)
+
+  if (savedTheme === 'light' || savedTheme === 'dark') {
+    return savedTheme
+  }
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light'
+}
+
+function playTransitionTone() {
+  const audioWindow = window as Window &
+    typeof globalThis & {
+      webkitAudioContext?: typeof AudioContext
+    }
+  const AudioContextConstructor =
+    audioWindow.AudioContext || audioWindow.webkitAudioContext
+
+  if (!AudioContextConstructor) {
+    return
+  }
+
+  const audioContext = new AudioContextConstructor()
+  const gain = audioContext.createGain()
+  gain.gain.setValueAtTime(0.0001, audioContext.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.045, audioContext.currentTime + 0.08)
+  gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 1.2)
+  gain.connect(audioContext.destination)
+
+  ;[261.63, 329.63, 392].forEach((frequency, index) => {
+    const oscillator = audioContext.createOscillator()
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime)
+    oscillator.detune.setValueAtTime(index * 4, audioContext.currentTime)
+    oscillator.connect(gain)
+    oscillator.start(audioContext.currentTime + index * 0.04)
+    oscillator.stop(audioContext.currentTime + 1.25)
+  })
+
+  window.setTimeout(() => {
+    void audioContext.close()
+  }, 1400)
+}
+
+function scrollToPageTop() {
+  document.documentElement.scrollTop = 0
+  document.body.scrollTop = 0
+}
+
+type NoteNavigationOptions = {
+  animateCourseSwitch?: boolean
+  transitionTitle?: string
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [theme, setTheme] = useState<Theme>(getInitialTheme)
+  const [hashRoute, setHashRoute] = useState(getHashRoute)
+  const [transitionTitle, setTransitionTitle] = useState<string | null>(null)
+  const transitionTimers = useRef<number[]>([])
+
+  const activeNoteSlug = hashRoute.startsWith('#/notes/')
+    ? hashRoute.replace('#/notes/', '')
+    : null
+  const activeNoteMatch = tracks
+    .flatMap((track) =>
+      track.topics.map((note) => ({
+        note,
+        track,
+      })),
+    )
+    .find(({ note }) => note.slug === activeNoteSlug)
+  const activeTrackIndex = activeNoteMatch
+    ? tracks.findIndex((track) => track.title === activeNoteMatch.track.title)
+    : -1
+  const nextTrack =
+    activeTrackIndex >= 0 ? tracks[activeTrackIndex + 1] : undefined
+
+  const navigateToNote = (
+    targetNote: Note,
+    options: NoteNavigationOptions = {},
+  ) => {
+    transitionTimers.current.forEach((timer) => window.clearTimeout(timer))
+
+    if (targetNote.slug === activeNoteSlug) {
+      setTransitionTitle(null)
+      scrollToPageTop()
+      return
+    }
+
+    if (!options.animateCourseSwitch) {
+      setTransitionTitle(null)
+      window.location.hash = `#/notes/${targetNote.slug}`
+      scrollToPageTop()
+      return
+    }
+
+    setTransitionTitle(options.transitionTitle ?? targetNote.title)
+    playTransitionTone()
+
+    const routeTimer = window.setTimeout(() => {
+      window.location.hash = `#/notes/${targetNote.slug}`
+      scrollToPageTop()
+    }, 420)
+
+    const clearTimer = window.setTimeout(() => {
+      setTransitionTitle(null)
+      scrollToPageTop()
+    }, 980)
+
+    transitionTimers.current = [routeTimer, clearTimer]
+  }
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+    document.documentElement.dataset.theme = theme
+    window.localStorage.setItem(themeStorageKey, theme)
+  }, [theme])
+
+  useEffect(() => {
+    const syncRoute = () => setHashRoute(getHashRoute())
+
+    window.addEventListener('hashchange', syncRoute)
+
+    return () => window.removeEventListener('hashchange', syncRoute)
+  }, [])
+
+  useEffect(() => {
+    if (activeNoteSlug) {
+      scrollToPageTop()
+    }
+  }, [activeNoteSlug])
+
+  useEffect(
+    () => () => {
+      transitionTimers.current.forEach((timer) => window.clearTimeout(timer))
+    },
+    [],
+  )
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <PageShell>
+      <Header
+        theme={theme}
+        onThemeToggle={() =>
+          setTheme((currentTheme) =>
+            currentTheme === 'light' ? 'dark' : 'light',
+          )
+        }
+      />
+      {activeNoteMatch ? (
+        <NoteReader
+          note={activeNoteMatch.note}
+          track={activeNoteMatch.track}
+          nextTrack={nextTrack}
+          onNavigateNote={navigateToNote}
+        />
+      ) : (
+        <main>
+          <Hero />
+          <Statement />
+          <Library />
+          <Roadmap />
+          <Contribute />
+          <Footer />
+        </main>
+      )}
+      {transitionTitle && (
+        <div className="note-route-transition" aria-live="polite">
+          <div className="note-route-transition__title">{transitionTitle}</div>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      )}
+    </PageShell>
   )
 }
 
