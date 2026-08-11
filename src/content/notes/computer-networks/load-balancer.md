@@ -5,74 +5,302 @@ description: "Why load balancers are needed, round robin, least connections, and
 track: "Computer Networks"
 ---
 
-A load balancer distributes incoming requests across multiple backend servers.
+# Load Balancer
+## What is a Load Balancer?
+A **Load Balancer** is a component that **distributes incoming requests across multiple servers**.
 
-## Why Load Balancers Are Needed
+Instead of all requests going to one server, the load balancer decides **which server should handle each request**.
+---
+## Why Do We Need a Load Balancer?
+Imagine your application has only one server.
 
-One server can become overloaded or fail.
-
-```text
-Users -> One App Server
+```plain text
+        Users
+          │
+          ▼
+     App Server
 ```
 
-With multiple servers, another problem appears: which server should receive each request?
+If 10 users visit, everything is fine.
 
-```text
-Users -> Load Balancer -> Server 1
-                       -> Server 2
-                       -> Server 3
+But what if 100,000 users visit at the same time?
+
+Problems:
+
+- Server becomes overloaded.
+- Response time increases.
+- Requests may fail.
+- If the server crashes, the entire application goes down.
+
+One server becomes a **single point of failure**.
+---
+## Solution
+Add more servers.
+
+```plain text
+App Server 1
+
+App Server 2
+
+App Server 3
 ```
 
-## Benefits
+But now another problem appears.
 
-- Better performance by sharing work.
-- High availability when one server fails.
-- Easier scaling by adding more servers.
-- Centralized health checks.
+How does the client know **which server to send the request to?**
 
-## Algorithms
+This is where the load balancer comes in.
 
-### Round Robin
-
-Requests are sent one after another.
-
-```text
-Request 1 -> Server 1
-Request 2 -> Server 2
-Request 3 -> Server 3
-Request 4 -> Server 1
+```plain text
+           Users
+             │
+             ▼
+      Load Balancer
+        /    |    \
+       ▼     ▼     ▼
+   Server1 Server2 Server3
 ```
 
-### Least Connections
+Clients send requests only to the **load balancer**.
 
-The request goes to the server with the fewest active connections. This is useful when requests have different durations.
+The load balancer forwards each request to one of the available servers.
+---
+# Benefits
+### 1. Better Performance
+Instead of one server handling everything:
 
-### IP Hash
+```plain text
+1000 requests
 
-The client IP determines the backend server. This can support session affinity when sessions are stored in server memory.
+↓
 
-## Health Checks
-
-The load balancer checks whether each backend is healthy.
-
-```text
-Server 1: healthy
-Server 2: unhealthy
-Server 3: healthy
+1 server
 ```
 
-Traffic is sent only to healthy servers.
+The work is shared:
 
-## Layer 4 vs Layer 7
+```plain text
+1000 requests
 
-Layer 4 load balancers route using IPs and TCP/UDP ports.
+↓
 
-Layer 7 load balancers inspect HTTP data like paths, headers, cookies, and hostnames.
+Server1 → 333
 
-## Interview Notes
+Server2 → 333
 
-- A load balancer distributes traffic across servers.
-- It improves availability and scalability.
-- Round robin is simple rotation.
-- Least connections chooses the least busy server.
-- Health checks prevent sending traffic to failed instances.
+Server3 → 334
+```
+
+Each server handles less work.
+---
+### 2. High Availability
+Suppose Server 2 crashes.
+
+Without a load balancer:
+
+```plain text
+Client
+
+↓
+
+Server 2
+
+❌ Failed
+```
+
+With a load balancer:
+
+```plain text
+Server2 ❌
+
+↓
+
+Request automatically goes to
+
+Server1
+
+or
+
+Server3
+```
+
+Users may not even notice the failure.
+---
+### 3. Scalability
+Traffic increases?
+
+Just add another server.
+
+```plain text
+Before
+
+LB
+
+↓
+
+3 servers
+```
+
+Later
+
+```plain text
+LB
+
+↓
+
+6 servers
+```
+
+The load balancer starts using the new servers automatically.
+---
+# How Does It Decide Which Server?
+The load balancer uses a routing algorithm.
+
+### 1. Round Robin
+Requests are distributed one after another.
+
+```plain text
+Request 1 → Server1
+
+Request 2 → Server2
+
+Request 3 → Server3
+
+Request 4 → Server1
+
+Request 5 → Server2
+```
+
+Simple and commonly used.
+---
+### 2. Least Connections
+The request goes to the server with the fewest active connections.
+
+Example:
+
+```plain text
+Server1 → 80 users
+
+Server2 → 25 users
+
+Server3 → 10 users
+```
+
+Next request goes to:
+
+```plain text
+Server3
+```
+
+Useful when requests take different amounts of time.
+---
+### 3. IP Hash (Session Affinity)
+The client's IP address determines the server.
+
+```plain text
+User A
+
+↓
+
+Server2
+```
+
+Every future request from User A goes to Server2 (unless the configuration changes).
+
+Useful when an application stores session data in memory on a specific server.
+---
+# Health Checks
+A load balancer continuously checks whether servers are healthy.
+
+Example:
+
+```plain text
+Server1 ✅
+
+Server2 ❌
+
+Server3 ✅
+```
+
+Requests are sent only to healthy servers.
+
+This improves reliability.
+---
+# Types of Load Balancers
+### Layer 4 (Transport Layer)
+Makes routing decisions using network information such as IP addresses and TCP/UDP ports.
+
+Fast and efficient because it doesn't inspect the HTTP request.
+---
+### Layer 7 (Application Layer)
+Makes decisions based on HTTP information.
+
+Examples:
+
+```plain text
+/api
+
+↓
+
+Backend API
+```
+
+```plain text
+/images
+
+↓
+
+Image Server
+```
+
+```plain text
+/admin
+
+↓
+
+Admin Service
+```
+
+This enables smarter routing based on URLs, headers, cookies, or hostnames.
+---
+# Common Load Balancers
+Examples you may encounter:
+
+- Nginx
+- HAProxy
+- AWS Application Load Balancer (ALB)
+- AWS Network Load Balancer (NLB)
+- Google Cloud Load Balancer
+- Azure Load Balancer
+---
+# Real-World Example
+Suppose Amazon receives **1 million requests per minute**.
+
+Without a load balancer:
+
+```plain text
+Users
+
+↓
+
+One Server
+
+💥 Crashes
+```
+
+With a load balancer:
+
+```plain text
+Users
+
+↓
+
+Load Balancer
+
+↓
+
+100 App Servers
+```
+
+Each server handles only a small portion of the traffic.
+---

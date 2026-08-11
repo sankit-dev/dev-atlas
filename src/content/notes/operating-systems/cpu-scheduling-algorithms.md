@@ -5,181 +5,163 @@ description: "FCFS, SJF, Round Robin, Priority Scheduling, Multilevel Queue."
 track: "Operating Systems"
 ---
 
-## What is CPU scheduling?
+# What is CPU Scheduling?
+CPU Scheduling is the process of deciding **which process gets the CPU next**.
 
-CPU scheduling is the process of deciding which process gets the CPU next.
+Since a CPU (single core) can execute **only one process/thread at a time**, the Operating System uses a **CPU Scheduler** to decide the execution order.
 
-Since a single CPU core can execute only one process or thread at a time, the operating system uses a CPU scheduler to decide the execution order.
-
-Example processes waiting for the CPU:
-
+**Example:**
+Processes waiting for the CPU:
 ```plain text
 Chrome
 Spotify
 VS Code
 Discord
 ```
-
 The scheduler decides which one should execute first.
-
 ---
-
-## Why is CPU scheduling needed?
-
+# Why is CPU Scheduling Needed?
 Imagine three processes:
 
-| Process | CPU Time |
-| --- | --- |
-| Chrome | 10 sec |
-| Spotify | 2 sec |
-| VS Code | 1 sec |
+<table header-row="true">
+<tr>
+<td>Process</td>
+<td>CPU Time</td>
+</tr>
+<tr>
+<td>Chrome</td>
+<td>10 sec</td>
+</tr>
+<tr>
+<td>Spotify</td>
+<td>2 sec</td>
+</tr>
+<tr>
+<td>VS Code</td>
+<td>1 sec</td>
+</tr>
+</table>
 
 If Chrome executes first, Spotify and VS Code must wait 10 seconds.
 
-A better strategy may be to execute shorter jobs first so that more processes finish quickly. This is why different scheduling algorithms exist.
+A better strategy may be to execute shorter jobs first so that more processes finish quickly.
 
+This is why different scheduling algorithms exist.
 ---
+# CPU Scheduling Algorithms
+## 1. First Come First Serve (FCFS)
+Processes are executed in the order they arrive.
 
-## First Come First Serve
-
-First Come First Serve, or FCFS, executes processes in the order they arrive.
-
-Example arrival order:
-
+### Example
 ```plain text
+Arrival Order
+
 Chrome (10s)
 Spotify (2s)
 VS Code (1s)
 ```
-
 Execution:
-
 ```plain text
-Chrome -> Spotify -> VS Code
+Chrome → Spotify → VS Code
 ```
-
-Pros:
-
+### Pros
 - Simple to implement.
-
-Cons:
-
+### Cons
 - Long processes make shorter processes wait.
-- It can cause the convoy effect.
-
+- Causes **Convoy Effect**.
 ---
-
-## Shortest Job First
-
-Shortest Job First, or SJF, executes the process with the shortest CPU burst first.
-
-Example:
-
+## 2. Shortest Job First (SJF)
+The process with the shortest CPU burst executes first.
+### Example
 ```plain text
 Chrome (10s)
 Spotify (2s)
 VS Code (1s)
 ```
-
 Execution:
-
 ```plain text
-VS Code -> Spotify -> Chrome
+VS Code → Spotify → Chrome
 ```
-
-Pros:
-
+### Pros
 - Reduces average waiting time.
-
-Cons:
-
-- Long processes may starve if short jobs keep arriving.
+### Cons
+- Long processes may **starve** if short jobs keep arriving.
 
 Example:
-
 ```plain text
-Chrome (10s) waits
+Chrome (10s)  ← Waiting
 
 Calculator (1s)
 Notepad (1s)
 Terminal (1s)
 ```
-
 Chrome may keep waiting indefinitely.
-
 ---
+## 3. Round Robin (RR)
+Each process gets a fixed amount of CPU time called the **Time Quantum**.
 
-## Round Robin
+If it doesn't finish within its quantum, it goes back to the end of the queue.
 
-Round Robin gives each process a fixed amount of CPU time called the time quantum.
-
-If a process does not finish within its quantum, it goes back to the end of the queue.
-
-Example with a 2 second time quantum:
+### Example
+Time Quantum = **2 seconds**
 
 ```plain text
 Chrome (10s)
 Spotify (2s)
 VS Code (1s)
 ```
-
 Execution:
-
 ```plain text
-Chrome -> 2s
-Spotify -> finished
-VS Code -> finished
-Chrome -> 2s
-Chrome -> ...
+Chrome → 2s
+Spotify → Finished
+VS Code → Finished
+Chrome → 2s
+Chrome → ...
 ```
-
-Pros:
-
+### Pros
 - Fair scheduling.
 - Every process gets CPU time.
 - Prevents starvation.
-
-Cons:
-
-- If the time quantum is too small, context switching happens too often.
-- If the time quantum is too large, Round Robin behaves like FCFS.
-
+### Cons
+**Time Quantum too small**
+- Frequent context switching.
+- CPU spends more time switching than executing.
+**Time Quantum too large**
+- Behaves like FCFS.
+- One process can hold the CPU for a long time.
+- System becomes less responsive.
 ---
+## 4. Priority Scheduling
+Each process is assigned a priority.
 
-## Priority Scheduling
+The scheduler executes the highest-priority process first.
 
-Priority scheduling assigns each process a priority. The scheduler executes the highest-priority process first.
-
-Example:
-
+### Example (Netflix as an operating system)
 ```plain text
-Watch Movie    -> High Priority
-Download Movie -> Medium Priority
-App Update     -> Low Priority
+Watch Movie      → High Priority
+Download Movie   → Medium Priority
+App Update       → Low Priority
 ```
-
 Movie playback should receive CPU first because it is latency-sensitive, while downloads and updates can wait.
 
-Pros:
-
+### Pros
 - Important tasks are executed first.
 
-Cons:
-
+### Cons
 - Low-priority processes may starve.
-
 ---
-
-## Interview points
-
+# Interview Points
 ### Why not always use SJF?
-
 Because long-running processes may starve.
 
 ### Why not always use Round Robin?
-
-Choosing the wrong time quantum can either increase context switching or make the system less responsive.
+Choosing the wrong Time Quantum can either:
+- increase context switching (too small), or
+- make the system unresponsive (too large).
 
 ### Which algorithm do real operating systems use?
-
-Modern operating systems such as Linux, Windows, and macOS do not use a single simple algorithm. They use hybrid schedulers that combine ideas from Round Robin, priority scheduling, aging, and other optimizations.
+Modern operating systems (Linux, Windows, macOS) **do not use a single algorithm**. They use hybrid schedulers that combine ideas from:
+- Round Robin
+- Priority Scheduling
+- Aging
+- Other optimization techniques

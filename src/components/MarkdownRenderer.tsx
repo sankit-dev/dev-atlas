@@ -62,6 +62,86 @@ function parseTableRow(line: string) {
     .map((cell) => cell.trim())
 }
 
+function parseNotionTable(lines: string[], index: number) {
+  const tableLines: string[] = []
+
+  while (index < lines.length && !lines[index].startsWith('</table>')) {
+    tableLines.push(lines[index])
+    index += 1
+  }
+
+  if (index < lines.length) {
+    tableLines.push(lines[index])
+    index += 1
+  }
+
+  const tableMarkup = tableLines.join('\n')
+  const hasHeader = /<table[^>]*header-row="true"/.test(tableMarkup)
+  const rows = [...tableMarkup.matchAll(/<tr>\s*([\s\S]*?)\s*<\/tr>/g)].map(
+    (rowMatch) =>
+      [...rowMatch[1].matchAll(/<td>\s*([\s\S]*?)\s*<\/td>/g)].map(
+        (cellMatch) => cellMatch[1].trim().replace(/\n+/g, ' '),
+      ),
+  )
+
+  return {
+    nextIndex: index,
+    rows,
+    hasHeader,
+  }
+}
+
+function isInterviewHeading(content: string) {
+  return /\binterview (?:tip|questions?|answers?|points?)\b/i.test(content)
+}
+
+function getInterviewQuestion(line: string) {
+  const match = line
+    .trim()
+    .match(/^(?:>\s+)?\*\*(?:Q:\s*)?(.+\?)\*\*$/i)
+  return match?.[1]
+}
+
+function getInterviewAnswer(line: string) {
+  const answerMatch = line.trim().match(/^\*\*Answer:\*\*\s*(.*)$/i)
+
+  if (answerMatch) {
+    return answerMatch[1]
+  }
+
+  const shortAnswerMatch = line.trim().match(/^\*\*((?:Yes|No)\.)\*\*$/i)
+  return shortAnswerMatch?.[1]
+}
+
+function startsMarkdownBlock(line: string) {
+  return /^(```|#{1,4}\s|[-*]\s|\d+\.\s|> |---$|<table)/.test(line)
+}
+
+function introducesInterviewQuestion(lines: string[], index: number) {
+  let nextIndex = index + 1
+
+  while (nextIndex < lines.length && !lines[nextIndex].trim()) {
+    nextIndex += 1
+  }
+
+  if (getInterviewQuestion(lines[nextIndex] ?? '')) {
+    return getInterviewAnswer(lines[nextIndex + 1] ?? '') !== undefined
+  }
+
+  while (
+    nextIndex < lines.length &&
+    lines[nextIndex].trim() &&
+    !startsMarkdownBlock(lines[nextIndex])
+  ) {
+    nextIndex += 1
+  }
+
+  return (
+    getInterviewQuestion(lines[nextIndex] ?? '') !== undefined &&
+    getInterviewAnswer(lines[nextIndex + 1] ?? '') !== undefined
+  )
+}
+
 export function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
   const lines = markdown.split('\n')
   const nodes: ReactNode[] = []
@@ -129,10 +209,82 @@ export function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
       continue
     }
 
+    if (line.startsWith('<table')) {
+      const table = parseNotionTable(lines, index)
+      const [headerRow, ...bodyRows] = table.hasHeader ? table.rows : []
+      const rows = table.hasHeader ? bodyRows : table.rows
+
+      nodes.push(
+        <div className="markdown-table-wrap" key={index}>
+          <table>
+            {headerRow && (
+              <thead>
+                <tr>
+                  {headerRow.map((header, headerIndex) => (
+                    <th key={`${header}-${headerIndex}`}>
+                      {renderInline(header)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            )}
+            <tbody>
+              {rows.map((row, rowIndex) => (
+                <tr key={`${row.join('-')}-${rowIndex}`}>
+                  {row.map((cell, cellIndex) => (
+                    <td key={`${cell}-${cellIndex}`}>{renderInline(cell)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>,
+      )
+      index = table.nextIndex
+      continue
+    }
+
     if (line === '---') {
       nodes.push(<hr key={index} />)
       index += 1
       continue
+    }
+
+    const question = getInterviewQuestion(line)
+
+    if (question) {
+      const answerStart = getInterviewAnswer(lines[index + 1] ?? '')
+
+      if (answerStart !== undefined) {
+        const answerLines = answerStart ? [answerStart] : []
+        index += 2
+
+        while (
+          index < lines.length &&
+          lines[index].trim() &&
+          !startsMarkdownBlock(lines[index]) &&
+          !getInterviewQuestion(lines[index])
+        ) {
+          answerLines.push(lines[index])
+          index += 1
+        }
+
+        nodes.push(
+          <section className="markdown-interview-question" key={index}>
+            <span className="markdown-interview-question__label">
+              Interview question
+            </span>
+            <p className="markdown-interview-question__prompt">
+              {renderInline(question)}
+            </p>
+            <div className="markdown-interview-question__answer">
+              <span>Answer</span>
+              <p>{renderInline(answerLines.join(' '))}</p>
+            </div>
+          </section>,
+        )
+        continue
+      }
     }
 
     if (line.startsWith('> ')) {
@@ -155,7 +307,19 @@ export function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
       const content = line.slice(level + 1)
       const Heading = `h${Math.min(level, 4)}` as 'h1' | 'h2' | 'h3' | 'h4'
 
-      nodes.push(<Heading key={index}>{renderInline(content)}</Heading>)
+      if (isInterviewHeading(content) && introducesInterviewQuestion(lines, index)) {
+        index += 1
+        continue
+      }
+
+      nodes.push(
+        <Heading
+          className={isInterviewHeading(content) ? 'markdown-interview-heading' : undefined}
+          key={index}
+        >
+          {renderInline(content)}
+        </Heading>,
+      )
       index += 1
       continue
     }
@@ -202,14 +366,25 @@ export function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
     while (
       index < lines.length &&
       lines[index].trim() &&
-      !/^(```|#{1,4}\s|[-*]\s|\d+\.\s|> |---$)/.test(lines[index]) &&
+      !startsMarkdownBlock(lines[index]) &&
       !isTable(lines, index)
     ) {
       paragraphLines.push(lines[index])
       index += 1
     }
 
-    nodes.push(<p key={index}>{renderInline(paragraphLines.join(' '))}</p>)
+    const paragraphText = paragraphLines.join(' ')
+    const nextMeaningfulLine = lines
+      .slice(index)
+      .find((nextLine) => nextLine.trim())
+    const isCodeLeadIn =
+      paragraphText.trim().endsWith(':') && nextMeaningfulLine?.startsWith('```')
+
+    nodes.push(
+      <p className={isCodeLeadIn ? 'markdown-code-lead-in' : undefined} key={index}>
+        {renderInline(paragraphText)}
+      </p>,
+    )
   }
 
   return <div className="markdown-body">{nodes}</div>

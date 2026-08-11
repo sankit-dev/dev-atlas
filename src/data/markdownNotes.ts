@@ -62,6 +62,10 @@ export const markdownNotes = Object.values(markdownFiles).map((markdown) => {
   }
 })
 
-export const markdownNotesBySlug = new Map(
-  markdownNotes.map((note) => [note.slug, note]),
+export const markdownNotesByTrackAndSlug = new Map(
+  markdownNotes.map((note) => [`${note.track}:${note.slug}`, note]),
 )
+
+export function getMarkdownNote(track: string, slug: string) {
+  return markdownNotesByTrackAndSlug.get(`${track}:${slug}`)
+}

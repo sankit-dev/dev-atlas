@@ -5,119 +5,104 @@ description: "Core difference, context switching cost, when to prefer one over t
 track: "Operating Systems"
 ---
 
+# 1. Process vs Thread
 ## Program
+A program is an executable file that contains instructions/code to run.
 
-A program is an executable file that contains instructions or code to run.
+**Examples:** Chrome, VS Code, Microsoft Word, Spotify.
 
-Examples:
-
-- Chrome
-- VS Code
-- Microsoft Word
-- Spotify
-
-A program in execution is called a process.
-
+A **program in execution** is called a **Process**.
 ---
-
 ## Process
+A process is an instance of a running program.
 
-A process is an instance of a running program. In simpler words, a process is a running program.
+In simple words, a process is a **running program**.
 
-- Each process is isolated by the operating system.
+- Each process is isolated by the Operating System.
 - One process cannot directly access another process's memory.
-- Each process gets its own memory and resources when it is created.
-- Two processes cannot communicate directly. They require Inter-Process Communication (IPC).
+- Each process gets its own memory and resources when created.
+- Two processes cannot communicate directly.
+- They require Inter-Process Communication (IPC).
 
-Examples:
-
+**Examples:**
 - Running Google Chrome.
 - Running VS Code.
 - Running Spotify.
 - Running a Node.js server.
 
-> If you open Chrome and VS Code, the operating system creates two separate processes.
-
+> If you open Chrome and VS Code, the OS creates two separate processes.
 ---
-
 ## Thread
-
 A thread is the smallest unit of execution within a process.
 
 - A process can have one or more threads.
 - Threads of the same process share memory and resources.
-- Multiple threads allow a process to perform multiple tasks at the same time.
+- Multiple threads allow a process to perform multiple tasks simultaneously.
 
-Examples:
-
-- Chrome may use one thread to render the webpage, another to handle user input, and another to download files.
-- A writing app may use one thread for typing and another for spell checking.
-- A music player may use one thread to play music and another to update the UI.
-- Node.js runs JavaScript on the main thread, while worker threads can handle CPU-intensive tasks.
-
+**Examples:**
+- **Chrome**
+	- One thread renders the webpage.
+	- Another handles user input.
+	- Another downloads files.
+- **Notion**
+	- One thread handles typing.
+	- Another performs spell checking.
+- **Music Player**
+	- One thread plays music.
+	- Another updates the UI.
+- **Node.js**
+	- Main thread executes JavaScript.
+	- Worker threads can handle CPU-intensive tasks.
 ---
+## Key Difference
+<table header-row="true">
+<tr>
+<td>Process</td>
+<td>Thread</td>
+</tr>
+<tr>
+<td>A process is an independent running program.</td>
+<td>A thread is the smallest unit of execution within a process.</td>
+</tr>
+<tr>
+<td>Each process has its own memory and resources.</td>
+<td>Threads share the memory and resources of their process.</td>
+</tr>
+<tr>
+<td>Processes are isolated from each other.</td>
+<td>Threads can directly communicate through shared memory.</td>
+</tr>
+<tr>
+<td>A process can contain one or more threads.</td>
+<td>A thread cannot exist without a process.</td>
+</tr>
+</table>
 
-## Key difference
+> **Context Switching:** The process of the CPU saving the state of the currently running process/thread and loading the state of another so execution can continue.
 
-| Process | Thread |
-| --- | --- |
-| A process is an independent running program. | A thread is the smallest unit of execution within a process. |
-| Each process has its own memory and resources. | Threads share the memory and resources of their process. |
-| Processes are isolated from each other. | Threads can directly communicate through shared memory. |
-| A process can contain one or more threads. | A thread cannot exist without a process. |
+> **Process context switch** is slower because the OS also switches memory address spaces.
 
----
+> **Thread context switch** is faster because threads share the same memory, so only the execution state needs to be switched.
 
-## Context switching
+The key idea is: **the CPU pauses one execution, saves its place, and resumes another.**
 
-Context switching is the process of the CPU saving the state of the currently running process or thread and loading the state of another so execution can continue.
-
-A process context switch is slower because the operating system also switches memory address spaces.
-
-A thread context switch is faster because threads share the same memory, so only the execution state needs to be switched.
-
-The key idea is:
-
-> The CPU pauses one execution, saves its place, and resumes another.
-
----
-
-## When to prefer a process
-
-Use a process when:
-
+## When to Prefer a Process
+Use a **Process** when:
 - Isolation is required.
 - One application's failure should not affect another.
 - Security is important.
 
-Examples:
-
+**Examples:**
 - Chrome and Spotify run as separate processes.
-- A database server and a web server should run as separate processes.
-
+- Database server and web server.
 ---
-
-## When to prefer threads
-
-Use threads when:
-
+## When to Prefer Threads
+Use **Threads** when:
 - Multiple tasks belong to the same application.
 - Tasks need to share memory and data.
 - Better performance and responsiveness are required.
 
-Examples:
-
+**Examples:**
 - Spell checking while typing.
 - Downloading a file while browsing.
 - Handling multiple client requests in a server.
-
----
-
-## Quick revision
-
-- A program is code stored on disk.
-- A process is a running program.
-- A thread is a unit of execution inside a process.
-- Processes are isolated.
-- Threads share memory inside the same process.
-- Process context switching is usually heavier than thread context switching.

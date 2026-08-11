@@ -5,61 +5,120 @@ description: "Getting predictable JSON-shaped model responses."
 track: "AI for Backend Developers"
 ---
 
-Structured output means asking the model to return data in a predictable shape, usually JSON.
+> **Structured output makes the model return data in a predictable format that your backend can safely process.**
 
-## Why it matters
+## Why is it needed?
 
-Backend systems need output that software can parse.
+Humans can understand this:
 
-Without structure, the model may return:
+```plain text
+The customer is Aman, and his plan is Pro.
+```
 
-- Extra explanation.
-- Missing fields.
-- Different field names.
-- Invalid JSON.
-- Values in the wrong type.
+A backend usually needs this:
 
-Structured output reduces parsing problems.
+```json
+{
+  "name": "Aman",
+  "plan": "pro"
+}
+```
 
-## Common use cases
+Free-form text can change between requests. The model might add headings, explanations, or different property names, breaking your parser.
 
-- Classification.
-- Entity extraction.
-- Form filling.
-- Moderation results.
-- Ticket routing.
-- SQL query planning.
-- Workflow decisions.
+## Prompting for JSON is not always enough
 
-## Schema-first thinking
+This instruction helps:
 
-Design the output schema before writing the prompt.
+```plain text
+Return JSON only.
+```
 
-Example fields:
+But the model may still return:
 
-- category.
-- confidence.
-- summary.
-- needsHumanReview.
-- extractedEntities.
+- invalid JSON
+- missing fields
+- wrong data types
+- unexpected values
+- extra explanation
 
-The schema should match what your application actually needs.
+A structured-output feature lets you define the expected schema.
 
-## Validate anyway
+## Example schema
 
-Never trust model output blindly. Parse it, validate it, and decide what to do when it fails.
+```javascript
+const schema = {
+  type: "object",
+  properties: {
+    name: { type: "string" },
+    plan: { enum: ["free", "pro"] },
+    active: { type: "boolean" }
+  },
+  required: ["name", "plan", "active"],
+  additionalProperties: false
+};
+```
 
-Validation should check:
+Conceptual request:
 
-- Required fields.
-- Allowed enum values.
-- Types.
-- String length.
-- Numeric ranges.
+```javascript
+const result = await ai.generate({
+  input: "Aman has an active Pro subscription.",
+  outputSchema: schema
+});
+```
 
-## Quick revision
+Expected result:
 
-- Structured output makes model responses easier to parse.
-- JSON is common for backend systems.
-- Define the schema first.
-- Validate every response before using it.
+```json
+{
+  "name": "Aman",
+  "plan": "pro",
+  "active": true
+}
+```
+
+## Where it is useful
+
+- extracting invoice fields
+- classifying support tickets
+- generating API-ready objects
+- moderation results
+- creating database records
+- returning lists with fixed fields
+
+## Still validate on the backend
+
+A valid structure does not guarantee correct information.
+
+For example, this is valid JSON but may be factually wrong:
+
+```json
+{
+  "total": 5000
+}
+```
+
+Validate:
+
+- business rules
+- allowed ranges
+- IDs against your database
+- permissions
+- required relationships
+
+## Structured output vs tool calling
+
+- **Structured output:** return data in a required shape
+- **Tool calling:** request that your backend perform an action
+
+Use structured output when you need data. Use tool calling when the model needs to interact with a system.
+
+## Common mistakes
+
+- parsing ordinary prose with fragile string operations
+- using an overly complex schema
+- treating schema-valid output as factually correct
+- directly inserting model output into a database without validation
+
+> Structured output guarantees a **shape**, not the **truth**.

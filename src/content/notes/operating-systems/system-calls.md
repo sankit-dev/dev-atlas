@@ -5,38 +5,36 @@ description: "fork, exec, and how user mode transitions to kernel mode."
 track: "Operating Systems"
 ---
 
-## Why do we need system calls?
-
+# System Calls
+## Why Do We Need System Calls?
 Suppose your program wants to:
-
-- Read a file.
-- Write to a file.
-- Create a new process.
-- Allocate memory.
-- Open a network socket.
+- Read a file
+- Write to a file
+- Create a new process
+- Allocate memory
+- Open a network socket
 
 Can your program directly access the hard disk, RAM, or CPU?
 
-No. The operating system controls hardware resources. Whenever a program needs a service from the operating system, it makes a system call.
+**No.**
 
+The operating system controls all hardware resources.
+
+So whenever a program needs a service from the OS, it makes a **System Call**.
 ---
-
 ## Definition
-
-A system call is a mechanism through which a user program requests services from the operating system kernel.
-
+A **System Call** is a mechanism through which a user program requests services from the operating system's kernel.
 Think of it as:
-
-> A bridge between user space and kernel space.
-
+> **A bridge between User Space and Kernel Space.**
 ---
-
-## User space vs kernel space
-
-Applications such as Chrome, VS Code, Node.js, and Python run in user space.
-
-The operating system kernel runs in kernel space.
-
+## User Space vs Kernel Space
+Applications like:
+- Chrome
+- VS Code
+- Node.js
+- Python
+run in **User Space**.
+The operating system runs in **Kernel Space**.
 ```plain text
 +----------------------+
 |      User Space      |
@@ -45,10 +43,10 @@ The operating system kernel runs in kernel space.
 | VS Code              |
 | Node.js              |
 +----------------------+
-          |
+          │
      System Call
-          |
-          v
+          │
+          ▼
 +----------------------+
 |     Kernel Space     |
 |----------------------|
@@ -58,212 +56,304 @@ The operating system kernel runs in kernel space.
 | Device Drivers       |
 +----------------------+
 ```
-
-Applications cannot directly access kernel resources. They must use system calls.
-
+Applications cannot directly access kernel resources.
+They must use **System Calls**.
 ---
-
-## Example
-
-Suppose a Node.js application reads a file:
+# Example
+Suppose your Node.js application reads a file.
 
 ```javascript
 fs.readFile("data.txt")
 ```
 
-What actually happens:
+What actually happens?
 
 ```plain text
 Node.js Application
-        |
-        v
+        │
+        ▼
 System Call (read/open)
-        |
-        v
+        │
+        ▼
 Kernel
-        |
-        v
+        │
+        ▼
 Disk
 ```
+Your program never talks directly to the disk.
 
-Your program never talks directly to the disk. The kernel does.
-
+The kernel does.
 ---
+# Common Types of System Calls
+### 1. Process Management
+Used for:
 
-## Common types of system calls
-
-### Process management
-
-Used for creating, terminating, and waiting for processes.
+- Creating processes
+- Terminating processes
+- Waiting for processes
 
 Examples:
-
 - `fork()`
 - `exec()`
 - `exit()`
 - `wait()`
+---
+### 2. File Management
+Used for:
 
-### File management
-
-Used for creating, opening, reading, writing, and closing files.
+- Creating files
+- Opening files
+- Reading files
+- Writing files
+- Closing files
 
 Examples:
-
 - `open()`
 - `read()`
 - `write()`
 - `close()`
+---
+### 3. Memory Management
+Used for:
 
-### Memory management
-
-Used for allocating and freeing memory.
+- Allocating memory
+- Freeing memory
 
 Examples:
-
 - `mmap()`
 - `brk()`
+---
+### 4. Device Management
+Used for interacting with hardware devices.
 
-### Device management
-
-Used for interacting with hardware devices such as keyboards and printers.
-
-### Communication
-
+Examples:
+- Reading from keyboard
+- Writing to printer
+---
+### 5. Communication
 Used for communication between processes or over a network.
 
 Examples:
-
 - `socket()`
 - `send()`
 - `recv()`
 - `pipe()`
-
 ---
+# Why Not Let Applications Access Hardware Directly?
+Imagine any application could directly access RAM or the disk.
 
-## Why not let applications access hardware directly?
-
-If any application could directly access RAM or disk:
-
+Problems:
 - One application could overwrite another application's memory.
 - Malware could access sensitive files.
 - Multiple applications could conflict while using hardware.
 
-The kernel acts as a security and resource manager.
-
+The kernel acts as a **security and resource manager**.
 ---
+# Real-Life Analogy
+Imagine a bank.
 
-## User mode to kernel mode
+You (the application) cannot enter the vault directly.
 
-The CPU moves from user mode to kernel mode through a system call.
+You ask the bank employee (the kernel).
 
-Suppose your program executes:
+The employee checks your request and then accesses the vault.
+
+The **request** you make is the **System Call**.
+---
+# Key Points
+- Applications run in **User Space**.
+- The OS runs in **Kernel Space**.
+- Applications use **System Calls** to request OS services.
+- System Calls provide controlled access to hardware and system resources.
+---
+# How does User Mode transition to Kernel Mode?
+Remember:
+```plain text
++------------------------+
+| User Mode              |
+| Chrome                 |
+| Node.js                |
+| VS Code                |
++------------------------+
+           │
+     System Call
+           │
+           ▼
++------------------------+
+| Kernel Mode            |
+| File System            |
+| Process Scheduler      |
+| Memory Manager         |
++------------------------+
+```
+The question is:
+> **How does the CPU move from User Mode to Kernel Mode?**
+---
+## Step-by-Step
+Suppose your Node.js program executes:
 
 ```javascript
-fs.readFile("data.txt")
+fs.readFile("data.txt");
 ```
 
-### Step 1: Program runs in user mode
+### Step 1: Program runs in User Mode
+Initially, your program is running normally.
 
-User mode has restricted permissions. It cannot:
+```plain text
+CPU
+│
+└── User Mode
+```
 
-- Read the disk directly.
-- Access hardware.
-- Change page tables.
-- Execute privileged CPU instructions.
+User mode has **restricted permissions**.
 
+It cannot:
+- Read the disk directly
+- Access hardware
+- Change page tables
+- Execute privileged CPU instructions
+---
 ### Step 2: Program requests an OS service
+The runtime eventually executes a **system call**.
 
-The runtime eventually executes a system call.
+Think of it as saying:
 
+> "Kernel, please read this file for me."
+---
 ### Step 3: Special CPU instruction
+The program executes a **special CPU instruction**.
 
-The program executes a special CPU instruction such as:
+Examples:
+- `syscall` (x86-64)
+- `sysenter`
+- `svc` (ARM)
 
-- `syscall` on x86-64.
-- `sysenter`.
-- `svc` on ARM.
+This instruction is recognized by the CPU as:
 
-This instruction tells the CPU to switch to kernel mode.
-
-### Step 4: CPU switches to kernel mode
-
+> "Switch to Kernel Mode."
+---
+### Step 4: CPU switches to Kernel Mode
 The CPU automatically:
 
-- Changes privilege level from user mode to kernel mode.
-- Saves the current program state.
+- Changes its privilege level from **User Mode** to **Kernel Mode**.
+- Saves the current program's state (registers, instruction pointer, etc.).
 - Jumps to the kernel's system call handler.
 
+```plain text
+User Mode
+    │
+    │ syscall instruction
+    ▼
+Kernel Mode
+```
+---
 ### Step 5: Kernel performs the work
+The kernel now has full privileges.
 
-The kernel can now read the disk, allocate memory, open sockets, or create processes.
+It can:
+- Read the disk
+- Allocate memory
+- Open sockets
+- Create processes
 
-### Step 6: Return to user mode
+In our example:
 
-When finished, the kernel:
+```plain text
+Kernel
+      │
+      ▼
+Read data.txt from disk
+```
+---
+### Step 6: Return to User Mode
+Once finished, the kernel:
 
 - Places the result where the program expects it.
 - Restores the saved CPU state.
-- Executes a return-from-system-call instruction.
+- Executes a special **return-from-system-call** instruction.
 
-The CPU switches back to user mode and the program continues.
-
----
-
-## Complete flow
+The CPU switches back to **User Mode**, and your program continues.
 
 ```plain text
-Node.js Program (User Mode)
-        |
-        v
-fs.readFile()
-        |
-        v
+User Mode
+     │
+     ▼
 System Call
-        |
-        v
+     │
+     ▼
+Kernel Mode
+     │
+     ▼
+Do the work
+     │
+     ▼
+Return to User Mode
+```
+---
+# Complete Flow
+```plain text
+Node.js Program (User Mode)
+        │
+        ▼
+fs.readFile()
+        │
+        ▼
+System Call (syscall instruction)
+        │
+        ▼
 CPU switches to Kernel Mode
-        |
-        v
+        │
+        ▼
 Kernel reads file from disk
-        |
-        v
+        │
+        ▼
 Kernel returns data
-        |
-        v
+        │
+        ▼
 CPU switches back to User Mode
-        |
-        v
+        │
+        ▼
 Program continues
 ```
-
 ---
+# Why can't the program just switch to Kernel Mode itself?
+Because that would be a huge security risk.
 
-## Why can't a program switch to kernel mode itself?
+Imagine any program could enter Kernel Mode whenever it wanted.
 
-That would be a huge security risk. A malicious program could delete operating system files, read another application's memory, disable security features, or crash the entire system.
+It could:
+- Delete operating system files.
+- Read another application's memory.
+- Disable security features.
+- Crash the entire system.
 
-The CPU prevents this. Only special system call instructions can legally trigger the transition, and control goes to a predefined entry point in the kernel.
+The CPU prevents this.
 
+Only the **special system call instruction** can legally trigger the transition, and control always goes to a predefined entry point in the kernel.
 ---
+## Interview Answer
+> **How does User Mode transition to Kernel Mode?**
 
-## Interview answer
+A program executes a **system call**, which uses a special CPU instruction such as `syscall` on x86-64.
 
-> A program executes a system call, which uses a special CPU instruction such as `syscall`. The CPU saves the current execution state, switches from user mode to kernel mode, transfers control to the kernel's system call handler, and after the requested operation completes, restores the state and returns to user mode.
+The CPU saves the current execution state and switches from **User Mode** to **Kernel Mode**.
 
+Control goes to the kernel's system call handler.
+
+After the requested operation is complete, the CPU restores the state and returns to **User Mode**.
+
+This is the explanation interviewers usually expect for backend and systems roles.
+
+# Interview Questions
+### Q1. What is a System Call?
+A System Call is a mechanism that allows a user program to request services from the operating system's kernel.
 ---
+### Q2. Why are System Calls needed?
+Because user applications cannot directly access hardware or privileged OS resources.
 
-## Interview questions
-
-### What is a system call?
-
-A system call is a mechanism that allows a user program to request services from the operating system kernel.
-
-### Why are system calls needed?
-
-Because user applications cannot directly access hardware or privileged operating system resources.
-
-### Give examples of system calls.
-
+They must request these services from the kernel.
+---
+### Q3. Give some examples of System Calls.
 - `read()`
 - `write()`
 - `open()`

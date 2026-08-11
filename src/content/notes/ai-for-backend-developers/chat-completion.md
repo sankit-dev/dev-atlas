@@ -5,60 +5,115 @@ description: "Sending messages to a model and reading responses."
 track: "AI for Backend Developers"
 ---
 
-Chat completion is the common API pattern for sending messages to a model and receiving a response.
+> **Chat completion means sending conversation input to an AI model and receiving generated text as the response.**
 
-## Message roles
+## Basic request flow
 
-Most chat APIs use roles:
+```mermaid
+flowchart LR
+    A["Messages and instructions"] --> B["AI model"]
+    B --> C["Generated response"]
+```
 
-- System: behavior and rules.
-- User: the user's request.
-- Assistant: previous model replies.
-- Tool: external tool results.
+A request usually contains:
 
-The model sees these messages as context.
+- the model to use
+- instructions for the model
+- the user's input
+- relevant conversation history
+- generation settings such as output length
 
-## Basic request shape
+## Roles in a conversation
 
-A backend request usually includes:
+<table header-row="true">
+<tr>
+<td>Role</td>
+<td>Purpose</td>
+</tr>
+<tr>
+<td>System or developer</td>
+<td>Defines behaviour and important rules</td>
+</tr>
+<tr>
+<td>User</td>
+<td>Contains the user's request</td>
+</tr>
+<tr>
+<td>Assistant</td>
+<td>Contains earlier model responses</td>
+</tr>
+</table>
 
-- Model name.
-- Messages.
-- Temperature.
-- Maximum output tokens.
-- Optional tools.
-- Optional structured output schema.
+Example:
 
-## Stateless API, stateful app
+```javascript
+const response = await ai.generate({
+  instructions: "Explain concepts to a beginner backend developer.",
+  input: "What is a load balancer?",
+  maxOutputTokens: 500
+});
 
-The API call is usually stateless. If you want conversation memory, your backend must store and resend relevant context.
+console.log(response.text);
+```
 
-Do not blindly resend infinite history. Summarize or select important turns.
+Exact SDK syntax differs between providers.
 
-## Response handling
+## AI APIs are usually stateless
 
-Production code should handle:
+The API normally does not automatically remember every previous request.
 
-- Empty or refused responses.
-- Provider errors.
-- Timeouts.
-- Rate limits.
-- Partial streaming responses.
-- Invalid JSON.
-- Retries with backoff.
+If the conversation is:
 
-## Common backend use cases
+```plain text
+User: My name is Aman.
+AI: Nice to meet you.
 
-- Support assistants.
-- Code explanation.
-- Document summarization.
-- Natural language search.
-- Data extraction.
-- Draft generation.
+User: What is my name?
+```
 
-## Quick revision
+The second request must also provide the relevant earlier information, or use a provider feature that preserves conversation state.
 
-- Chat completion sends role-based messages.
-- The backend controls context and parameters.
-- Conversation state must be managed by your app.
-- Always handle failures and invalid output.
+Conceptually:
+
+```javascript
+const messages = [
+  { role: "user", content: "My name is Aman." },
+  { role: "assistant", content: "Nice to meet you." },
+  { role: "user", content: "What is my name?" }
+];
+```
+
+Sending more history uses more input tokens and context-window space.
+
+## Important settings
+
+- **Temperature:** controls how varied token selection is
+- **Maximum output tokens:** limits response length
+- **Structured output:** asks for validated machine-readable data
+- **Tools:** allow the model to request backend actions
+- **Streaming:** sends generated text gradually
+
+Not every model exposes every setting.
+
+## What your backend should handle
+
+- validate the user's input
+- authenticate and rate-limit the user
+- set timeouts
+- handle provider errors
+- record token usage and cost
+- avoid logging sensitive prompts
+- return or stream the response
+
+## Common mistakes
+
+- assuming the model remembers previous API calls
+- sending the entire conversation forever
+- trusting generated facts without verification
+- exposing the provider key in the frontend
+- not setting an output limit
+- parsing free-form text when the application expects JSON
+
+## Final mental model
+
+> A chat API call is simply: **instructions + current input + relevant context → generated output**.

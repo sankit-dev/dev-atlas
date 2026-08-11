@@ -5,55 +5,133 @@ description: "How much information a model can consider at once."
 track: "AI for Backend Developers"
 ---
 
-The context window is the amount of information a model can consider in a single request.
+> **The context window is the maximum amount of information an AI model can consider at one time. It is measured in tokens.**
 
-## What it includes
+Think of it as the model's **working memory** for the current request.
 
-The context window includes all input sent to the model:
+## What goes inside the context window?
 
-- System instructions.
-- User message.
-- Conversation history.
-- Retrieved documents.
-- Tool results.
-- Examples.
+The window may contain:
 
-The generated answer also consumes part of the total request capacity in many APIs.
+- system instructions
+- developer instructions
+- your current message
+- previous conversation messages
+- uploaded or retrieved documents
+- tool results
+- the answer being generated
 
-## Why it matters
+```mermaid
+flowchart TB
+    A["Context-window token budget"] --> B["Instructions"]
+    A --> C["Conversation history"]
+    A --> D["Current prompt and documents"]
+    A --> E["Generated answer"]
+```
 
-If context is too small, the model may miss important information. If context is too large, cost and latency increase and important details can get buried.
+All of these compete for space inside the same token budget.
 
-More context is not automatically better.
+## Simple example
 
-## Backend strategies
+Assume a model has a **10,000-token context window**.
 
-Use these patterns to manage context:
+<table header-row="true">
+<tr>
+<td>Content</td>
+<td>Tokens</td>
+</tr>
+<tr>
+<td>Instructions</td>
+<td>1,000</td>
+</tr>
+<tr>
+<td>Conversation history</td>
+<td>4,000</td>
+</tr>
+<tr>
+<td>Your new prompt and documents</td>
+<td>2,000</td>
+</tr>
+<tr>
+<td>Space remaining for the answer</td>
+<td>3,000</td>
+</tr>
+</table>
 
-- Keep only relevant conversation turns.
-- Summarize old history.
-- Retrieve only the top matching documents.
-- Trim repeated boilerplate.
-- Prefer structured context over raw dumps.
-- Set output token limits.
+```plain text
+10,000 - 1,000 - 4,000 - 2,000 = 3,000 tokens remaining
+```
 
-## RAG and context
+This is a simplified example.
 
-In RAG, retrieved chunks are inserted into the prompt. If chunks are too large or too many, they waste context. If they are too small, they may miss important details.
+Exact input and output limits depend on the model and API.
 
-Good RAG design balances chunk size, retrieval count, and answer requirements.
+## What happens when a conversation becomes too long?
 
-## Failure modes
+The application must usually do one or more of these:
 
-- Request exceeds model limit.
-- Important instruction gets diluted.
-- Model answers from irrelevant context.
-- Latency becomes too high.
-- Cost grows unexpectedly.
+- remove the oldest messages
+- summarize earlier messages
+- retrieve only the relevant information
+- reject the request because it exceeds the limit
+- reduce the maximum possible answer length
 
-## Quick revision
+If an important old detail is removed or summarized badly, the model may answer without it.
 
-- Context window is the model's working input space.
-- It includes instructions, history, documents, and tool results.
-- Bigger context costs more and can be noisy.
-- Backend systems should curate context before calling the model.
+### Example
+
+At the beginning, you say:
+
+```plain text
+My project uses PostgreSQL. Do not suggest MongoDB.
+```
+
+After a very long conversation, that message may no longer be present in the active context.
+
+The AI might then suggest MongoDB because it cannot see the earlier instruction.
+
+## Why long context can still cause mistakes
+
+Even when information technically fits inside the context window, a very long input can make the relevant detail harder to identify.
+
+The model may focus on a more recent or strongly worded instruction.
+
+A larger context window provides more space, but it does **not guarantee perfect memory or reasoning**.
+
+## How to handle long conversations
+
+- Repeat critical requirements when starting a new task.
+- Keep instructions short and unambiguous.
+- Summarize important decisions.
+- Start a fresh conversation when the old discussion is no longer relevant.
+- In an AI application, retrieve only the most relevant documents instead of sending everything.
+- Store permanent facts in a database; do not rely only on chat history.
+
+> **Context window is temporary working memory, not permanent memory.**
+
+> The model only knows the information currently placed inside its context.
+
+## Context window vs model training
+
+<table header-row="true">
+<tr>
+<td>Model training</td>
+<td>Context window</td>
+</tr>
+<tr>
+<td>Knowledge learned before the conversation</td>
+<td>Information supplied for the current request</td>
+</tr>
+<tr>
+<td>Not changed by an ordinary chat</td>
+<td>Changes with every message</td>
+</tr>
+<tr>
+<td>Long-term model parameters</td>
+<td>Temporary working information</td>
+</tr>
+</table>
+
+## Interview answer
+
+**The context window is the maximum number of tokens a model can consider during one request. It contains instructions, conversation history, user input, documents, and generated output. When the limit is reached, older or less relevant information may need to be removed, summarized, or retrieved separately.**

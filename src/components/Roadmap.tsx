@@ -1,7 +1,11 @@
-import { roadmapSteps } from '../data/tracks'
+import { tracks } from '../data/tracks'
 import { Wrap } from './PageShell'
 
-export function Roadmap() {
+type RoadmapProps = {
+  completedNoteSlugs: Set<string>
+}
+
+export function Roadmap({ completedNoteSlugs }: RoadmapProps) {
   return (
     <Wrap>
       <section
@@ -16,22 +20,37 @@ export function Roadmap() {
         </div>
 
         <div className="border-l border-(--color-line)">
-          {roadmapSteps.map((step, index) => (
-            <div
-              className="relative pb-7.5 pl-8.75 last:pb-0"
-              key={step.title}
-            >
-              <span className="absolute top-0 -left-3.25 grid size-6.25 place-items-center rounded-full bg-(--color-inverse-bg) font-mono text-[10px] text-(--color-inverse-text)">
-                {index + 1}
-              </span>
-              <h3 className="mb-1.75 text-[17px] tracking-normal">
-                {step.title}
-              </h3>
-              <p className="m-0 text-[13px] leading-[1.6] text-(--color-muted)">
-                {step.description}
-              </p>
-            </div>
-          ))}
+          {tracks.map((track, index) => {
+            const completedCount = track.topics.filter((topic) =>
+              completedNoteSlugs.has(topic.slug),
+            ).length
+            const isComplete = completedCount === track.topics.length
+            const hasStarted = completedCount > 0
+
+            return (
+              <div
+                className="roadmap-step relative pb-7.5 pl-8.75 last:pb-0"
+                data-complete={isComplete}
+                data-started={hasStarted}
+                key={track.title}
+              >
+                <span className="roadmap-step__number absolute top-0 -left-3.25 grid size-6.25 place-items-center rounded-full bg-(--color-inverse-bg) font-mono text-[10px] text-(--color-inverse-text)">
+                  {isComplete ? '✓' : index + 1}
+                </span>
+                <h3 className="mb-1.75 text-[17px] tracking-normal">
+                  {track.title}
+                </h3>
+                <p className="m-0 text-[13px] leading-[1.6] text-(--color-muted)">
+                  {track.description}
+                </p>
+                {hasStarted && (
+                  <p className="roadmap-step__progress">
+                    {completedCount} of {track.topics.length} notes complete
+                  </p>
+                )}
+              </div>
+            )
+          })}
         </div>
       </section>
     </Wrap>

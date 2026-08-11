@@ -5,57 +5,105 @@ description: "Authenticating safely with AI APIs."
 track: "AI for Backend Developers"
 ---
 
-AI APIs are external services, so backend systems must authenticate safely and protect credentials.
+> **An API key is a secret value that identifies and authenticates your backend when it calls an AI provider.**
 
-## API keys
+## Why is it needed?
 
-An API key identifies and authorizes your application when calling an AI provider.
+AI APIs are paid and protected services. The provider needs to know:
 
-API keys should:
+- which account is making the request
+- whether that account has permission
+- whose usage and cost should be recorded
+- whether request limits have been exceeded
 
-- Stay on the server.
-- Be stored in environment variables or secret managers.
-- Never be shipped to browsers.
-- Never be committed to Git.
-- Be rotated if exposed.
+A request commonly includes the key in an authorization header:
 
-## Backend proxy pattern
+```javascript
+Authorization: Bearer YOUR_API_KEY
+```
 
-Frontend clients should call your backend, not the AI provider directly.
+## Correct request flow
 
-The backend can then:
+```mermaid
+flowchart LR
+    A["Frontend"] --> B["Your backend"]
+    B --> C["AI API"]
+    C --> B
+    B --> A
+```
 
-- Add the API key safely.
-- Enforce user authentication.
-- Apply rate limits.
-- Validate input.
-- Log usage.
-- Hide provider details.
+The API key stays on your backend.
 
-## User authentication
+The frontend calls your backend, and your backend calls the AI provider.
 
-Your app still needs normal user auth. API provider authentication only proves your server can call the provider. It does not prove the end user is allowed to use the feature.
+## Never expose the key in frontend code
 
-Check both:
+This is unsafe:
 
-- Is the user logged in?
-- Is the user allowed to perform this AI action?
+```javascript
+// Browser code — do not do this
+const API_KEY = "secret-key";
+```
 
-## Key rotation
+Anyone can inspect the browser, copy the key, and use your account.
 
-Plan for key rotation before an incident.
+Store the key in an environment variable:
 
-Good practice:
+```bash
+AI_API_KEY=your-secret-key
+```
 
-- Use secret manager versions.
-- Support deploying a new key quickly.
-- Monitor unusual usage.
-- Disable old keys after migration.
+Use it on the server:
 
-## Quick revision
+```javascript
+const client = new AIClient({
+  apiKey: process.env.AI_API_KEY
+});
+```
 
-- Keep AI API keys server-side.
-- Do not expose keys in frontend code.
-- Authenticate users separately.
-- Add rate limits and usage logs.
-- Rotate leaked keys immediately.
+Do not commit the environment file to Git.
+
+## Authentication vs authorization
+
+- **Authentication:** Which application is calling the API?
+- **Authorization:** What is that application allowed to do?
+
+The provider authenticates your backend with the API key. Your backend must separately authenticate its own users and decide who can use its AI features.
+
+## Important security practices
+
+- Keep keys only on trusted servers.
+- Use separate keys for development and production.
+- Rotate a key if it is leaked.
+- Give keys the minimum permissions available.
+- Set spending and usage limits when supported.
+- Do not print keys in logs or error messages.
+- Restrict access to production environment variables.
+
+## Your backend still needs user-level protection
+
+One server key may be shared by all users of your application.
+
+Therefore, your backend should track:
+
+- user ID
+- number of requests
+- tokens used
+- permission to access the feature
+- rate-limit status
+
+> The AI provider's API key protects the provider account. It does not replace authentication, authorization, or rate limiting inside your own application.
+
+## If a key is leaked
+
+1. Revoke or rotate it immediately.
+2. Create a replacement key.
+3. Update the production secret.
+4. Review usage and billing.
+5. Find and remove the source of the leak.
+
+## Final mental model
+
+> **Frontend → your authenticated backend → AI provider.**
+>
+> The provider key never belongs in the browser.

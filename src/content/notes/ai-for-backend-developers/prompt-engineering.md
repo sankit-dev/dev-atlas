@@ -5,61 +5,143 @@ description: "Writing instructions that produce useful model behavior."
 track: "AI for Backend Developers"
 ---
 
-Prompt engineering is the practice of writing instructions and context so the model produces useful output.
+> **Prompt engineering means giving clear instructions to an AI so it produces a useful answer.**
 
-## Good prompts are specific
+## Why is it needed?
 
-A good backend prompt usually defines:
+An AI cannot automatically know exactly what you want.
 
-- Task.
-- Input format.
-- Output format.
-- Constraints.
-- Examples.
-- What to do when information is missing.
+A vague prompt gives the AI more room to guess.
 
-Vague prompts produce vague outputs.
+A clear prompt tells it:
 
-## Prompt structure
+- what task to perform
+- what context it should use
+- what rules it should follow
+- what the final answer should look like
 
-A practical structure:
+## Simple example
 
-1. Role or behavior.
-2. Task.
-3. Context.
-4. Rules.
-5. Output schema.
-6. Examples.
+**Vague prompt:**
 
-For backend systems, the output schema is often the most important part.
+```plain text
+Explain APIs.
+```
 
-## Bad prompt
+This may produce an answer that is too broad or too advanced.
 
-Summarize this.
+**Better prompt:**
 
-## Better prompt
+```plain text
+Explain REST APIs to a beginner backend developer.
+Use simple language, one real-world analogy, and a small Node.js example.
+Keep the answer under 300 words.
+```
 
-Summarize this support ticket in 3 bullet points. Include problem, suspected cause, and next action. If the ticket lacks enough detail, return "needs_more_info": true.
+The second prompt is better because the AI knows the **audience, depth, format, and limit**.
 
-## Use delimiters
+## A useful prompt structure
 
-When inserting user content, separate it clearly from instructions.
+<table header-row="true">
+<tr>
+<td>Part</td>
+<td>Meaning</td>
+<td>Example</td>
+</tr>
+<tr>
+<td>Role</td>
+<td>Who should the AI act as?</td>
+<td>You are a backend mentor.</td>
+</tr>
+<tr>
+<td>Task</td>
+<td>What should it do?</td>
+<td>Explain JWT authentication.</td>
+</tr>
+<tr>
+<td>Context</td>
+<td>What background does it need?</td>
+<td>I know basic Node.js but not security.</td>
+</tr>
+<tr>
+<td>Constraints</td>
+<td>What rules should it follow?</td>
+<td>Use simple language and avoid unnecessary theory.</td>
+</tr>
+<tr>
+<td>Output format</td>
+<td>How should the answer be presented?</td>
+<td>Give notes, an example, and interview questions.</td>
+</tr>
+</table>
 
-Example:
+## Important techniques
 
-- Instructions: classify the ticket.
-- User content: the actual ticket text.
+### Zero-shot prompting
 
-This reduces instruction confusion and prompt injection risk.
+Ask the AI to do a task without giving an example.
 
-## Version prompts
+```plain text
+Classify this review as positive, negative, or neutral:
+"The product is useful, but delivery was late."
+```
 
-Prompts are application logic. Store them in code, version them, test them, and review changes.
+### Few-shot prompting
 
-## Quick revision
+Give a few examples so the AI can copy the pattern.
 
-- Prompt engineering controls model behavior.
-- Be specific about task, constraints, and output.
-- Use examples when behavior is subtle.
-- Keep user content separated from instructions.
-- Treat prompts like code.
+```plain text
+"Excellent product" → Positive
+"Waste of money" → Negative
+"It is okay" → Neutral
+
+Classify: "Good quality, but expensive."
+```
+
+### Step-by-step instruction
+
+Break a complex task into smaller steps.
+
+```plain text
+Review this API design:
+1. Find security problems.
+2. Find performance problems.
+3. Suggest improvements.
+4. Show the corrected design.
+```
+
+### Give the AI boundaries
+
+Tell it what to do when information is missing.
+
+```plain text
+Use only the information I provide.
+If something is unknown, say "I don't have enough information."
+Do not guess.
+```
+
+This helps reduce hallucinations, but it cannot remove them completely.
+
+## Prompt template
+
+```plain text
+You are a [role].
+
+Your task is to [task].
+
+Context:
+[important background]
+
+Requirements:
+- [rule 1]
+- [rule 2]
+
+Return the answer as:
+[output format]
+```
+
+> **Simple rule:** Better context + clearer instructions = a more useful answer.
+
+## Interview answer
+
+**Prompt engineering is the process of designing clear instructions, context, examples, and output constraints so an AI model produces a more accurate and useful response.**
