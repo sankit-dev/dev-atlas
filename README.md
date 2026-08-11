@@ -1,75 +1,66 @@
-# React + TypeScript + Vite
+# Learning Atlas
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Learning Atlas is a React/Vite study-note site for backend, computer fundamentals, AI, and DevOps topics.
 
-Currently, two official plugins are available:
+## Local Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Before sending changes:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm run lint
+npm run build
 ```
+
+## Notes Content
+
+Notes live as Markdown files in:
+
+```plain text
+src/content/notes/<track>/<slug>.md
+```
+
+Each note needs frontmatter:
+
+```markdown
+---
+title: "HTTP"
+slug: "http"
+description: "Request/response, headers, methods, status codes, cookies, sessions, and keep-alive."
+track: "Computer Networks"
+priority: "Must Know"
+---
+```
+
+Required fields:
+
+- `title`
+- `slug`
+- `description`
+- `track`
+Optional fields:
+
+- `priority`: use `Must Know` or `Important`
+
+The site uses `src/data/tracks.ts` for the library organization and `src/content/notes/**/*.md` for full note bodies. When adding a new note, add it to the correct track in `tracks.ts` and create the matching Markdown file with the same `slug`.
+
+## Supported Markdown
+
+The local renderer supports:
+
+- headings
+- paragraphs
+- unordered and ordered lists
+- blockquotes
+- fenced code blocks
+- inline code
+- bold text
+- links
+- horizontal rules
+- simple Markdown tables
+
+Keep diagrams as fenced `plain text` blocks unless they are images or interactive assets.
