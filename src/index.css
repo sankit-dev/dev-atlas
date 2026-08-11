@@ -684,6 +684,7 @@ button {
 }
 
 .library-card:not(.is-expanded) .library-topic-list {
+  max-height: none;
   overflow: visible;
 }
 
@@ -1372,6 +1373,15 @@ button {
 
   .library-topic-list li {
     grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .library-topic-list {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .library-card__toggle {
+    margin-top: 14px;
   }
 
   .library-topic-list__badge {
