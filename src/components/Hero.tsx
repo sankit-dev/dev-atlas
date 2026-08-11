@@ -14,7 +14,7 @@ export function Hero() {
   return (
     <Wrap>
       <section
-        className="grid min-h-[560px] grid-cols-[1.18fr_0.82fr] items-center gap-20 py-[72px] pb-[90px] max-[760px]:grid-cols-1 max-[760px]:gap-[52px] max-[760px]:py-[65px] max-[760px]:pb-[75px]"
+        className="grid min-h-140 grid-cols-[1.18fr_0.82fr] items-center gap-20 py-18 pb-22.5 max-[760px]:grid-cols-1 max-[760px]:gap-13 max-[760px]:py-16.25 max-[760px]:pb-18.75"
         id="top"
       >
         <div>
@@ -24,7 +24,7 @@ export function Hero() {
             <br />
             <em className="font-serif font-normal">More learning.</em>
           </h1>
-          <p className="my-[30px] max-w-[490px] text-base leading-[1.8] text-[var(--color-muted)]">
+          <p className="my-7.5 max-w-122.5 text-base leading-[1.8] text-(--color-muted)">
             A structured collection of simple, practical notes for developers,
             built to help you understand the why, not just memorize answers.
           </p>
@@ -35,22 +35,22 @@ export function Hero() {
 
         <aside
           aria-label="Learning Atlas overview"
-          className="rotate-2 rounded-[20px] border border-[var(--color-line)] bg-[var(--color-surface)] px-[30px] pt-7 pb-5 shadow-[12px_12px_0_var(--color-shadow)] transition-colors max-[760px]:mx-auto max-[760px]:max-w-[400px]"
+          className="rotate-2 rounded-5 border border-(--color-line) bg-(--color-surface) px-7.5 pt-7 pb-5 shadow-[12px_12px_0_var(--color-shadow)] transition-colors max-[760px]:mx-auto max-[760px]:max-w-100"
         >
-          <p className="card-label mb-[22px] text-[var(--color-muted)]">YOUR LEARNING MAP</p>
+          <p className="card-label mb-5.5 text-(--color-muted)">YOUR LEARNING MAP</p>
           {mapItems.map(([label, number, dotClass]) => (
             <div
-              className="flex h-[47px] items-center gap-3 border-t border-[var(--color-soft-line)] text-sm font-bold"
+              className="flex h-11.75 items-center gap-3 border-t border-(--color-soft-line) text-sm font-bold"
               key={label}
             >
-              <span className={`size-[9px] rounded-full ${dotClass}`} />
+              <span className={`size-2.25 rounded-full ${dotClass}`} />
               <span>{label}</span>
-              <b className="ml-auto font-mono text-xs font-normal text-[var(--color-muted)]">
+              <b className="ml-auto font-mono text-xs font-normal text-(--color-muted)">
                 {number}
               </b>
             </div>
           ))}
-          <p className="m-0 border-t border-[var(--color-soft-line)] pt-[15px] font-mono text-[11px] text-[var(--color-muted)]">
+          <p className="m-0 border-t border-(--color-soft-line) pt-3.75 font-mono text-[11px] text-(--color-muted)">
             {totalNoteCount} focused notes · markdown powered
           </p>
         </aside>

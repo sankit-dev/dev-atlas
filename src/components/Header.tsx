@@ -19,14 +19,14 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
     <Wrap>
       <nav
         aria-label="Primary navigation"
-        className="flex h-[86px] items-center justify-between max-[760px]:h-[70px]"
+        className="flex h-21.5 items-center justify-between max-[760px]:h-17.5"
       >
         <Brand />
-        <div className="flex items-center gap-[30px] text-[13px] font-bold text-[var(--color-muted)] max-[760px]:gap-4 max-[760px]:text-[11px]">
-          <div className="flex gap-[30px] max-[760px]:gap-4 max-[560px]:hidden">
+        <div className="flex items-center gap-7.5 text-[13px] font-bold text-(--color-muted) max-[760px]:gap-4 max-[760px]:text-[11px]">
+          <div className="flex gap-7.5 max-[760px]:gap-4 max-[560px]:hidden">
             {navigationLinks.map((link) => (
               <a
-                className="transition-colors hover:text-[var(--color-accent-strong)]"
+                className="transition-colors hover:text-(--color-accent-strong)"
                 href={link.href}
                 key={link.href}
               >
@@ -37,20 +37,20 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
           <button
             aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
             aria-pressed={isDark}
-            className="relative grid h-9 w-[68px] grid-cols-[28px_28px] place-items-center rounded-full border border-[var(--color-line)] bg-[var(--color-surface)] p-1 text-[15px] leading-none text-[var(--color-muted)] transition-colors"
+            className="relative grid h-9 w-17 grid-cols-[28px_28px] place-items-center rounded-full border border-(--color-line) bg-(--color-surface) p-1 text-[15px] leading-none text-(--color-muted) transition-colors"
             onClick={onThemeToggle}
             title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
             type="button"
           >
             <span
-              className={`absolute top-1 left-1 size-7 rounded-full bg-[var(--color-inverse-bg)] transition-transform ${
+              className={`absolute top-1 left-1 size-7 rounded-full bg-(--color-inverse-bg) transition-transform ${
                 isDark ? 'translate-x-8' : 'translate-x-0'
               }`}
             />
-            <span className={`relative z-10 grid size-7 place-items-center ${isDark ? '' : 'text-[var(--color-inverse-text)]'}`}>
+            <span className={`relative z-10 grid size-7 place-items-center ${isDark ? '' : 'text-(--color-inverse-text)'}`}>
               ☀
             </span>
-            <span className={`relative z-10 grid size-7 place-items-center ${isDark ? 'text-[var(--color-inverse-text)]' : ''}`}>
+            <span className={`relative z-10 grid size-7 place-items-center ${isDark ? 'text-(--color-inverse-text)' : ''}`}>
               ☾
             </span>
           </button>
