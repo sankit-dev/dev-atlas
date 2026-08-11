@@ -236,8 +236,20 @@ button {
   padding-left: 24px;
 }
 
+.markdown-body ul {
+  list-style: disc;
+}
+
+.markdown-body ol {
+  list-style: decimal;
+}
+
 .markdown-body li {
   padding-left: 4px;
+}
+
+.markdown-body li::marker {
+  color: var(--color-accent-strong);
 }
 
 .markdown-body a {
