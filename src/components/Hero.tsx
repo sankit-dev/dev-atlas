@@ -3,11 +3,11 @@ import { ButtonLink } from './Button'
 import { Wrap } from './PageShell'
 
 const mapItems = [
-  ['Computer Networks', '01', 'bg-[#85b9ff]'],
-  ['Databases & SQL', '02', 'bg-[#8dce9d]'],
-  ['OOP', '03', 'bg-[#f5d25d]'],
-  ['AI fundamentals', '04', 'bg-[#baa7ff]'],
-  ['DevOps / Tools', '05', 'bg-[#ff755f]'],
+  ['Computer Networks', '01', 'bg-(--track-blue)'],
+  ['Databases & SQL', '02', 'bg-(--track-green)'],
+  ['OOP', '03', 'bg-(--track-yellow)'],
+  ['AI fundamentals', '04', 'bg-(--track-violet)'],
+  ['DevOps / Tools', '05', 'bg-(--track-coral)'],
 ] as const
 
 export function Hero() {
@@ -35,12 +35,12 @@ export function Hero() {
 
         <aside
           aria-label="Learning Atlas overview"
-          className="rotate-2 rounded-5 border border-(--color-line) bg-(--color-surface) px-7.5 pt-7 pb-5 shadow-[12px_12px_0_var(--color-shadow)] transition-colors max-[760px]:mx-auto max-[760px]:max-w-100"
+          className="hero-map-card rotate-2 rounded-5 border border-(--color-line) bg-(--color-surface) px-7.5 pt-7 pb-5 shadow-[12px_12px_0_var(--color-shadow)] transition-colors max-[760px]:mx-auto max-[760px]:max-w-100"
         >
           <p className="card-label mb-5.5 text-(--color-muted)">YOUR LEARNING MAP</p>
           {mapItems.map(([label, number, dotClass]) => (
             <div
-              className="flex h-11.75 items-center gap-3 border-t border-(--color-soft-line) text-sm font-bold"
+              className="hero-map-row flex h-11.75 items-center gap-3 border-t border-(--color-soft-line) text-sm font-bold"
               key={label}
             >
               <span className={`size-2.25 rounded-full ${dotClass}`} />

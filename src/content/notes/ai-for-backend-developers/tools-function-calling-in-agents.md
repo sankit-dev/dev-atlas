@@ -5,53 +5,171 @@ description: "How agents use tools to affect external systems."
 track: "AI for Backend Developers"
 ---
 
-Agents use tools to interact with external systems. Function calling is the structured way to request those tool actions.
+> **Tools allow an agent to read live information or request actions that an LLM cannot perform by generating text alone.**
 
-## Tool schema
+Examples:
 
-Each tool should define:
+- search orders
+- query a database
+- calculate a value
+- retrieve weather
+- send an approved email
+- create a support ticket
 
-- Name.
-- Description.
-- Required arguments.
-- Argument types.
-- Allowed values.
-- Result shape.
+## Tools make an agent useful
 
-Clear schemas reduce bad tool calls.
+Without tools:
 
-## Execution flow
+```plain text
+User: What is the status of order 123?
+LLM: I do not have access to your order system.
+```
 
-1. Model decides a tool is needed.
-2. Model returns tool name and arguments.
-3. Backend validates the request.
-4. Backend checks permissions.
-5. Backend executes the tool.
-6. Tool result is returned to the model or user.
+With a tool:
 
-## Tool design
+```plain text
+LLM requests getOrderStatus(123)
+Backend executes it
+Tool returns "shipped"
+LLM explains the result to the user
+```
 
-Prefer narrow tools over broad tools.
+## Agent tool loop
 
-Good:
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant A as Agent
+    participant B as Backend
+    participant T as Tool
+    U->>A: Find my pending orders
+    A->>B: Request listOrders(status=pending)
+    B->>T: Validate and execute
+    T-->>B: Two pending orders
+    B-->>A: Tool result
+    A->>B: Request another tool or finish
+    A-->>U: You have two pending orders.
+```
 
-- getOrderStatus(orderId)
-- searchHelpCenter(query)
+The agent may call multiple tools because each result can influence the next decision.
+
+## Defining a good tool
+
+A tool needs:
+
+- clear name
+- clear description
+- input schema
+- narrow responsibility
+- predictable output
+
+```javascript
+const tool = {
+  name: "getOrderStatus",
+  description: "Return the status of one order owned by the current user",
+  parameters: {
+    type: "object",
+    properties: {
+      orderId: { type: "integer" }
+    },
+    required: ["orderId"]
+  }
+};
+```
+
+Good descriptions matter because the model uses them to decide which tool fits the task.
+
+## The backend executes the tool
+
+The model may return:
+
+```json
+{
+  "tool": "getOrderStatus",
+  "arguments": {
+    "orderId": 123
+  }
+}
+```
+
+Your backend must then:
+
+1. Validate the arguments.
+2. Authenticate the user.
+3. Check order ownership.
+4. Execute the real function.
+5. Return the result to the agent.
+
+The model does not bypass backend security.
+
+## Read tools vs action tools
+
+### Read tools
+
+- search documents
+- fetch order status
+- check calendar availability
+
+These usually have lower risk.
+
+### Action tools
+
+- cancel an order
+- send a message
+- delete a record
+- create a payment
+
+These require stricter permissions and may require user confirmation.
+
+```plain text
+Agent proposes cancellation
+        ↓
+User confirms exact order
+        ↓
+Backend rechecks permissions and state
+        ↓
+Cancellation tool executes
+```
+
+## Prevent repeated actions
+
+An agent or retry may request the same action twice.
+
+Use:
+
+- idempotency keys
+- unique operation IDs
+- stored execution state
+- duplicate detection
+
+This prevents duplicate emails, orders, or payments.
+
+## Keep tools narrow
 
 Risky:
 
-- runAnySql(query)
-- executeShell(command)
+```plain text
+executeAnySQL(query)
+```
 
-Narrow tools are easier to validate and secure.
+Safer:
 
-## Idempotency
+```plain text
+getOrderStatus(orderId)
+listPendingOrders(userId)
+cancelOwnedOrder(orderId)
+```
 
-Actions that change state should use idempotency keys or confirmation steps. This prevents duplicate actions when retries happen.
+Narrow tools are easier to validate, authorize, and audit.
 
-## Quick revision
+## Common mistakes
 
-- Tools let agents act.
-- Backend validates and executes tool calls.
-- Narrow tools are safer than broad tools.
-- Risky state-changing actions need approvals or idempotency.
+- assuming model-generated arguments are trustworthy
+- giving the agent unrestricted database or shell access
+- skipping user confirmation
+- returning huge tool results to the context
+- not limiting tool-call count
+- allowing repeated side effects
+- exposing secrets inside tool results
+
+> The agent may **request** a tool. Only trusted backend code can approve and execute it.

@@ -7,88 +7,63 @@ track: "Operating Systems"
 
 A process goes through different states from creation to termination.
 
----
-
-## New
-
+## 1. New
 - The process is being created.
-- The operating system allocates memory and resources.
+- The OS allocates memory and resources.
 
-Example: you double-click Chrome.
-
+**Example:** You double-click Chrome.
 ---
-
-## Ready
-
+## 2. Ready
 - The process is ready to run.
 - It is waiting for the CPU.
 
-Example: Chrome is loaded into memory but is waiting for the CPU to execute it.
-
+**Example:** Chrome is loaded into memory but waiting for the CPU to execute it.
 ---
-
-## Running
-
+## 3. Running
 - The CPU is executing the process.
 
-Example: Chrome is opening a webpage.
-
+**Example:** Chrome is opening a webpage.
 ---
-
-## Waiting or blocked
-
+## 4. Waiting (Blocked)
 - The process is waiting for an event or I/O operation to complete.
 - During this time, it does not use the CPU.
 
-Examples:
-
+**Example:**
 - Waiting for a file to be read.
 - Waiting for data from the internet.
 - Waiting for user input.
-
 ---
-
-## Terminated or exit
-
+## 5. Terminated (Exit)
 - The process has finished execution or has been stopped.
-- The operating system releases its memory and resources.
+- The OS releases its memory and resources.
 
-Example: you close Chrome.
-
+**Example:** You close Chrome.
 ---
-
-## Process lifecycle
-
+# Process Lifecycle
 ```plain text
 New
-  |
-  v
+  │
+  ▼
 Ready
-  |
-  v
+  │
+  ▼
 Running
-  |------------- Terminated
-  |
-  v
+ ├─────────────► Terminated
+ │
+ ▼
 Waiting
-  |
-  v
+ │
+ ▼
 Ready
 ```
-
 ---
-
-## State transitions
-
-- **New -> Ready**: the process is created.
-- **Ready -> Running**: the CPU scheduler assigns the CPU.
-- **Running -> Waiting**: the process requests I/O or waits for an event.
-- **Waiting -> Ready**: I/O or the event completes.
-- **Running -> Ready**: the CPU time slice expires and a context switch happens.
-- **Running -> Terminated**: the process finishes execution.
-
+## State Transitions
+- **New → Ready** : Process is created.
+- **Ready → Running** : CPU scheduler assigns the CPU.
+- **Running → Waiting** : Process requests I/O or waits for an event.
+- **Waiting → Ready** : I/O or event completes.
+- **Running → Ready** : CPU time slice expires (context switch).
+- **Running → Terminated** : Process finishes execution.
 ---
-
-## Interview tip
-
-> A process spends most of its lifetime alternating between Ready, Running, and Waiting until it eventually reaches Terminated.
+### Interview Tip
+> A process spends most of its lifetime alternating between **Ready**, **Running**, and **Waiting** until it eventually reaches **Terminated**.

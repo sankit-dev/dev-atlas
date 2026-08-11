@@ -4,11 +4,11 @@ import { totalNoteCount, tracks } from '../data/tracks'
 import { Wrap } from './PageShell'
 
 const trackAccentColor: Record<Accent, string> = {
-  coral: '#ff755f',
-  blue: '#85b9ff',
-  yellow: '#f5d25d',
-  green: '#8dce9d',
-  violet: '#baa7ff',
+  coral: 'var(--track-coral)',
+  blue: 'var(--track-blue)',
+  yellow: 'var(--track-yellow)',
+  green: 'var(--track-green)',
+  violet: 'var(--track-violet)',
 }
 
 function getTrackSearchText(track: Track) {
@@ -30,6 +30,10 @@ export function Library() {
   const [activeTrack, setActiveTrack] = useState('All')
   const [expandedTrack, setExpandedTrack] = useState<string | null>(null)
   const featuredTrack = tracks[0]
+  const activeTrackLabel =
+    activeTrack === 'All'
+      ? 'All tracks'
+      : (tracks.find((track) => track.title === activeTrack)?.shortTitle ?? activeTrack)
 
   const visibleTracks = useMemo(() => {
     const term = query.trim().toLowerCase()
@@ -41,6 +45,11 @@ export function Library() {
       return matchesFilter && matchesSearch
     })
   }, [activeTrack, query])
+
+  function handleFilterSelect(item: string) {
+    setActiveTrack(item)
+    setExpandedTrack(null)
+  }
 
   return (
     <Wrap>
@@ -71,40 +80,52 @@ export function Library() {
           </div>
         </div>
 
-        <div className="library-toolbar">
-          <label className="library-search">
-            <span aria-hidden="true">/</span>
-            <input
-              aria-label="Search learning topics"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search topics, for example: joins"
-              value={query}
-            />
-          </label>
+        <div className="library-controls">
+          <div className="library-controls__header">
+            <div>
+              <p className="eyebrow">Browse notes</p>
+              <h3>{activeTrackLabel}</h3>
+            </div>
+            <span>
+              {visibleTracks.length} {visibleTracks.length === 1 ? 'track' : 'tracks'}
+            </span>
+          </div>
 
-          <div aria-label="Filter learning tracks" className="library-filters">
-            {['All', ...tracks.map((track) => track.title)].map((item) => {
-              const isActive = activeTrack === item
-              const track = tracks.find((candidate) => candidate.title === item)
+          <div className="library-toolbar">
+            <label className="library-search">
+              <span aria-hidden="true">/</span>
+              <input
+                aria-label="Search learning topics"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search topics, for example: joins"
+                value={query}
+              />
+            </label>
 
-              return (
-                <button
-                  className={isActive ? 'is-active' : ''}
-                  key={item}
-                  onClick={() => setActiveTrack(item)}
-                  style={
-                    track
-                      ? ({
-                          '--filter-accent': trackAccentColor[track.accent],
-                        } as CSSProperties)
-                      : undefined
-                  }
-                  type="button"
-                >
-                  {item === 'All' ? item : track?.shortTitle}
-                </button>
-              )
-            })}
+            <div aria-label="Filter learning tracks" className="library-filters">
+              {['All', ...tracks.map((track) => track.title)].map((item) => {
+                const isActive = activeTrack === item
+                const track = tracks.find((candidate) => candidate.title === item)
+
+                return (
+                  <button
+                    className={isActive ? 'is-active' : ''}
+                    key={item}
+                    onClick={() => handleFilterSelect(item)}
+                    style={
+                      track
+                        ? ({
+                            '--filter-accent': trackAccentColor[track.accent],
+                          } as CSSProperties)
+                        : undefined
+                    }
+                    type="button"
+                  >
+                    {item === 'All' ? item : track?.shortTitle}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
 

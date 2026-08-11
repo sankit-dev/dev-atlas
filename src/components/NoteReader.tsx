@@ -1,10 +1,11 @@
 import type { MouseEvent } from 'react'
 import type { Note, Track } from '../data/tracks'
-import { markdownNotesBySlug } from '../data/markdownNotes'
+import { getMarkdownNote } from '../data/markdownNotes'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { Wrap } from './PageShell'
 
 type NoteReaderProps = {
+  completedNoteSlugs: Set<string>
   note: Note
   nextTrack?: Track
   onNavigateNote: (
@@ -51,12 +52,13 @@ function removeDuplicateTitle(markdown: string, title: string) {
 }
 
 export function NoteReader({
+  completedNoteSlugs,
   note,
   nextTrack,
   onNavigateNote,
   track,
 }: NoteReaderProps) {
-  const markdownNote = markdownNotesBySlug.get(note.slug)
+  const markdownNote = getMarkdownNote(track.title, note.slug)
   const body = markdownNote?.body
     ? removeDuplicateTitle(markdownNote.body, note.title)
     : undefined
@@ -115,20 +117,22 @@ export function NoteReader({
               <ol className="m-0 list-none p-0">
                 {track.topics.map((trackNote, index) => {
                   const isActive = trackNote.slug === note.slug
+                  const isCompleted = completedNoteSlugs.has(trackNote.slug)
 
                   return (
                     <li key={trackNote.slug}>
                       <a
-                        className={`grid grid-cols-[24px_1fr] gap-2 border-t border-(--color-soft-line) py-3 text-[12px] leading-[1.35] transition-colors ${
+                        className={`note-sidebar-link grid grid-cols-[24px_1fr] gap-2 border-t border-(--color-soft-line) py-3 text-[12px] leading-[1.35] transition-colors ${
                           isActive
                             ? 'font-extrabold text-(--color-text)'
                             : 'text-(--color-muted) hover:text-(--color-accent-strong)'
                         }`}
+                        data-completed={isCompleted}
                         href={`#/notes/${trackNote.slug}`}
                         onClick={(event) => handleNoteClick(event, trackNote)}
                       >
                         <span className="font-mono text-[10px]">
-                          {String(index + 1).padStart(2, '0')}
+                          {isCompleted ? '✓' : String(index + 1).padStart(2, '0')}
                         </span>
                         <span>{trackNote.title}</span>
                       </a>
@@ -156,7 +160,10 @@ export function NoteReader({
             </header>
 
             {body ? (
-              <MarkdownRenderer markdown={body} />
+              <MarkdownRenderer
+                key={`${track.title}:${note.slug}`}
+                markdown={body}
+              />
             ) : (
               <div className="max-w-190 border-t border-(--color-line) pt-8">
                 <h2 className="m-0 text-[28px] tracking-normal">

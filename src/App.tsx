@@ -15,6 +15,7 @@ import { tracks } from './data/tracks'
 export type Theme = 'light' | 'dark'
 
 const themeStorageKey = 'learning-atlas-theme'
+const completedNotesStorageKey = 'learning-atlas-completed-notes'
 
 function getHashRoute() {
   if (typeof window === 'undefined') {
@@ -22,6 +23,12 @@ function getHashRoute() {
   }
 
   return window.location.hash
+}
+
+function getNoteSlugFromHash(hashRoute: string) {
+  return hashRoute.startsWith('#/notes/')
+    ? hashRoute.replace('#/notes/', '')
+    : null
 }
 
 function getInitialTheme(): Theme {
@@ -38,6 +45,40 @@ function getInitialTheme(): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light'
+}
+
+function getInitialCompletedNotes() {
+  if (typeof window === 'undefined') {
+    return new Set<string>()
+  }
+
+  try {
+    const savedNotes = window.localStorage.getItem(completedNotesStorageKey)
+
+    if (!savedNotes) {
+      return new Set<string>()
+    }
+
+    const parsedNotes: unknown = JSON.parse(savedNotes)
+
+    if (!Array.isArray(parsedNotes)) {
+      return new Set<string>()
+    }
+
+    const completedNotes = new Set(
+      parsedNotes.filter((note): note is string => typeof note === 'string'),
+    )
+    const activeNoteSlug = getNoteSlugFromHash(getHashRoute())
+
+    if (activeNoteSlug) {
+      completedNotes.add(activeNoteSlug)
+    }
+
+    return completedNotes
+  } catch {
+    const activeNoteSlug = getNoteSlugFromHash(getHashRoute())
+    return activeNoteSlug ? new Set([activeNoteSlug]) : new Set<string>()
+  }
 }
 
 function playTransitionTone() {
@@ -87,12 +128,13 @@ type NoteNavigationOptions = {
 function App() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
   const [hashRoute, setHashRoute] = useState(getHashRoute)
+  const [completedNoteSlugs, setCompletedNoteSlugs] = useState(
+    getInitialCompletedNotes,
+  )
   const [transitionTitle, setTransitionTitle] = useState<string | null>(null)
   const transitionTimers = useRef<number[]>([])
 
-  const activeNoteSlug = hashRoute.startsWith('#/notes/')
-    ? hashRoute.replace('#/notes/', '')
-    : null
+  const activeNoteSlug = getNoteSlugFromHash(hashRoute)
   const activeNoteMatch = tracks
     .flatMap((track) =>
       track.topics.map((note) => ({
@@ -149,7 +191,29 @@ function App() {
   }, [theme])
 
   useEffect(() => {
-    const syncRoute = () => setHashRoute(getHashRoute())
+    window.localStorage.setItem(
+      completedNotesStorageKey,
+      JSON.stringify([...completedNoteSlugs]),
+    )
+  }, [completedNoteSlugs])
+
+  useEffect(() => {
+    const syncRoute = () => {
+      const nextHashRoute = getHashRoute()
+      const nextNoteSlug = getNoteSlugFromHash(nextHashRoute)
+
+      setHashRoute(nextHashRoute)
+
+      if (nextNoteSlug) {
+        setCompletedNoteSlugs((currentSlugs) => {
+          if (currentSlugs.has(nextNoteSlug)) {
+            return currentSlugs
+          }
+
+          return new Set(currentSlugs).add(nextNoteSlug)
+        })
+      }
+    }
 
     window.addEventListener('hashchange', syncRoute)
 
@@ -183,6 +247,7 @@ function App() {
         <NoteReader
           note={activeNoteMatch.note}
           track={activeNoteMatch.track}
+          completedNoteSlugs={completedNoteSlugs}
           nextTrack={nextTrack}
           onNavigateNote={navigateToNote}
         />
@@ -191,7 +256,7 @@ function App() {
           <Hero />
           <Statement />
           <Library />
-          <Roadmap />
+          <Roadmap completedNoteSlugs={completedNoteSlugs} />
           <Contribute />
           <Footer />
         </main>

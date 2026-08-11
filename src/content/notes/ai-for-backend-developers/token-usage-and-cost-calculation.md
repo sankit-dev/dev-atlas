@@ -5,63 +5,123 @@ description: "Estimating AI feature cost from token usage."
 track: "AI for Backend Developers"
 ---
 
-Token usage determines the cost of many AI features.
+> **AI API cost is commonly calculated from the number of input and output tokens used.**
 
-## Cost components
+Input and output tokens may have different prices.
 
-Most providers charge separately for:
+## What counts as input tokens?
 
-- Input tokens.
-- Output tokens.
-- Embedding tokens.
-- Image, audio, or tool usage when applicable.
+- system and developer instructions
+- user message
+- conversation history
+- retrieved RAG documents
+- tool definitions and results
 
-Some models have different prices for cached input or batch requests.
+## What counts as output tokens?
 
-## Basic formula
+- generated answer
+- structured output
+- tool-call arguments created by the model
 
-Cost is usually:
+## Basic cost formula
 
-Input tokens multiplied by input price plus output tokens multiplied by output price.
+```plain text
+Input cost  = input tokens  × input price per token
+Output cost = output tokens × output price per token
+Total cost  = input cost + output cost
+```
 
-Always check the current provider pricing before committing to business estimates.
+Prices are often listed per one million tokens:
 
-## What increases cost
+```plain text
+Input cost =
+(input tokens ÷ 1,000,000) × input price per million
 
-- Long prompts.
-- Full conversation history.
-- Too many retrieved chunks.
-- Large model choice.
-- Long generated answers.
-- Retries.
-- Agents that make many calls.
+Output cost =
+(output tokens ÷ 1,000,000) × output price per million
+```
 
-## Backend tracking
+## Example calculation
 
-Log usage per request:
+Assume these **illustrative prices**:
 
-- User ID or tenant ID.
-- Feature name.
-- Model.
-- Input tokens.
-- Output tokens.
-- Total cost estimate.
-- Request status.
+```plain text
+Input:  ₹100 per 1,000,000 tokens
+Output: ₹400 per 1,000,000 tokens
+```
 
-This helps with billing, quotas, debugging, and abuse detection.
+One request uses:
 
-## Cost controls
+```plain text
+5,000 input tokens
+1,000 output tokens
+```
 
-- Set output token limits.
-- Use smaller models when enough.
-- Cache safe repeated responses.
-- Summarize history.
-- Limit retrieved chunks.
-- Add user quotas.
+Calculation:
 
-## Quick revision
+```plain text
+Input  = (5,000 ÷ 1,000,000) × ₹100 = ₹0.50
+Output = (1,000 ÷ 1,000,000) × ₹400 = ₹0.40
 
-- AI cost often depends on token usage.
-- Input and output may have different prices.
-- RAG and agents can multiply costs.
-- Log usage by feature and user.
+Total = ₹0.90
+```
+
+These prices are examples only. Always use the current pricing for the exact model.
+
+## Reading usage from a response
+
+A provider may return something like:
+
+```json
+{
+  "input_tokens": 5000,
+  "output_tokens": 1000,
+  "total_tokens": 6000
+}
+```
+
+Store usage by user, feature, model, and request.
+
+## Why input can become expensive
+
+In a long conversation, your application may resend the conversation history with every request.
+
+```plain text
+Request 1: short history
+Request 20: large history + new message
+```
+
+RAG documents, tool definitions, and repeated instructions also add input tokens.
+
+## How to control cost
+
+- choose an appropriate model for the task
+- limit output tokens
+- send only relevant conversation history
+- retrieve fewer and better RAG chunks
+- summarize older messages
+- cache safe repeated results
+- avoid retry loops without limits
+- rate-limit users
+- monitor cost per feature
+
+## Cost should be controlled on the server
+
+The frontend can request a long answer, but the backend should enforce:
+
+- maximum input size
+- maximum output tokens
+- requests per user
+- daily or monthly usage budget
+- allowed models
+
+## Cost vs context window
+
+These are related but different:
+
+- **Context window:** maximum tokens the model can process at once
+- **Token cost:** money charged for tokens processed or generated
+
+A request may fit inside the context window and still be unnecessarily expensive.
+
+> Track cost per request, per user, and per feature. A small cost multiplied by thousands of requests becomes a large bill.

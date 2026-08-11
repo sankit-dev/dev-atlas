@@ -5,64 +5,115 @@ description: "The units AI models read, write, and charge for."
 track: "AI for Backend Developers"
 ---
 
-Tokens are the units that language models read and write. They matter because they affect context limits, latency, and cost.
+> **A token is a small piece of text that an AI model reads or generates.**
 
-## What a token is
+The model does not directly read complete sentences like humans do.
 
-A token can be:
+Before processing text, a **tokenizer** breaks it into tokens and converts them into numbers called **token IDs**.
 
-- A whole word.
-- Part of a word.
-- Punctuation.
-- Whitespace.
-- A symbol.
+## Simple example
 
-For example, a short sentence may become more tokens than words because uncommon words can be split into pieces.
+The sentence:
+
+```plain text
+ChatGPT is helpful.
+```
+
+might be split approximately like this:
+
+```plain text
+["Chat", "GPT", " is", " helpful", "."]
+```
+
+This example has about **5 tokens**.
+
+> Token boundaries depend on the model's tokenizer. One token is **not always one word**.
+
+> A token may be a whole word, part of a word, punctuation, or even a space combined with text.
+
+## How tokenization works
+
+```mermaid
+flowchart LR
+    A["Text<br>ChatGPT is helpful"] --> B["Tokenizer"]
+    B --> C["Tokens<br>Chat · GPT · is · helpful"]
+    C --> D["Token IDs<br>Numbers"]
+    D --> E["AI model"]
+```
+
+The model processes the token IDs and predicts the next likely token.
+
+## Tokens are used for both input and output
+
+**Input tokens** include:
+
+- your prompt
+- previous conversation messages
+- system instructions
+- documents provided to the model
+
+**Output tokens** are the tokens generated in the answer.
+
+### Example
+
+Suppose you send a prompt containing **100 tokens**, and the AI returns **300 tokens**.
+
+```plain text
+Total tokens used = 100 input tokens + 300 output tokens
+                  = 400 tokens
+```
 
 ## Why tokens matter
 
-AI APIs usually charge based on token usage.
+<table header-row="true">
+<tr>
+<td>Reason</td>
+<td>Explanation</td>
+</tr>
+<tr>
+<td>Context limit</td>
+<td>A model can process only a limited number of tokens at once.</td>
+</tr>
+<tr>
+<td>API cost</td>
+<td>AI APIs commonly charge according to input and output token usage.</td>
+</tr>
+<tr>
+<td>Response length</td>
+<td>More output tokens allow a longer answer.</td>
+</tr>
+<tr>
+<td>Speed</td>
+<td>Processing and generating more tokens usually takes more time.</td>
+</tr>
+</table>
 
-Total token usage includes:
+## Backend example
 
-- Input tokens: prompt, system message, conversation history, retrieved context.
-- Output tokens: model response.
+When calling an AI API, usage may look like:
 
-More tokens usually means:
+```json
+{
+  "input_tokens": 120,
+  "output_tokens": 80,
+  "total_tokens": 200
+}
+```
 
-- Higher cost.
-- More latency.
-- More context used.
-- Higher chance of hitting model limits.
+This information is useful for tracking cost and limiting user usage.
 
-## Context window
+## Common misunderstanding
 
-The context window is the maximum number of tokens a model can consider in one request. If you send too much text, the request may fail or older content may need to be removed.
+**Wrong:** One token always equals one word.
 
-Backend systems should control context carefully instead of sending everything.
+**Correct:** A token is a piece of text.
 
-## Token budgeting
+A long or unusual word may become several tokens, while a common short word may be one token.
 
-Before calling a model, estimate:
+> A rough English estimate is often around **one token for every three to four characters**, but never use this as an exact calculation.
 
-- How much instruction text is needed.
-- How much user input is included.
-- How much retrieved context is included.
-- How large the answer can be.
+> Different languages and tokenizers behave differently.
 
-For RAG systems, chunk size and number of retrieved chunks directly affect token usage.
+## Interview answer
 
-## Common mistakes
-
-- Sending entire documents when only one section is needed.
-- Keeping full chat history forever.
-- Asking for long output without a limit.
-- Ignoring output token costs.
-- Not logging usage per request.
-
-## Quick revision
-
-- Tokens are model-readable pieces of text.
-- Both input and output tokens can cost money.
-- Token count affects latency and limits.
-- Good backend systems budget tokens deliberately.
+**A token is a small unit of text processed by an AI model. A tokenizer converts text into token IDs, which the model uses to understand the input and generate the next tokens. Tokens affect context limits, API cost, response length, and speed.**

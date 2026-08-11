@@ -5,56 +5,109 @@ description: "Remembering useful context across turns."
 track: "AI for Backend Developers"
 ---
 
-Conversation memory is the context an AI feature remembers across turns.
+> **Conversation memory is the information an AI application preserves and supplies so the model can continue a conversation consistently.**
 
-## Short-term memory
+The model itself does not automatically remember every previous API call.
 
-Short-term memory is usually recent chat history included in the next model request.
+## Why is memory needed?
 
-It helps with:
+Conversation:
 
-- Follow-up questions.
-- References like "that issue".
-- Conversation continuity.
+```plain text
+User: My project uses PostgreSQL.
+AI: Understood.
 
-But it increases token cost.
+User: Which database extension should I use for vectors?
+```
 
-## Long-term memory
+The second message depends on the first. If the application sends only the latest question, the model may not know that PostgreSQL is being used.
 
-Long-term memory stores durable facts outside the model context.
+## Types of memory
 
-Examples:
+### Recent conversation history
 
-- User preferences.
-- Project details.
-- Previous decisions.
-- Saved summaries.
+Send the latest messages with each request.
 
-Long-term memory should be retrieved only when relevant.
+Good for:
 
-## Backend design
+- follow-up questions
+- pronouns such as "it" or "that"
+- recent decisions
 
-Memory is an application feature, not automatic magic.
+Problem: history grows and uses more tokens.
 
-You need to decide:
+### Summarized memory
 
-- What to store.
-- Who can access it.
-- When to retrieve it.
-- How long to keep it.
-- How users can delete it.
+Replace older messages with a short summary:
 
-## Risks
+```plain text
+User is building a Node.js backend with PostgreSQL.
+They prefer simple explanations and practical examples.
+```
 
-- Storing sensitive data accidentally.
-- Remembering incorrect facts.
-- Mixing data between users.
-- Sending too much history.
-- Making stale context look authoritative.
+This saves tokens but may lose details if the summary is poor.
 
-## Quick revision
+### Long-term memory
 
-- Memory can be recent history or durable stored facts.
-- The backend owns memory storage and retrieval.
-- Memory must respect privacy and permissions.
-- Retrieve only useful context.
+Store important facts in a database:
+
+```json
+{
+  "userId": 25,
+  "preferredDatabase": "PostgreSQL",
+  "learningStyle": "simple practical examples"
+}
+```
+
+Retrieve only relevant facts for the current request.
+
+## Practical memory flow
+
+```mermaid
+flowchart LR
+    A["New message"] --> B["Recent messages"]
+    C["Relevant stored facts"] --> D["Build context"]
+    B --> D
+    D --> E["LLM response"]
+    E --> F["Save useful updates"]
+```
+
+## Do not store everything forever
+
+Not every message deserves long-term memory.
+
+Store information only when it is:
+
+- useful later
+- stable enough
+- allowed by the user
+- safe to retain
+
+Avoid saving secrets, passwords, payment data, or unnecessary sensitive information.
+
+## Context window is not memory storage
+
+The context window is the temporary information given to one model request.
+
+Your application memory lives outside the model, in a database, cache, or conversation service, and selected parts are placed into the context window.
+
+## A practical strategy
+
+For a basic chatbot:
+
+1. Keep the latest messages.
+2. Summarize older conversation.
+3. Store important stable preferences separately.
+4. Retrieve only facts related to the current question.
+5. Let the user view or delete saved memory where appropriate.
+
+## Common mistakes
+
+- sending the complete chat forever
+- storing every message as a permanent fact
+- trusting AI-generated summaries without checking
+- mixing memories between different users
+- retrieving unrelated facts
+- storing sensitive data without a clear need
+
+> The model does not "remember." The application **stores information and sends the relevant part back to the model**.

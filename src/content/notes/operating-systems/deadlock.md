@@ -5,148 +5,174 @@ description: "4 Conditions, Prevention, Avoidance, Detection."
 track: "Operating Systems"
 ---
 
-A deadlock is a situation where two or more threads or processes wait indefinitely for each other to release a resource, so none of them can continue.
-
+A **Deadlock** is a situation where **two or more threads/processes wait indefinitely for each other to release a resource**, so none of them can continue.
 ---
-
-## How it happens
-
+## How it Happens
 Suppose there are two resources:
+- Lock A
+- Lock B
 
-- Lock A.
-- Lock B.
-
-Thread 1:
-
+**Thread 1**
 ```plain text
 Locks A
 Waits for B
 ```
-
-Thread 2:
-
+**Thread 2**
 ```plain text
 Locks B
 Waits for A
 ```
+Now:
+- Thread 1 can't continue until Thread 2 releases **B**.
+- Thread 2 can't continue until Thread 1 releases **A**.
 
-Now Thread 1 cannot continue until Thread 2 releases B, and Thread 2 cannot continue until Thread 1 releases A. Both wait forever.
+Both wait forever.
 
+This is a **deadlock**.
 ---
-
 ## Visualization
-
 ```plain text
 Thread 1
 Has Lock A
 Needs Lock B
-      ^
-      |
+      ↑
+      │
+      │
 Needs Lock A
 Has Lock B
 Thread 2
 ```
-
 Neither thread can proceed.
-
 ---
-
-## Real-life example
-
-Imagine two cars on a one-lane bridge.
-
+## Real-Life Example
+Imagine two cars on a **one-lane bridge**.
 - Car A waits for Car B to reverse.
 - Car B waits for Car A to reverse.
+Neither moves.
 
-Neither moves. Both are stuck.
-
+Both are stuck forever.
 ---
+## Causes of Deadlock (Coffman Conditions)
+A deadlock can occur only if **all four** of these conditions are true:
 
-## Causes of deadlock
+1. **Mutual Exclusion**
+	- A resource can be used by only one thread/process at a time.
+2. **Hold and Wait**
+	- A thread/process holds one resource while waiting for another.
+3. **No Preemption**
+	- A resource cannot be forcibly taken away; it must be released voluntarily.
+4. **Circular Wait**
+	- A circular chain exists where each thread/process is waiting for a resource held by the next.
 
-A deadlock can occur only if all four Coffman conditions are true.
-
-1. **Mutual exclusion**: a resource can be used by only one thread or process at a time.
-2. **Hold and wait**: a thread or process holds one resource while waiting for another.
-3. **No preemption**: a resource cannot be forcibly taken away; it must be released voluntarily.
-4. **Circular wait**: a circular chain exists where each thread or process waits for a resource held by the next.
-
-> If any one of these four conditions is prevented, deadlock cannot occur.
-
+> **Interview Tip:** If **any one** of these four conditions is prevented, a deadlock cannot occur.
 ---
-
-## How to prevent deadlocks
-
+## How to Prevent Deadlocks
 - Acquire locks in a fixed order.
 - Release locks as soon as possible.
 - Avoid holding one lock while waiting for another.
 - Use lock timeouts where appropriate.
-
 ---
-
-## Deadlock vs race condition
-
-| Race Condition | Deadlock |
-| --- | --- |
-| Multiple threads access shared data simultaneously. | Multiple threads wait forever for each other. |
-| May produce incorrect results. | Program stops making progress. |
-| Solved using synchronization such as mutexes. | Prevented through proper lock management and ordering. |
-
+## Deadlock vs Race Condition
+<table header-row="true">
+<tr>
+<td>**Race Condition**</td>
+<td>**Deadlock**</td>
+</tr>
+<tr>
+<td>Multiple threads access shared data simultaneously.</td>
+<td>Multiple threads wait forever for each other.</td>
+</tr>
+<tr>
+<td>May produce incorrect results.</td>
+<td>Program stops making progress.</td>
+</tr>
+<tr>
+<td>Solved using synchronization (e.g., mutex).</td>
+<td>Prevented through proper lock management and ordering.</td>
+</tr>
+</table>
 ---
+## Interview Question
+**Q: Can a mutex cause a deadlock?**
+**Answer:** Yes.
 
-## Can a mutex cause deadlock?
-
-Yes. A mutex prevents race conditions, but if multiple mutexes are acquired in the wrong order, they can lead to a deadlock.
-
+A mutex prevents race conditions, but if multiple mutexes are acquired in the wrong order, they can lead to a deadlock.
 ---
+# Starvation
+**Starvation** occurs when a thread/process waits indefinitely because other threads/processes continuously get access to the required resource.
 
-## Starvation
-
-Starvation occurs when a thread or process waits indefinitely because other threads or processes continuously get access to the required resource.
-
-Unlike deadlock, the program is still making progress. Only one or more threads are not.
-
-Example:
-
-- High Priority Thread A.
-- High Priority Thread B.
-- Low Priority Thread C.
-
-Whenever the CPU becomes free, A or B gets scheduled. Thread C keeps waiting and never gets CPU time.
-
+Unlike deadlock, the program is still making progress—**only one or more threads are not**.
 ---
+## Example
+Imagine three threads:
+- High Priority Thread A
+- High Priority Thread B
+- Low Priority Thread C
 
-## Preventing starvation
+Whenever the CPU becomes free, A or B gets scheduled.
 
-Use aging: gradually increase the priority of waiting threads so they eventually get a chance to execute.
+Thread C keeps waiting and never gets CPU time.
 
+This is **Starvation**.
 ---
+## Real-Life Example
+Imagine standing in a queue, but VIP customers keep arriving and are always served before you.
 
-## Livelock
+You may end up waiting forever.
+---
+## How to Prevent Starvation
+- **Aging**: Gradually increase the priority of waiting threads so they eventually get a chance to execute.
+---
+# Livelock
+**Livelock** occurs when two or more threads/processes keep responding to each other but **no useful work gets done**.
 
-Livelock occurs when two or more threads or processes keep responding to each other but no useful work gets done.
-
-Unlike deadlock, the threads are not blocked. They remain active but make no progress.
-
-Example:
-
+Unlike deadlock, the threads are **not blocked**—they remain active but make no progress.
+---
+## Example
+Two threads try to avoid a deadlock:
 - Thread A releases its lock because Thread B is waiting.
 - Thread B also releases its lock because Thread A is waiting.
 - Both immediately try again.
 - The same thing keeps repeating.
 
+They are busy, but neither completes its work.
 ---
+## Real-Life Example
+Imagine two people walking toward each other in a narrow hallway.
+Both step to the left.
 
-## Deadlock vs Starvation vs Livelock
+Both step to the right.
 
-| Deadlock | Starvation | Livelock |
-| --- | --- | --- |
-| Threads wait forever for each other. | A thread waits indefinitely because others keep getting the resource. | Threads keep running but make no progress. |
-| Threads are blocked. | Waiting thread is blocked; others continue normally. | Threads are active but stuck in repeated actions. |
-| Affected threads stop progressing. | System continues, but one or more threads never execute. | System is active, but useful work never completes. |
+They keep trying to avoid each other but never pass.
 
-Remember:
-
-- Deadlock: waiting forever.
-- Starvation: never getting a chance.
-- Livelock: always moving, never progressing.
+That's **Livelock**.
+---
+# Deadlock vs Starvation vs Livelock
+<table header-row="true">
+<tr>
+<td>**Deadlock**</td>
+<td>**Starvation**</td>
+<td>**Livelock**</td>
+</tr>
+<tr>
+<td>Threads wait forever for each other.</td>
+<td>A thread waits indefinitely because others keep getting the resource.</td>
+<td>Threads keep running but make no progress.</td>
+</tr>
+<tr>
+<td>Threads are blocked.</td>
+<td>Waiting thread is blocked; others continue normally.</td>
+<td>Threads are active but stuck in repeated actions.</td>
+</tr>
+<tr>
+<td>System or affected threads stop progressing.</td>
+<td>System continues, but one or more threads never get a chance to execute.</td>
+<td>System is active, but useful work never completes.</td>
+</tr>
+</table>
+---
+## Interview Tip
+Remember them like this:
+- **Deadlock** → **Waiting forever.**
+- **Starvation** → **Never getting a chance.**
+- **Livelock** → **Always moving, never progressing.**

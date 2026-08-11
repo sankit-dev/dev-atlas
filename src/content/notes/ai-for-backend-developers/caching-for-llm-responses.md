@@ -5,50 +5,117 @@ description: "Caching model responses where it is correct and useful."
 track: "AI for Backend Developers"
 ---
 
-Caching stores reusable AI results so repeated requests can avoid another model call.
+> **LLM caching stores a previous result so the application can reuse it instead of making the same expensive model call again.**
 
-## When caching is safe
+## Why is caching useful?
 
-Caching works best for deterministic or low-risk outputs.
+AI requests can be slower and more expensive than normal database queries.
 
-Examples:
+If many users ask:
 
-- Summaries of public docs.
-- Generated explanations for static content.
-- Embeddings for unchanged text.
-- Classification for immutable records.
+```plain text
+What is the company's leave policy?
+```
 
-## When caching is risky
+and the answer is the same, generating it every time may waste time and money.
 
-Avoid blind caching when output depends on:
+## Basic cache flow
 
-- User permissions.
-- Personal data.
-- Frequently changing facts.
-- Conversation state.
-- Current time.
-- Random creative generation.
+```mermaid
+flowchart LR
+    A["Request"] --> B{"Cached result?"}
+    B -->|Yes| C["Return cached response"]
+    B -->|No| D["Call LLM"]
+    D --> E["Store response"]
+    E --> C
+```
 
-Wrong caching can leak data or return stale answers.
+## Exact-match caching
 
-## Cache keys
+Reuse a response only when the cache key is exactly the same.
 
-A cache key should include everything that affects the output:
+A useful cache key may include:
 
-- Model.
-- Prompt version.
-- Input text hash.
-- Relevant settings.
-- User or tenant when needed.
-- Retrieved context version.
+```plain text
+model
++ prompt-template version
++ normalized user input
++ relevant settings
++ data or document version
++ user or tenant scope
+```
 
-## Embedding cache
+If any important input changes, the cache should not return the old result.
 
-Embedding unchanged text is a strong caching use case. Store the embedding and recompute only when the source text changes.
+## Example
 
-## Quick revision
+```javascript
+const cacheKey = createHash({
+  model: "chosen-model",
+  promptVersion: "faq-v2",
+  question: normalizedQuestion,
+  policyVersion: currentPolicyVersion
+});
 
-- Cache only when reuse is correct.
-- Include prompt and model version in cache keys.
-- Be careful with user-specific data.
-- Embedding caching is usually valuable.
+let answer = await cache.get(cacheKey);
+
+if (!answer) {
+  answer = await generateAnswer(question);
+  await cache.set(cacheKey, answer, { ttl: 3600 });
+}
+
+return answer;
+```
+
+## TTL and invalidation
+
+**TTL** means time to live: how long a cached result remains valid.
+
+Invalidation means removing the cache when its source data changes.
+
+Example:
+
+```plain text
+HR policy updated
+    ↓
+Old RAG answer may be wrong
+    ↓
+Delete cache or change policy version in cache key
+```
+
+## What is semantic caching?
+
+Semantic caching may reuse an answer for questions with similar meaning:
+
+```plain text
+"What is the leave policy?"
+"How does annual leave work?"
+```
+
+It can improve cache hits, but it is riskier because similar questions are not always identical.
+
+Start with exact caching unless semantic reuse is clearly safe.
+
+## When should you avoid caching?
+
+Be careful with:
+
+- personalized answers
+- live balances or order status
+- rapidly changing data
+- one-time or sensitive requests
+- responses affected by user permissions
+- actions such as sending email or creating records
+
+Never let one user's private response appear for another user.
+
+## Common mistakes
+
+- using only the raw question as the cache key
+- forgetting model or prompt versions
+- keeping results after source documents change
+- caching errors for too long
+- caching sensitive data without user isolation
+- assuming every AI response is safe to reuse
+
+> Cache only when the **same effective input should produce a reusable answer**. Correct cache keys and invalidation matter more than simply adding Redis.

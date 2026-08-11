@@ -5,109 +5,113 @@ description: "Temporal vs spatial locality and why caching improves performance.
 track: "Operating Systems"
 ---
 
-## Why do we need cache?
+# Cache Memory
+## Why Do We Need Cache?
+The CPU is **extremely fast**, but RAM is much slower.
 
-The CPU is extremely fast, but RAM is much slower.
-
+Imagine:
 ```plain text
-CPU -> wants data immediately
-RAM -> takes longer to respond
+CPU → Wants data immediately
+RAM → Takes longer to respond
 ```
 
-If the CPU had to wait for RAM every time, it would spend a lot of time idle. To reduce this waiting time, computers use cache memory.
+If the CPU had to wait for RAM every time, it would spend a lot of time idle.
 
+To reduce this waiting time, computers use **Cache Memory**.
 ---
-
 ## Definition
+**Cache Memory** is a **small, very fast memory** located close to the CPU.
 
-Cache memory is a small, very fast memory located close to the CPU. It stores frequently or recently used data so the CPU can access it much faster than RAM.
-
+It stores **frequently or recently used data** so the CPU can access it much faster than RAM.
 ---
-
-## Memory hierarchy
-
+## Memory Hierarchy
 ```plain text
 Fastest
         CPU Registers
-              |
-              v
+              │
+              ▼
            L1 Cache
-              |
-              v
+              │
+              ▼
            L2 Cache
-              |
-              v
+              │
+              ▼
            L3 Cache
-              |
-              v
+              │
+              ▼
              RAM
-              |
-              v
+              │
+              ▼
          SSD / HDD
 Slowest
 ```
-
 As you go down:
-
-- Memory becomes larger.
-- Memory becomes slower.
-- Memory becomes cheaper per GB.
-
+- Memory becomes **larger**
+- Memory becomes **slower**
+- Memory becomes **cheaper per GB**
 ---
+## Example
+Suppose your program repeatedly does:
 
-## Why cache improves performance
-
-Many programs reuse the same data or nearby data. Instead of repeatedly accessing slower RAM, the CPU often finds the needed data in cache.
-
-Example:
-
-```cpp
+```c++
 sum += arr[i];
 ```
 
-The CPU accesses the same memory region repeatedly. Cache makes this much faster.
+The CPU accesses the same memory region again and again.
 
+Instead of fetching from RAM every time:
+
+```plain text
+CPU
+ │
+ ▼
+Cache ✅
+ │
+ ▼
+RAM (only if needed)
+```
+This is much faster.
 ---
+# Why Does Cache Improve Performance?
+Because many programs tend to reuse the same data or nearby data.
 
-## Locality of reference
+Instead of repeatedly accessing slower RAM, the CPU finds the data in the cache.
 
+This significantly reduces memory access time.
+---
+# Locality of Reference
 Cache works because programs usually access memory in predictable patterns.
 
-There are two important types:
-
-- Temporal locality.
-- Spatial locality.
-
+There are two important types.
 ---
+## 1. Temporal Locality
+**Meaning:**
 
-## Temporal locality
+If a program accesses some data now, it's likely to access the **same data again soon**.
 
-Temporal locality means if a program accesses some data now, it is likely to access the same data again soon.
-
-Example:
-
-```cpp
-for (int i = 0; i < 1000; i++) {
-  count++;
+### Example
+```c++
+for(int i = 0; i < 1000; i++) {
+    count++;
 }
 ```
+The variable `count` is accessed repeatedly.
 
-The variable `count` is accessed repeatedly, so the CPU keeps it in cache.
+The CPU keeps it in cache.
 
+This is **Temporal Locality**.
 ---
+## 2. Spatial Locality
+**Meaning:**
 
-## Spatial locality
+If a program accesses one memory location, it's likely to access **nearby memory locations** soon.
 
-Spatial locality means if a program accesses one memory location, it is likely to access nearby memory locations soon.
-
-Example:
-
-```cpp
-for (int i = 0; i < 1000; i++) {
-  sum += arr[i];
+### Example
+```c++
+for(int i = 0; i < 1000; i++) {
+    sum += arr[i];
 }
 ```
-
 The CPU reads:
 
 ```plain text
@@ -117,57 +121,61 @@ arr[2]
 arr[3]
 ...
 ```
+These elements are stored next to each other in memory.
 
-These elements are stored next to each other in memory. The CPU often loads a cache line, which is a small contiguous block of memory. When `arr[0]` is fetched, nearby elements may already be in cache.
+The CPU often loads a whole **cache line**.
 
+So when `arr[0]` is fetched, `arr[1]`, `arr[2]`, etc., are likely already in cache.
+
+This is **Spatial Locality**.
 ---
-
-## Comparison
-
-| Temporal Locality | Spatial Locality |
-| --- | --- |
-| Reuse the same data soon. | Access nearby data soon. |
-| Example: updating the same variable repeatedly. | Example: iterating through an array. |
-
+# Comparison
+<table header-row="true">
+<tr>
+<td>Temporal Locality</td>
+<td>Spatial Locality</td>
+</tr>
+<tr>
+<td>Reuse the **same** data soon.</td>
+<td>Access **nearby** data soon.</td>
+</tr>
+<tr>
+<td>Example: Updating the same variable repeatedly.</td>
+<td>Example: Iterating through an array.</td>
+</tr>
+</table>
 ---
+# Real-Life Analogy
+Imagine you're cooking.
 
-## Real-life analogy
-
-Imagine you are cooking.
-
-- Temporal locality: you use the same spoon over and over, so you keep it on the counter.
-- Spatial locality: when you take out salt, pepper is nearby, so keeping both nearby is useful.
-
+- **Temporal Locality:** You use the same spoon over and over, so you keep it on the counter instead of putting it back in the drawer each time.
+- **Spatial Locality:** When you take out the salt, the pepper is right next to it, so keeping both nearby is useful because you'll probably use them together.
 ---
-
-## Interview questions
-
+# Interview Questions
 ### Why is cache faster than RAM?
-
-Cache is built using SRAM, which is faster but more expensive and smaller than the DRAM used for main memory.
-
-### Why does a computer not use only cache?
-
-Cache is very expensive and consumes more chip area. RAM is slower but much cheaper and available in much larger capacities.
-
-### What is locality of reference?
-
-It is the tendency of programs to access the same data repeatedly or nearby data soon. Cache memory relies on this behavior to improve performance.
-
+Because cache is built using **SRAM**, which is faster but more expensive and smaller than the **DRAM** used for main memory.
 ---
+### Why doesn't a computer use only cache?
+Because cache is **very expensive** and consumes more chip area.
 
-## Backend connection
+RAM is slower but much cheaper and available in much larger capacities.
+---
+### What is locality of reference?
+It is the tendency of programs to access the **same data repeatedly (temporal locality)** or **nearby data (spatial locality)**.
 
-Even as a backend developer, this matters.
-
-Cache-friendly code:
-
-```cpp
+Cache memory relies on this behavior to improve performance.
+---
+# Backend Connection
+Even as a backend developer, this concept matters.
+For example:
+```c++
+// Cache-friendly
 for (int i = 0; i < n; i++) {
-  sum += arr[i];
+    sum += arr[i];
 }
 ```
+This benefits from **spatial locality** because array elements are contiguous.
 
-This benefits from spatial locality because array elements are contiguous.
+Whereas code that jumps randomly around memory (for example, following scattered pointers in a large data structure) often results in more **cache misses**, reducing performance.
 
-Code that jumps randomly around memory, such as following scattered pointers in a large data structure, often causes more cache misses and can be slower.
+You don't usually optimize for cache in day-to-day backend work, but understanding why some code is more cache-friendly is valuable in performance-critical systems.
