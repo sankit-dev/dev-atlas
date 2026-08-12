@@ -6,7 +6,7 @@ track: "Docker"
 priority: "Must Know"
 ---
 
-Docker networking controls how containers communicate with each other and with the host.
+Once you have more than one container, they need a way to talk. Docker networking controls communication between containers and between a container and your computer.
 
 ## Default bridge network
 

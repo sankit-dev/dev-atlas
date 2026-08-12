@@ -1,12 +1,14 @@
 ---
-title: "Environments, Approvals and Deployment"
+title: "Deploying Safely"
 slug: "environments-approvals-and-deployment"
-description: "Staging/production separation, protected environments and safe releases."
+description: "Use staging, production approvals, and a rollback plan when you start releasing automatically."
 track: "GitHub CI/CD"
 priority: "Must Know"
 ---
 
-GitHub environments help separate staging, production, and other deployment targets.
+Deploying means putting a new version of your app somewhere people can use it. CI has checked the code; now CD helps you release it carefully.
+
+Do not start by automatically deploying every project to production. A safe first step is deploying to a **staging** environment after code reaches `main`.
 
 ## Why environments exist
 

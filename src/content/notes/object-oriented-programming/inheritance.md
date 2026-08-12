@@ -12,20 +12,16 @@ It is used for code reuse and for modeling an is-a relationship.
 ## Example
 
 ```java
-class Vehicle {
-    void start() {
-        System.out.println("Vehicle started");
-    }
+class BaseJob {
+    void recordStart() { System.out.println("Job started"); }
 }
 
-class Car extends Vehicle {
-    void openSunroof() {
-        System.out.println("Sunroof opened");
-    }
+class DataExportJob extends BaseJob {
+    void writeCsv() { System.out.println("Writing CSV"); }
 }
 ```
 
-`Car` inherits `start()` from `Vehicle`.
+`DataExportJob` inherits `recordStart()` from `BaseJob`.
 
 ## Why Inheritance Is Used
 
@@ -39,20 +35,20 @@ class Car extends Vehicle {
 ### Single
 
 ```text
-Vehicle -> Car
+BaseJob -> DataExportJob
 ```
 
 ### Multilevel
 
 ```text
-Vehicle -> Car -> SportsCar
+BaseJob -> DataExportJob -> ScheduledDataExportJob
 ```
 
 ### Hierarchical
 
 ```text
-Vehicle -> Car
-Vehicle -> Bike
+BaseJob -> DataExportJob
+BaseJob -> CleanupJob
 ```
 
 ### Multiple
@@ -69,8 +65,8 @@ Constructors are not inherited.
 
 Use inheritance when the child truly is a parent type.
 
-- Car is a Vehicle: good.
-- Car is an Engine: wrong; this is composition.
+- A scheduled export is a data export: potentially a good fit.
+- An export job is a CSV writer: wrong; use composition instead.
 
 ## Interview Notes
 

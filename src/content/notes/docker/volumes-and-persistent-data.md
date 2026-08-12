@@ -6,7 +6,7 @@ track: "Docker"
 priority: "Must Know"
 ---
 
-Container files are temporary by default. Volumes preserve data outside the container lifecycle.
+Containers are meant to be easy to replace. That is good for app code, but it creates an important question: where should a database keep its data? The answer is usually a **volume**.
 
 ## Container filesystem
 

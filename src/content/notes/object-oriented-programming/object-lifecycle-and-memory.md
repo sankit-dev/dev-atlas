@@ -22,22 +22,22 @@ Garbage collector may reclaim memory
 ## Object Creation
 
 ```java
-Car car = new Car();
+FeatureFlag darkMode = new FeatureFlag();
 ```
 
 This does a few things:
 
 - Allocates memory for the object.
 - Calls the constructor.
-- Stores a reference in `car`.
+- Stores a reference in `darkMode`.
 
 ## Reference vs Object
 
-`car` is not the object. It is a reference to the object.
+`darkMode` is not the object. It is a reference to the object.
 
 ```text
-Stack                 Heap
-car reference  --->   Car object
+Stack                     Heap
+darkMode reference  --->   FeatureFlag object
 ```
 
 ## Stack
@@ -65,8 +65,8 @@ Objects live until they become unreachable and the garbage collector removes the
 An object becomes eligible for garbage collection when no live reference can reach it.
 
 ```java
-Car car = new Car();
-car = null;
+FeatureFlag darkMode = new FeatureFlag();
+darkMode = null;
 ```
 
 If no other reference points to that object, it is eligible for cleanup.

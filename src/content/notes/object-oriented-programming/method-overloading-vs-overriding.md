@@ -26,17 +26,11 @@ The compiler decides which method to call.
 A child class provides its own implementation of a parent method.
 
 ```java
-class Vehicle {
-    void start() {
-        System.out.println("Vehicle started");
-    }
-}
+class BaseNotifier { void send() { System.out.println("Sending"); } }
 
-class Car extends Vehicle {
+class SlackNotifier extends BaseNotifier {
     @Override
-    void start() {
-        System.out.println("Car started");
-    }
+    void send() { System.out.println("Sending Slack message"); }
 }
 ```
 

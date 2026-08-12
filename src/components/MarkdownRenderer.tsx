@@ -1,4 +1,6 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { createBundledHighlighter } from 'shiki/core'
+import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 
 type MarkdownRendererProps = {
   markdown: string
@@ -14,6 +16,142 @@ type MermaidSequenceStep = {
   from: string
   to: string
   message: string
+}
+
+const shikiLanguages = {
+  bash: () => import('@shikijs/langs/bash'),
+  c: () => import('@shikijs/langs/c'),
+  cpp: () => import('@shikijs/langs/cpp'),
+  css: () => import('@shikijs/langs/css'),
+  dockerfile: () => import('@shikijs/langs/dockerfile'),
+  html: () => import('@shikijs/langs/html'),
+  java: () => import('@shikijs/langs/java'),
+  javascript: () => import('@shikijs/langs/javascript'),
+  json: () => import('@shikijs/langs/json'),
+  python: () => import('@shikijs/langs/python'),
+  sql: () => import('@shikijs/langs/sql'),
+  typescript: () => import('@shikijs/langs/typescript'),
+  xml: () => import('@shikijs/langs/xml'),
+  yaml: () => import('@shikijs/langs/yaml'),
+}
+
+const createShikiHighlighter = createBundledHighlighter({
+  engine: createJavaScriptRegexEngine,
+  langs: shikiLanguages,
+  themes: {
+    'github-dark': () => import('@shikijs/themes/github-dark'),
+  },
+})
+
+type HighlightLanguage = keyof typeof shikiLanguages
+
+const shikiHighlighters = new Map<
+  HighlightLanguage,
+  ReturnType<typeof createShikiHighlighter>
+>()
+
+function getShikiHighlighter(language: HighlightLanguage) {
+  const existing = shikiHighlighters.get(language)
+
+  if (existing) return existing
+
+  const highlighter = createShikiHighlighter({
+    langs: [language],
+    themes: ['github-dark'],
+  })
+
+  shikiHighlighters.set(language, highlighter)
+  return highlighter
+}
+
+const languageAliases: Record<string, HighlightLanguage | undefined> = {
+  bash: 'bash',
+  c: 'c',
+  cpp: 'cpp',
+  css: 'css',
+  dockerfile: 'dockerfile',
+  html: 'html',
+  java: 'java',
+  javascript: 'javascript',
+  js: 'javascript',
+  json: 'json',
+  python: 'python',
+  sh: 'bash',
+  shell: 'bash',
+  sql: 'sql',
+  ts: 'typescript',
+  typescript: 'typescript',
+  xml: 'xml',
+  yaml: 'yaml',
+  yml: 'yaml',
+}
+
+function CodeBlock({ code, language }: { code: string; language: string }) {
+  const [highlightedHtml, setHighlightedHtml] = useState('')
+  const [copyStatus, setCopyStatus] = useState<'Copy' | 'Copied!' | 'Try again'>('Copy')
+  const shikiLanguage = languageAliases[language.toLowerCase()]
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (!shikiLanguage) {
+      return () => {
+        cancelled = true
+      }
+    }
+
+    getShikiHighlighter(shikiLanguage)
+      .then((highlighter) =>
+        highlighter.codeToHtml(code, {
+          lang: shikiLanguage,
+          theme: 'github-dark',
+        }),
+      )
+      .then((html) => {
+        if (!cancelled) setHighlightedHtml(html)
+      })
+      .catch(() => {
+        if (!cancelled) setHighlightedHtml('')
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [code, shikiLanguage])
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(code)
+      setCopyStatus('Copied!')
+    } catch {
+      setCopyStatus('Try again')
+    }
+
+    window.setTimeout(() => setCopyStatus('Copy'), 1600)
+  }
+
+  const languageLabel = language || 'text'
+
+  return (
+    <section className="markdown-code-block">
+      <header>
+        <span>{languageLabel}</span>
+        <button aria-label={`Copy ${languageLabel} code`} onClick={handleCopy} type="button">
+          {copyStatus}
+        </button>
+      </header>
+      {highlightedHtml ? (
+        <div
+          className="markdown-code-block__highlight"
+          dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+        />
+      ) : (
+        <pre>
+          <code data-language={language}>{code}</code>
+        </pre>
+      )}
+    </section>
+  )
 }
 
 function renderInline(text: string): ReactNode[] {
@@ -338,11 +476,7 @@ export function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
       if (language === 'mermaid') {
         nodes.push(<MermaidDiagram code={codeLines.join('\n')} key={index} />)
       } else {
-        nodes.push(
-          <pre key={index}>
-            <code data-language={language}>{codeLines.join('\n')}</code>
-          </pre>,
-        )
+        nodes.push(<CodeBlock code={codeLines.join('\n')} key={index} language={language} />)
       }
 
       index += 1

@@ -74,7 +74,7 @@ html {
 body {
   margin: 0;
   font-family:
-    Manrope, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', Inter, ui-sans-serif, system-ui,
     'Segoe UI', sans-serif;
   background: var(--color-page);
   color: var(--color-text);
@@ -371,6 +371,52 @@ button {
   background: var(--color-inverse-bg);
   color: var(--color-inverse-text);
   padding-inline: 22px 14px;
+}
+
+.learning-practice-banner,
+.note-practice-callout {
+  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 55%, var(--color-line));
+  border-left: 5px solid var(--color-accent-strong);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-accent-strong) 10%, var(--color-surface));
+}
+
+.learning-practice-banner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 22px;
+  align-items: center;
+  margin: 18px 0 26px;
+  padding: 18px 22px;
+}
+
+.learning-practice-banner__label,
+.note-practice-callout span {
+  color: var(--color-accent-strong);
+  font-family: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.learning-practice-banner p,
+.note-practice-callout p {
+  max-width: 78ch;
+  margin: 0;
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.note-practice-callout {
+  max-width: 72ch;
+  margin: 0 0 32px;
+  padding: 17px 20px;
+}
+
+.note-practice-callout p {
+  margin-top: 6px;
 }
 
 .library-controls {
@@ -967,17 +1013,24 @@ button {
 }
 
 .markdown-body {
-  width: min(100%, 820px);
+  width: min(100%, 72ch);
   color: var(--color-text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, ui-sans-serif,
+    system-ui, 'Segoe UI', sans-serif;
+  font-size: 17px;
+  letter-spacing: -0.012em;
 }
 
 .markdown-body h1,
 .markdown-body h2,
 .markdown-body h3,
 .markdown-body h4 {
-  margin: 42px 0 14px;
-  line-height: 1.08;
-  letter-spacing: 0;
+  margin: 56px 0 18px;
+  color: var(--color-text);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.028em;
 }
 
 .markdown-body h1 {
@@ -985,15 +1038,16 @@ button {
 }
 
 .markdown-body h2 {
-  font-size: clamp(28px, 4vw, 38px);
+  font-size: clamp(27px, 3.2vw, 34px);
 }
 
 .markdown-body h3 {
-  font-size: 24px;
+  font-size: 22px;
 }
 
 .markdown-body h4 {
   font-size: 18px;
+  letter-spacing: -0.015em;
 }
 
 .markdown-body .markdown-interview-heading {
@@ -1145,13 +1199,29 @@ button {
 .markdown-body p,
 .markdown-body li,
 .markdown-body blockquote {
-  font-size: 15px;
-  line-height: 1.85;
+  font-size: 1em;
+  line-height: 1.78;
 }
 
 .markdown-body p {
   max-width: 72ch;
-  margin: 0 0 20px;
+  margin: 0 0 28px;
+}
+
+.markdown-body > p:first-child {
+  color: color-mix(in srgb, var(--color-text) 92%, var(--color-muted));
+  font-size: 1.12em;
+  line-height: 1.72;
+}
+
+.markdown-body strong {
+  color: var(--color-text);
+  font-weight: 730;
+  background: linear-gradient(
+    transparent 61%,
+    color-mix(in srgb, var(--color-accent-strong) 30%, transparent) 61%
+  );
+  padding: 0 0.08em;
 }
 
 .markdown-body .markdown-code-lead-in {
@@ -1168,8 +1238,8 @@ button {
 
 .markdown-body ul,
 .markdown-body ol {
-  margin: 0 0 24px;
-  padding-left: 24px;
+  margin: 2px 0 32px;
+  padding-left: 28px;
 }
 
 .markdown-body ul {
@@ -1181,7 +1251,8 @@ button {
 }
 
 .markdown-body li {
-  padding-left: 4px;
+  margin: 10px 0;
+  padding-left: 7px;
 }
 
 .markdown-body li::marker {
@@ -1209,11 +1280,13 @@ button {
 }
 
 .markdown-body blockquote {
-  margin: 24px 0;
+  margin: 32px 0;
   border-left: 4px solid var(--color-accent-strong);
-  padding: 12px 18px;
-  background: var(--color-surface);
-  color: var(--color-muted);
+  border-radius: 0 12px 12px 0;
+  padding: 18px 21px;
+  background: color-mix(in srgb, var(--color-accent-strong) 9%, var(--color-surface));
+  color: var(--color-text);
+  font-weight: 500;
 }
 
 .markdown-body code {
@@ -1222,6 +1295,91 @@ button {
   padding: 2px 6px;
   font-family: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.9em;
+}
+
+.markdown-code-block {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 72ch;
+  margin: 18px 0 32px;
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  background: #0d1117;
+}
+
+.markdown-code-block > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 42px;
+  border-bottom: 1px solid #30363d;
+  padding: 0 12px 0 16px;
+  color: #8b949e;
+  font-family: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.markdown-code-block > header button {
+  border: 1px solid #30363d;
+  border-radius: 5px;
+  background: #161b22;
+  padding: 5px 9px;
+  color: #c9d1d9;
+  font: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  transition: border-color 180ms var(--motion-ease), color 180ms var(--motion-ease), background 180ms var(--motion-ease);
+}
+
+.markdown-code-block > header button:hover,
+.markdown-code-block > header button:focus-visible {
+  border-color: var(--color-accent-strong);
+  background: #21262d;
+  color: #ffffff;
+  outline: none;
+}
+
+.markdown-body .markdown-code-block pre,
+.markdown-code-block .shiki {
+  overflow: visible;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 22px 26px;
+  background: #0d1117 !important;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.markdown-code-block .shiki {
+  white-space: pre-wrap;
+}
+
+.markdown-code-block pre {
+  color: #c9d1d9;
+}
+
+.markdown-body .markdown-code-block pre code,
+.markdown-code-block .shiki code {
+  display: block;
+  min-width: 0;
+  background: transparent;
+  padding: 0;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.markdown-body > .markdown-code-block + p,
+.markdown-table-wrap + p {
+  margin-top: 24px;
 }
 
 .markdown-body pre {
@@ -1233,12 +1391,12 @@ button {
   padding: 20px 22px;
 }
 
+.markdown-body .markdown-code-lead-in + .markdown-code-block,
 .markdown-body .markdown-code-lead-in + pre {
   margin-top: 14px;
 }
 
-.markdown-body pre + p,
-.markdown-table-wrap + p {
+.markdown-body pre + p {
   margin-top: 24px;
 }
 

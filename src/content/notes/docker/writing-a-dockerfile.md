@@ -6,7 +6,9 @@ track: "Docker"
 priority: "Must Know"
 ---
 
-A Dockerfile is a recipe for building a Docker image.
+A Dockerfile is a plain-text recipe for building a Docker image. You write it once in your project; Docker follows its instructions to create the package.
+
+For a Node app, it normally says: start from a Node base image, copy the project in, install dependencies, and say how to start the app.
 
 ## Basic Node example
 
@@ -19,6 +21,8 @@ COPY . .
 EXPOSE 3000
 CMD ["npm", "start"]
 ```
+
+After you save this as `Dockerfile`, the next note shows how to turn it into an image with `docker build`.
 
 ## FROM
 

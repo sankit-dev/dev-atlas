@@ -6,7 +6,11 @@ track: "GitHub CI/CD"
 priority: "Important"
 ---
 
-Artifacts are files produced by a workflow. Docker images are deployable artifacts for containerized apps.
+Sometimes the work from one job needs to be kept or passed to the next job. That saved output is an **artifact**.
+
+For example, a frontend build produces a `dist` folder. Instead of building it again somewhere else, a workflow can save that folder and a later deployment job can use it.
+
+A Docker image is another kind of artifact: a packaged version of an app that a server can run.
 
 ## Build artifacts
 
@@ -34,7 +38,7 @@ Another job can download the artifact and deploy or inspect it.
 
 ## Docker images
 
-For backend services, the main artifact is often a Docker image.
+For backend services, the main artifact is often a Docker image. It contains your app and its runtime setup, so the staging server runs the same version that CI tested.
 
 Typical flow:
 
@@ -54,7 +58,7 @@ Common registries:
 - Google Artifact Registry.
 - Azure Container Registry.
 
-A registry stores images so deployment systems can pull them.
+A registry is like a storage shelf for Docker images. Your workflow pushes an image there; a deployment system pulls that exact image later.
 
 ## Tagging
 

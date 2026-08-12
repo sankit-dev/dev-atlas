@@ -40,14 +40,14 @@ Student() {
 Use `super` to access parent members or call the parent constructor.
 
 ```java
-class Car extends Vehicle {
-    Car() {
+class WebhookEvent extends DomainEvent {
+    WebhookEvent() {
         super();
     }
 
-    void start() {
-        super.start();
-        System.out.println("Car started");
+    void publish() {
+        super.publish();
+        System.out.println("Webhook delivered");
     }
 }
 ```

@@ -12,24 +12,17 @@ The same method call can behave differently depending on the object.
 ## Runtime Polymorphism
 
 ```java
-class Vehicle {
-    void start() {
-        System.out.println("Vehicle started");
-    }
+interface ReceiptChannel { void send(); }
+
+class EmailChannel implements ReceiptChannel {
+    public void send() { System.out.println("Email sent"); }
 }
 
-class Car extends Vehicle {
-    @Override
-    void start() {
-        System.out.println("Car started");
-    }
-}
-
-Vehicle vehicle = new Car();
-vehicle.start();
+ReceiptChannel channel = new EmailChannel();
+channel.send();
 ```
 
-The reference type is `Vehicle`, but the actual object is `Car`, so `Car.start()` runs.
+The reference type is `ReceiptChannel`, but the actual object is `EmailChannel`, so its `send()` method runs.
 
 ## Compile-Time Polymorphism
 
