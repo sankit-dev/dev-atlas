@@ -160,10 +160,19 @@ export function NoteReader({
             </header>
 
             {body ? (
-              <MarkdownRenderer
-                key={`${track.title}:${note.slug}`}
-                markdown={body}
-              />
+              <>
+                <aside className="note-practice-callout" aria-label="Practice reminder">
+                  <span>Practice, don’t just read</span>
+                  <p>
+                    Read this note, build one small example, then explain it aloud
+                    without looking. That is what makes the knowledge interview-ready.
+                  </p>
+                </aside>
+                <MarkdownRenderer
+                  key={`${track.title}:${note.slug}`}
+                  markdown={body}
+                />
+              </>
             ) : (
               <div className="max-w-190 border-t border-(--color-line) pt-8">
                 <h2 className="m-0 text-[28px] tracking-normal">

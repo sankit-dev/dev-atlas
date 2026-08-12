@@ -6,7 +6,7 @@ track: "Docker"
 priority: "Must Know"
 ---
 
-Docker Compose runs multi-container applications with one YAML file.
+Running one container is useful. Real projects often need an API plus a database, cache, or worker. Docker Compose lets you describe and start that local stack from one YAML file.
 
 ## Why Compose exists
 

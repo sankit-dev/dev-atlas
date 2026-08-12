@@ -1,12 +1,14 @@
 ---
-title: "Triggers, Filters and Manual Runs"
+title: "When Should a Workflow Run?"
 slug: "triggers-filters-and-manual-runs"
-description: "Running workflows for the right branches and events."
+description: "Choose pull requests, pushes, manual runs, and path filters for the task."
 track: "GitHub CI/CD"
 priority: "Must Know"
 ---
 
-Workflow triggers decide when GitHub Actions runs.
+A workflow should run at the moment it is useful—not for every tiny repository event. In GitHub Actions, the `on:` section chooses that moment.
+
+For a beginner, remember this rule: **check code on pull requests; release code after it is merged.**
 
 ## Common triggers
 
@@ -23,7 +25,7 @@ This runs checks on pull requests, runs on pushes to main, and allows manual exe
 
 ## Pull request trigger
 
-Use pull request workflows for validation.
+Use a pull request workflow when you want to check a change before it enters `main`.
 
 Good PR checks:
 
@@ -37,7 +39,7 @@ Be careful with secrets on pull requests from forks.
 
 ## Push trigger
 
-Use push triggers for branch-specific actions.
+Use a push trigger for work that should happen after code has landed on a specific branch.
 
 Example:
 
@@ -61,6 +63,8 @@ This can save time and CI minutes.
 ## Manual runs
 
 `workflow_dispatch` lets a person run a workflow manually.
+
+Use it when a release should happen only after someone deliberately starts it.
 
 It is useful for:
 

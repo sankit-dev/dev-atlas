@@ -6,7 +6,9 @@ track: "GitHub CI/CD"
 priority: "Must Know"
 ---
 
-CI/CD systems often need credentials to deploy, publish images, or call cloud APIs. Those credentials must be scoped and protected.
+When a workflow needs to deploy an app or publish a Docker image, it may need a password, API key, or cloud credential. These are sensitive values, so they must never be written directly in the workflow file or committed to Git.
+
+GitHub gives you a safe place to store them: **Actions secrets**. A workflow can read a secret while it runs, but people cannot see its value in the repository.
 
 ## Secrets
 
@@ -32,6 +34,8 @@ env:
 ```
 
 Only expose a secret to the step that needs it. Avoid putting secrets in global environment variables when possible.
+
+For example, add `DEPLOY_TOKEN` in **Repository settings → Secrets and variables → Actions**. Then pass it only to the deployment command that needs it.
 
 ## GITHUB_TOKEN
 

@@ -6,11 +6,11 @@ track: "Docker"
 priority: "Must Know"
 ---
 
-Images, containers, and registries are the core Docker concepts.
+Docker has three core nouns. Learn these before memorising commands: **image**, **container**, and **registry**.
 
 ## Image
 
-An image is a read-only package used to create containers.
+An image is a read-only package used to create containers. Think of it as the saved blueprint for your application.
 
 It contains:
 
@@ -24,7 +24,7 @@ Images are built from Dockerfiles.
 
 ## Container
 
-A container is a running instance of an image.
+A container is a running instance of an image—your app actually running.
 
 From one image, you can start many containers.
 
@@ -32,7 +32,7 @@ Each container has its own writable layer, process space, network identity, and 
 
 ## Registry
 
-A registry stores Docker images.
+A registry stores Docker images so another machine can download and run them. Think of it as a package store for images.
 
 Examples:
 

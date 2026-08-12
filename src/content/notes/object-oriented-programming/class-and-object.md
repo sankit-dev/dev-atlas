@@ -27,41 +27,39 @@ An object is an instance of a class. When an object is created:
 ## Example
 
 ```java
-class Car {
-    String brand;
-    String color;
+class FeatureFlag {
+    String key;
+    boolean enabled;
 
-    void start() {
-        System.out.println("Started");
-    }
+    void disable() { enabled = false; }
 }
 
-Car car = new Car();
+FeatureFlag darkMode = new FeatureFlag();
 ```
 
 Here:
 
-- `Car` is the class.
-- `car` is a reference variable.
-- `new Car()` creates the object.
+- `FeatureFlag` is the class.
+- `darkMode` is a reference variable.
+- `new FeatureFlag()` creates the object.
 
 ## Multiple Objects
 
 One class can create many objects.
 
-| Object | Brand | Color |
+| Object | Key | Enabled |
 | --- | --- | --- |
-| car1 | Honda | White |
-| car2 | BMW | Black |
-| car3 | Tesla | Red |
+| darkMode | `dark-mode` | true |
+| betaSearch | `beta-search` | false |
+| newEditor | `new-editor` | true |
 
 The structure is the same, but each object has its own state.
 
 ## Stack vs Heap
 
 ```text
-Stack                 Heap
-car reference  --->   Car object
+Stack                     Heap
+darkMode reference  --->   FeatureFlag object
 ```
 
 Local references often live on the stack. Actual objects usually live on the heap.

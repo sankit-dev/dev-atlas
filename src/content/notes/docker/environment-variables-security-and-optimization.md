@@ -1,12 +1,12 @@
 ---
-title: "Environment Variables, Security and Optimization"
+title: "Configuration, Security and Optimization"
 slug: "environment-variables-security-and-optimization"
-description: "Configuration, secrets, .dockerignore, small images and non-root users."
+description: "Handle settings and secrets safely, then make your production image smaller and safer."
 track: "Docker"
 priority: "Important"
 ---
 
-Docker images should be configurable, secure, and small enough to ship efficiently.
+After your container works locally, make it ready to share or deploy. A good image can receive configuration safely, avoids leaking secrets, and stays small enough to ship quickly.
 
 ## Environment variables
 

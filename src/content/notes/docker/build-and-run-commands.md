@@ -6,7 +6,7 @@ track: "Docker"
 priority: "Must Know"
 ---
 
-Docker commands let you build images, start containers, inspect what is running, and debug problems.
+You now have a Dockerfile—the recipe. These commands let you make the package, start it, and see what it is doing.
 
 ## Build an image
 

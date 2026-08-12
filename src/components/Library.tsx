@@ -80,6 +80,15 @@ export function Library() {
           </div>
         </div>
 
+        <aside className="learning-practice-banner" aria-label="How to use this library">
+          <span className="learning-practice-banner__label">Make it stick</span>
+          <p>
+            <strong>Reading is the start, not the finish.</strong> For each topic:
+            read the note, build one tiny example, then explain it aloud without
+            looking. That is how you become interview-ready.
+          </p>
+        </aside>
+
         <div className="library-controls">
           <div className="library-controls__header">
             <div>

@@ -1,12 +1,14 @@
 ---
-title: "GitHub Actions Workflow Structure"
+title: "GitHub Actions: How It Works"
 slug: "github-actions-workflow-structure"
-description: "Workflows, events, jobs, steps, actions and runners."
+description: "The GitHub feature that runs your automation: workflows, jobs, steps, actions, and runners."
 track: "GitHub CI/CD"
 priority: "Must Know"
 ---
 
-GitHub Actions workflows are YAML files that define automated jobs.
+Now that you know what CI/CD does, this is the tool that makes it happen on GitHub: **GitHub Actions**.
+
+Think of it as a written checklist that GitHub follows whenever something happens in your repository. The checklist is called a **workflow**.
 
 ## Workflow file location
 
@@ -22,7 +24,17 @@ Example:
 .github/workflows/ci.yml
 ```
 
-## Workflow
+## The five words you need to know
+
+- **Workflow**: the whole automated checklist, such as “test every pull request.”
+- **Event**: the thing that starts it, such as opening a pull request.
+- **Job**: one group of work, such as “run tests” or “deploy.”
+- **Step**: one item inside a job, such as `npm test`.
+- **Runner**: the temporary computer that does the work.
+
+An **action** is a reusable step written by GitHub or the community. For example, `actions/checkout` downloads your repository onto the runner.
+
+## See it in one example
 
 A workflow has a name, triggers, jobs, and steps.
 
@@ -40,9 +52,13 @@ jobs:
       - run: npm test
 ```
 
-## Events
+Read it like a sentence: “Call this workflow CI. When a pull request changes, use an Ubuntu computer, download my code, and run the tests.”
 
-Events decide when the workflow runs.
+## What happens when it runs?
+
+GitHub creates a fresh runner for the job. The runner starts empty, so your workflow normally checks out the code, installs dependencies, and then runs your commands. When the job ends, that temporary machine goes away.
+
+## Events
 
 Examples:
 

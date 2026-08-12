@@ -12,11 +12,11 @@ Composition and inheritance are both reuse techniques, but they model different 
 Inheritance models an is-a relationship.
 
 ```java
-class Vehicle {}
-class Car extends Vehicle {}
+class Report {}
+class MonthlyReport extends Report {}
 ```
 
-A car is a vehicle.
+A monthly report is a report.
 
 Use inheritance when:
 
@@ -30,12 +30,12 @@ Use inheritance when:
 Composition models a has-a relationship.
 
 ```java
-class Car {
-    private Engine engine;
+class ReportService {
+    private PdfRenderer renderer;
 }
 ```
 
-A car has an engine.
+A report service has a renderer.
 
 Use composition when:
 

@@ -1,12 +1,14 @@
 ---
-title: "Building a Useful CI Pipeline"
+title: "Your First CI Pipeline"
 slug: "building-a-useful-ci-pipeline"
-description: "Install, lint, test, build and caching in the correct order."
+description: "Set up a simple check that installs, lints, tests, and builds your app."
 track: "GitHub CI/CD"
 priority: "Must Know"
 ---
 
-A useful CI pipeline checks code in the right order and fails early when something is wrong.
+This is the first workflow most projects need. It answers one question: **can this code safely be merged?**
+
+For a Node.js app, start with a workflow that installs dependencies, checks the code, runs tests, and builds the app. You can add more later.
 
 ## Good pipeline order
 
@@ -24,6 +26,14 @@ A common backend order:
 Run cheaper checks before expensive ones.
 
 ## Example workflow
+
+Create this file in your repository:
+
+```text
+.github/workflows/ci.yml
+```
+
+Then add:
 
 ```yaml
 name: CI
@@ -48,6 +58,8 @@ jobs:
       - run: npm test
       - run: npm run build
 ```
+
+Replace `npm run lint` or `npm test` if your project does not have those scripts yet. GitHub shows the result under the **Actions** tab and on the pull request.
 
 ## Dependency caching
 

@@ -19,12 +19,9 @@ It can contain:
 - Constructors.
 
 ```java
-abstract class Vehicle {
-    void startEngine() {
-        System.out.println("Engine started");
-    }
-
-    abstract void move();
+abstract class ImportJob {
+    void recordStart() { System.out.println("Import started"); }
+    abstract void importData();
 }
 ```
 
@@ -55,9 +52,9 @@ Use an interface when unrelated classes share a capability.
 
 Example:
 
-- Car is a Vehicle.
-- Car can be Chargeable.
-- Phone can be Chargeable.
+- CsvImportJob is an ImportJob.
+- CsvImportJob can be Retryable.
+- WebhookDelivery can be Retryable.
 
 ## Comparison
 
