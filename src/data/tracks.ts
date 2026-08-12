@@ -214,6 +214,28 @@ export const tracks: Track[] = [
     ],
   },
   {
+    title: 'React / Namaste React',
+    shortTitle: 'React',
+    eyebrow: 'Frontend engineering',
+    description:
+      'React notes from the public NamasteReact course repository, covering foundations, routing, hooks, data flow, styling, optimization, and testing basics.',
+    accent: 'coral',
+    status: '11 notes',
+    topics: [
+      note('React Inception', 'Set up React from first principles with plain HTML, DOM APIs, CDN scripts, React elements, and roots.', 'https://github.com/sankitdev/NamasteReact/blob/main/01_Inception/README.md', 'Must Know'),
+      note('Igniting a React App', 'Bundlers, package managers, Parcel, npm scripts, dependencies, browserslist, and production builds.', 'https://github.com/sankitdev/NamasteReact/blob/main/02_Igniting_App/README.md', 'Must Know'),
+      note('Laying the Foundation', 'Babel, JSX, React elements, components, composition, and the early structure of a React app.', 'https://github.com/sankitdev/NamasteReact/blob/main/03_Laying_Foundation/README.md', 'Must Know'),
+      note('Talk Is Cheap, Show Me the Code', 'Planning and building a food ordering app with components, props, config-driven UI, and project structure.', 'https://github.com/sankitdev/NamasteReact/blob/main/04_Talk_is_cheap/README.md', 'Must Know', 'talk-is-cheap-show-me-the-code'),
+      note('Let’s Get Hooked', 'ES modules, React hooks, useState, state-driven rendering, reconciliation, and React Fiber basics.', 'https://github.com/sankitdev/NamasteReact/blob/main/05_Lets_get_hooked/README.md', 'Must Know', 'lets-get-hooked'),
+      note('Exploring the World', 'Fetching data, service architectures, useEffect, shimmer UI, conditional rendering, and search filtering.', 'https://github.com/sankitdev/NamasteReact/blob/main/06_Exploring_World/README.md', 'Must Know'),
+      note('Finding the Path', 'Client-side routing with react-router-dom, nested routes, outlets, dynamic routes, and error pages.', 'https://github.com/sankitdev/NamasteReact/blob/main/07_Finding_Path/README.md', 'Must Know'),
+      note('Let’s Get Classy', 'Class components, props, state, lifecycle methods, async effects, and cleanup.', 'https://github.com/sankitdev/NamasteReact/blob/main/08_Lets_get_classy/README.md', 'Must Know', 'lets-get-classy'),
+      note('Optimizing a React App', 'Custom hooks, modularity, single responsibility, lazy loading, Suspense, and code splitting.', 'https://github.com/sankitdev/NamasteReact/blob/main/09_Optimise_App/README.md', 'Must Know'),
+      note('Styling React with Tailwind', 'CSS approaches in React, CSS frameworks, Tailwind setup, utility classes, and pros and cons.', 'https://github.com/sankitdev/NamasteReact/blob/main/10_Tailwind/README.md', 'Must Know'),
+      note('Data Is the New Oil', 'Data layer thinking, context, prop drilling, lifting state, controlled components, and React data flow.', 'https://github.com/sankitdev/NamasteReact/blob/main/11_Data_new_oil/README.md', 'Must Know'),
+    ],
+  },
+  {
     title: 'Docker',
     shortTitle: 'Docker',
     eyebrow: 'DevOps / Tools',

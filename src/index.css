@@ -1289,6 +1289,28 @@ button {
   font-weight: 500;
 }
 
+.markdown-body .markdown-image {
+  width: 100%;
+  max-width: 72ch;
+  margin: 26px 0 34px;
+}
+
+.markdown-body .markdown-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.markdown-body .markdown-image figcaption {
+  margin-top: 8px;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .markdown-body code {
   border-radius: 5px;
   background: var(--color-soft-line);
