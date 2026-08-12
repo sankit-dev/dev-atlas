@@ -1,14 +1,21 @@
 export function Brand() {
   return (
     <a
-      aria-label="Learning Atlas home"
+      aria-label="DevAtlas home"
       className="flex items-center gap-2 text-sm font-extrabold tracking-normal text-(--color-text)"
       href="#top"
     >
-      <span className="grid size-7 place-items-center rounded-[9px] bg-(--color-inverse-bg) font-mono text-[10px] tracking-normal text-(--color-inverse-text)">
-        LA
+      <img
+        alt=""
+        className="size-7 rounded-[9px]"
+        height="28"
+        src="/favicon.svg"
+        width="28"
+      />
+      <span>
+        <span className="text-(--color-accent-strong)">Dev</span>
+        <span className="text-(--color-text)">Atlas</span>
       </span>
-      Learning Atlas
     </a>
   )
 }
