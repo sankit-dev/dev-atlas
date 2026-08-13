@@ -1,4 +1,4 @@
-import { tracks } from '../data/tracks'
+import { countNotes, flattenNotes, tracks } from '../data/tracks'
 import { Wrap } from './PageShell'
 
 type RoadmapProps = {
@@ -21,10 +21,12 @@ export function Roadmap({ completedNoteSlugs }: RoadmapProps) {
 
         <div className="border-l border-(--color-line)">
           {tracks.map((track, index) => {
-            const completedCount = track.topics.filter((topic) =>
+            const notes = flattenNotes(track.topics)
+            const noteCount = countNotes(track.topics)
+            const completedCount = notes.filter((topic) =>
               completedNoteSlugs.has(topic.slug),
             ).length
-            const isComplete = completedCount === track.topics.length
+            const isComplete = completedCount === noteCount
             const hasStarted = completedCount > 0
 
             return (
@@ -45,7 +47,7 @@ export function Roadmap({ completedNoteSlugs }: RoadmapProps) {
                 </p>
                 {hasStarted && (
                   <p className="roadmap-step__progress">
-                    {completedCount} of {track.topics.length} notes complete
+                    {completedCount} of {noteCount} notes complete
                   </p>
                 )}
               </div>

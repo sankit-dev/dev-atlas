@@ -1,6 +1,6 @@
 import { useMemo, useState, type CSSProperties } from 'react'
-import type { Accent, Track } from '../data/tracks'
-import { totalNoteCount, tracks } from '../data/tracks'
+import type { Accent, Note, Track } from '../data/tracks'
+import { countNotes, flattenNotes, totalNoteCount, tracks } from '../data/tracks'
 import { Wrap } from './PageShell'
 
 const trackAccentColor: Record<Accent, string> = {
@@ -15,7 +15,7 @@ function getTrackSearchText(track: Track) {
   return [
     track.title,
     track.description,
-    ...track.topics.flatMap((topic) => [
+    ...flattenNotes(track.topics).flatMap((topic) => [
       topic.title,
       topic.description,
       topic.priority ?? '',
@@ -173,6 +173,38 @@ function TrackCard({ index, isExpanded, onToggle, track }: TrackCardProps) {
   const topics = isExpanded ? track.topics : track.topics.slice(0, 3)
   const firstTopic = track.topics[0]
   const accent = trackAccentColor[track.accent]
+  const noteCount = countNotes(track.topics)
+  const flatNotes = flattenNotes(track.topics)
+
+  const renderTopic = (topic: Note, depth = 0) => {
+    const topicIndex = flatNotes.findIndex(
+      (candidate) => candidate.slug === topic.slug,
+    )
+
+    return (
+      <li
+        className={depth > 0 ? 'library-topic-list__child' : undefined}
+        key={topic.slug}
+        style={{ '--topic-depth': depth } as CSSProperties}
+      >
+        <span className="library-topic-list__index">
+          {String(topicIndex + 1).padStart(2, '0')}
+        </span>
+        <a href={`#/notes/${topic.slug}`}>
+          <strong>{topic.title}</strong>
+          <span>{topic.description}</span>
+        </a>
+        {topic.priority && (
+          <span className="library-topic-list__badge">{topic.priority}</span>
+        )}
+        {isExpanded && Boolean(topic.children?.length) && (
+          <ol className="library-topic-list__children">
+            {topic.children?.map((childTopic) => renderTopic(childTopic, depth + 1))}
+          </ol>
+        )}
+      </li>
+    )
+  }
 
   return (
     <article
@@ -184,7 +216,7 @@ function TrackCard({ index, isExpanded, onToggle, track }: TrackCardProps) {
           {String(index + 1).padStart(2, '0')}
         </span>
         <span className="eyebrow">{track.eyebrow}</span>
-        <span className="library-card__count">{track.status}</span>
+        <span className="library-card__count">{noteCount} notes</span>
       </div>
 
       <div className="library-card__body">
@@ -197,25 +229,12 @@ function TrackCard({ index, isExpanded, onToggle, track }: TrackCardProps) {
           Start learning
         </a>
         <button className="library-card__ghost" onClick={onToggle} type="button">
-          {isExpanded ? 'Collapse' : `${track.topics.length} topics`}
+          {isExpanded ? 'Collapse' : `${noteCount} topics`}
         </button>
       </div>
 
       <ol className="library-topic-list">
-        {topics.map((topic, topicIndex) => (
-          <li key={topic.slug}>
-            <span className="library-topic-list__index">
-              {String(topicIndex + 1).padStart(2, '0')}
-            </span>
-            <a href={`#/notes/${topic.slug}`}>
-              <strong>{topic.title}</strong>
-              <span>{topic.description}</span>
-            </a>
-            {topic.priority && (
-              <span className="library-topic-list__badge">{topic.priority}</span>
-            )}
-          </li>
-        ))}
+        {topics.map((topic) => renderTopic(topic))}
       </ol>
 
       <button
@@ -223,7 +242,7 @@ function TrackCard({ index, isExpanded, onToggle, track }: TrackCardProps) {
         onClick={onToggle}
         type="button"
       >
-        {isExpanded ? 'Show less' : `View all ${track.topics.length} topics`}
+        {isExpanded ? 'Show less' : `View all ${noteCount} topics`}
         <span>{isExpanded ? '↑' : '↓'}</span>
       </button>
     </article>

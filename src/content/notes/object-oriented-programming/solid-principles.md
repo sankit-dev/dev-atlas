@@ -1,116 +1,151 @@
 ---
 title: "SOLID Principles"
 slug: "solid-principles"
-description: "Five practical design principles, their limits, and how they relate to functional programming."
+description: "Five object-oriented design principles that make code easier to change."
 track: "Object-Oriented Programming"
 ---
 
-SOLID is a set of five guidelines for keeping **object-oriented** code easy to change. It is not a law and it is not a reason to create five classes for a ten-line feature.
+# SOLID Principles
 
-Use it when a class is becoming hard to understand, test, or extend. The aim is low coupling and clear responsibilities.
+SOLID is a group of five object-oriented design principles.
 
-## The five principles
+They help you write code that is easier to:
 
-| Letter | Principle | Practical question |
-| --- | --- | --- |
-| S | Single Responsibility | Does this class have one clear reason to change? |
-| O | Open/Closed | Can I add a new variation without editing stable logic everywhere? |
-| L | Liskov Substitution | Can any subtype safely stand in for its parent? |
-| I | Interface Segregation | Is this contract small enough that implementers need every method? |
-| D | Dependency Inversion | Does high-level logic rely on a contract rather than one concrete tool? |
+- understand
+- test
+- extend
+- change safely
 
-## SOLID through one backend example
+SOLID is not a rule that says every feature needs many classes.
 
-Suppose an application sends a receipt after an invoice is paid. This version is tightly coupled to email:
+It is a way to notice design problems when code starts becoming hard to change.
+
+---
+
+# What does SOLID stand for?
+
+```plain text
+S → Single Responsibility Principle
+O → Open/Closed Principle
+L → Liskov Substitution Principle
+I → Interface Segregation Principle
+D → Dependency Inversion Principle
+```
+
+Each word matters.
+
+---
+
+# The main idea
+
+Bad object-oriented code usually has these problems:
+
+- One class does too many things.
+- Adding a new feature requires editing old stable code again and again.
+- Child classes break behavior expected from parent classes.
+- Interfaces force classes to implement methods they do not need.
+- Business logic is tightly coupled to concrete tools like database clients, email clients, or payment SDKs.
+
+SOLID gives names to these problems and suggests better structure.
+
+---
+
+# SOLID as a tree
+
+```plain text
+SOLID Principles
+├── S: Single Responsibility Principle
+├── O: Open/Closed Principle
+├── L: Liskov Substitution Principle
+├── I: Interface Segregation Principle
+└── D: Dependency Inversion Principle
+```
+
+Read them one by one.
+
+Do not try to memorize definitions first.
+
+Understand the problem each principle solves.
+
+---
+
+# Quick Summary
+
+<table header-row="true">
+<tr>
+<td>Letter</td>
+<td>Principle</td>
+<td>Simple Question</td>
+</tr>
+<tr>
+<td>S</td>
+<td>Single Responsibility</td>
+<td>Does this class have one clear reason to change?</td>
+</tr>
+<tr>
+<td>O</td>
+<td>Open/Closed</td>
+<td>Can I add new behavior without rewriting stable code?</td>
+</tr>
+<tr>
+<td>L</td>
+<td>Liskov Substitution</td>
+<td>Can a child type safely replace its parent type?</td>
+</tr>
+<tr>
+<td>I</td>
+<td>Interface Segregation</td>
+<td>Is this interface small enough for every implementer?</td>
+</tr>
+<tr>
+<td>D</td>
+<td>Dependency Inversion</td>
+<td>Does business logic depend on an abstraction instead of a concrete tool?</td>
+</tr>
+</table>
+
+---
+
+# One Common Example
+
+Imagine an application that handles invoice payment.
+
+Bad design often puts everything in one class:
 
 ```java
-class ReceiptService {
-    void sendReceipt(Invoice invoice) {
-        EmailClient client = new EmailClient();
-        client.send(invoice.customerEmail(), "Your receipt");
+class InvoiceService {
+    void payInvoice(Invoice invoice) {
+        // validate invoice
+        // calculate tax
+        // save payment in database
+        // send receipt email
+        // write audit log
     }
 }
 ```
 
-It is hard to test without email and awkward to add SMS later. Depend on a small contract instead:
+This looks convenient at first.
 
-```java
-interface ReceiptChannel {
-    void send(Invoice invoice);
-}
+But later, different changes hit the same class:
 
-class ReceiptService {
-    private final ReceiptChannel channel;
+- Tax rules change.
+- Database storage changes.
+- Email provider changes.
+- Audit logging changes.
+- Payment validation changes.
 
-    ReceiptService(ReceiptChannel channel) {
-        this.channel = channel;
-    }
+That is where SOLID becomes useful.
 
-    void sendReceipt(Invoice invoice) {
-        channel.send(invoice);
-    }
-}
+It helps separate responsibilities, hide change behind contracts, and make extension safer.
 
-class EmailReceiptChannel implements ReceiptChannel {
-    public void send(Invoice invoice) { /* email provider call */ }
-}
-```
+---
 
-This applies **DIP**: the business rule depends on `ReceiptChannel`, not `EmailClient`. It also makes an SMS channel an extension (**OCP**) and lets a test use a fake channel.
+# Interview Answer
 
-## S — Single Responsibility Principle
+If an interviewer asks:
 
-One class should have one coherent reason to change. It does not mean “one method” or “one tiny class.”
+> **What is SOLID?**
 
-`InvoicePdfRenderer` changes when the PDF format changes. `InvoiceRepository` changes when persistence changes. Putting both jobs in `InvoiceService` couples unrelated changes.
+You can answer:
 
-## O — Open/Closed Principle
-
-Prefer adding a new implementation behind a stable contract over repeatedly editing a long `if/else` chain. Do this only when variations are real and likely—not for imagined future options.
-
-## L — Liskov Substitution Principle
-
-If code accepts a `ReceiptChannel`, every implementation must honour that contract. A subtype that silently drops receipts or throws “not supported” for normal input breaks substitution.
-
-LSP is mainly a warning: a bad inheritance hierarchy is usually a modelling problem. Prefer a smaller interface or composition.
-
-## I — Interface Segregation Principle
-
-Do not create a giant interface that forces every implementation to pretend it can do everything.
-
-```java
-interface Exporter { void exportCsv(); void exportPdf(); void exportXml(); }
-
-// Better: each caller depends only on the capability it needs.
-interface CsvExporter { void exportCsv(); }
-interface PdfExporter { void exportPdf(); }
-```
-
-## Where does SOLID stand beside functional programming?
-
-SOLID was named for object-oriented design, especially systems with mutable state, interfaces, and inheritance. Functional programming solves some of the same problems differently:
-
-| Design goal | OOP / SOLID approach | Functional approach |
-| --- | --- | --- |
-| Limit responsibility | Focused class | Small focused function/module |
-| Avoid mutation bugs | Encapsulate mutable state | Prefer immutable data and pure functions |
-| Swap behaviour | Interface + implementation | Pass a function as a value |
-| Make tests easy | Depend on a contract / inject a fake | Test pure functions with inputs and outputs |
-
-For a calculation, a plain function is usually clearest:
-
-```java
-BigDecimal applyDiscount(BigDecimal amount, BigDecimal percent) {
-    return amount.subtract(amount.multiply(percent));
-}
-```
-
-For coordinating an external provider, an interface and object can be clearer because there is state, configuration, and a dependency to manage. Modern Java code often uses both styles in the same feature.
-
-## A useful warning
-
-Do not turn every function into a class, every field into a getter/setter, or every possible variation into an interface. SOLID should reduce complexity. If it adds ceremony without a real change boundary, keep the code simpler.
-
-## Interview answer in one breath
-
-SOLID is five object-oriented design principles that reduce coupling and make changes safer: focused responsibilities, extension through contracts, safe subtypes, focused interfaces, and dependencies on abstractions. Functional programming shares goals such as testability and low coupling, but often reaches them with pure functions and immutable data instead of objects and interfaces.
+SOLID is a set of five object-oriented design principles: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion. These principles help reduce coupling and make code easier to understand, test, and extend. They are guidelines, not strict rules, and should be applied when they reduce complexity.

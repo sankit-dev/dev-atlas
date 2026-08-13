@@ -1,5 +1,6 @@
-import type { MouseEvent } from 'react'
+import { useState, type CSSProperties, type MouseEvent } from 'react'
 import type { Note, Track } from '../data/tracks'
+import { flattenNotes } from '../data/tracks'
 import { getMarkdownNote } from '../data/markdownNotes'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { Wrap } from './PageShell'
@@ -58,21 +59,29 @@ export function NoteReader({
   onNavigateNote,
   track,
 }: NoteReaderProps) {
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [expandedBranches, setExpandedBranches] = useState<Set<string>>(
+    () => new Set(),
+  )
+  const [collapsedBranches, setCollapsedBranches] = useState<Set<string>>(
+    () => new Set(),
+  )
   const markdownNote = getMarkdownNote(track.title, note.slug)
   const body = markdownNote?.body
     ? removeDuplicateTitle(markdownNote.body, note.title)
     : undefined
-  const currentNoteIndex = track.topics.findIndex(
+  const flatNotes = flattenNotes(track.topics)
+  const currentNoteIndex = flatNotes.findIndex(
     (trackNote) => trackNote.slug === note.slug,
   )
   const previousNote =
-    currentNoteIndex > 0 ? track.topics[currentNoteIndex - 1] : undefined
+    currentNoteIndex > 0 ? flatNotes[currentNoteIndex - 1] : undefined
   const nextNote =
-    currentNoteIndex < track.topics.length - 1
-      ? track.topics[currentNoteIndex + 1]
+    currentNoteIndex < flatNotes.length - 1
+      ? flatNotes[currentNoteIndex + 1]
       : undefined
   const progressPercent = Math.round(
-    ((currentNoteIndex + 1) / track.topics.length) * 100,
+    ((currentNoteIndex + 1) / flatNotes.length) * 100,
   )
   const nextCourseNote = !nextNote ? nextTrack?.topics[0] : undefined
 
@@ -88,59 +97,171 @@ export function NoteReader({
     onNavigateNote(targetNote, options)
   }
 
+  const isBranchActive = (branchNote: Note): boolean =>
+    branchNote.slug === note.slug ||
+    Boolean(branchNote.children?.some((childNote) => isBranchActive(childNote)))
+
+  const toggleBranch = (branchSlug: string, isOpen: boolean) => {
+    setExpandedBranches((currentBranches) => {
+      const nextBranches = new Set(currentBranches)
+
+      if (isOpen) {
+        nextBranches.delete(branchSlug)
+      } else {
+        nextBranches.add(branchSlug)
+      }
+
+      return nextBranches
+    })
+
+    setCollapsedBranches((currentBranches) => {
+      const nextBranches = new Set(currentBranches)
+
+      if (isOpen) {
+        nextBranches.add(branchSlug)
+      } else {
+        nextBranches.delete(branchSlug)
+      }
+
+      return nextBranches
+    })
+  }
+
+  const renderSidebarNote = (trackNote: Note, depth = 0) => {
+    const isActive = trackNote.slug === note.slug
+    const isCompleted = completedNoteSlugs.has(trackNote.slug)
+    const hasChildren = Boolean(trackNote.children?.length)
+    const childNotes = trackNote.children ? flattenNotes(trackNote.children) : []
+    const completedChildCount = childNotes.filter((childNote) =>
+      completedNoteSlugs.has(childNote.slug),
+    ).length
+    const childProgressPercent = childNotes.length
+      ? Math.round((completedChildCount / childNotes.length) * 100)
+      : 0
+    const isOpen =
+      !collapsedBranches.has(trackNote.slug) &&
+      (expandedBranches.has(trackNote.slug) || isBranchActive(trackNote))
+    const noteIndex = flatNotes.findIndex(
+      (candidate) => candidate.slug === trackNote.slug,
+    )
+
+    return (
+      <li
+        className={depth > 0 ? 'note-sidebar-child-item' : undefined}
+        key={trackNote.slug}
+      >
+        <div
+          className="note-sidebar-row"
+          style={{ '--note-depth': depth } as CSSProperties}
+        >
+          <a
+            className={`note-sidebar-link grid grid-cols-[24px_1fr] gap-2 border-t border-(--color-soft-line) py-3 text-[12px] leading-[1.35] transition-colors ${
+              isActive
+                ? 'font-extrabold text-(--color-text)'
+                : 'text-(--color-muted) hover:text-(--color-accent-strong)'
+            }`}
+            data-completed={isCompleted}
+            href={`#/notes/${trackNote.slug}`}
+            onClick={(event) => handleNoteClick(event, trackNote)}
+          >
+            <span className="font-mono text-[10px]">
+              {isCompleted ? '✓' : String(noteIndex + 1).padStart(2, '0')}
+            </span>
+            <span className="note-sidebar-link__content">
+              <span className="note-sidebar-link__title">
+                {trackNote.title}
+                {hasChildren && (
+                  <span
+                    className="note-sidebar-branch-progress"
+                    data-complete={completedChildCount === childNotes.length}
+                  >
+                    {completedChildCount}/{childNotes.length}
+                  </span>
+                )}
+              </span>
+              {hasChildren && (
+                <span className="note-sidebar-branch-meter" aria-hidden="true">
+                  <span style={{ width: `${childProgressPercent}%` }} />
+                </span>
+              )}
+            </span>
+          </a>
+
+          {hasChildren && (
+            <button
+              aria-expanded={isOpen}
+              aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${trackNote.title}`}
+              className="note-sidebar-branch-toggle"
+              type="button"
+              onClick={() => toggleBranch(trackNote.slug, isOpen)}
+            >
+              {isOpen ? '−' : '+'}
+            </button>
+          )}
+        </div>
+
+        {hasChildren && isOpen && (
+          <ol className="note-sidebar-children m-0 list-none p-0">
+            {trackNote.children?.map((childNote) =>
+              renderSidebarNote(childNote, depth + 1),
+            )}
+          </ol>
+        )}
+      </li>
+    )
+  }
+
   return (
     <main className="note-reader-shell">
       <Wrap>
         <div className="note-reader-grid grid grid-cols-[260px_minmax(0,1fr)] gap-12 max-[980px]:grid-cols-1">
           <aside className="note-reader-sidebar border-r border-(--color-line) pr-6 max-[980px]:border-r-0 max-[980px]:border-b max-[980px]:pr-0 max-[980px]:pb-6">
-            <a
-              className="mb-7 inline-block text-xs font-extrabold text-(--color-muted) transition-colors hover:text-(--color-accent-strong)"
-              href="#library"
-            >
-              Back to library
-            </a>
+            <div className="note-reader-sidebar__summary">
+              <div className="min-w-0">
+                <p className="eyebrow m-0 text-(--color-accent)">
+                  {track.title}
+                </p>
+                <p className="m-0 mt-2 font-mono text-[11px] text-(--color-muted)">
+                  {currentNoteIndex + 1} of {flatNotes.length} notes
+                </p>
+              </div>
+              <button
+                aria-controls="note-reader-topic-list"
+                aria-expanded={isMobileSidebarOpen}
+                className="note-reader-sidebar__toggle"
+                type="button"
+                onClick={() => setIsMobileSidebarOpen((isOpen) => !isOpen)}
+              >
+                {isMobileSidebarOpen ? 'Hide topics' : 'Show topics'}
+              </button>
+            </div>
 
-            <p className="eyebrow m-0 text-(--color-accent)">
-              {track.title}
-            </p>
             <div className="mt-4 mb-5 h-2 overflow-hidden rounded-full bg-(--color-soft-line)">
               <div
                 className="h-full bg-(--color-accent-strong)"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-            <p className="m-0 mb-5 font-mono text-[11px] text-(--color-muted)">
-              {currentNoteIndex + 1} of {track.topics.length} notes
-            </p>
 
-            <nav aria-label={`${track.title} notes`}>
+            <div
+              className={`note-reader-sidebar__body ${
+                isMobileSidebarOpen ? 'is-open' : ''
+              }`}
+              id="note-reader-topic-list"
+            >
+              <a
+                className="mb-5 inline-block text-xs font-extrabold text-(--color-muted) transition-colors hover:text-(--color-accent-strong)"
+                href="#library"
+              >
+                Back to library
+              </a>
+
+              <nav aria-label={`${track.title} notes`}>
               <ol className="m-0 list-none p-0">
-                {track.topics.map((trackNote, index) => {
-                  const isActive = trackNote.slug === note.slug
-                  const isCompleted = completedNoteSlugs.has(trackNote.slug)
-
-                  return (
-                    <li key={trackNote.slug}>
-                      <a
-                        className={`note-sidebar-link grid grid-cols-[24px_1fr] gap-2 border-t border-(--color-soft-line) py-3 text-[12px] leading-[1.35] transition-colors ${
-                          isActive
-                            ? 'font-extrabold text-(--color-text)'
-                            : 'text-(--color-muted) hover:text-(--color-accent-strong)'
-                        }`}
-                        data-completed={isCompleted}
-                        href={`#/notes/${trackNote.slug}`}
-                        onClick={(event) => handleNoteClick(event, trackNote)}
-                      >
-                        <span className="font-mono text-[10px]">
-                          {isCompleted ? '✓' : String(index + 1).padStart(2, '0')}
-                        </span>
-                        <span>{trackNote.title}</span>
-                      </a>
-                    </li>
-                  )
-                })}
+                {track.topics.map((trackNote) => renderSidebarNote(trackNote))}
               </ol>
-            </nav>
+              </nav>
+            </div>
           </aside>
 
           <article className="note-reader-content min-w-0">
@@ -160,19 +281,10 @@ export function NoteReader({
             </header>
 
             {body ? (
-              <>
-                <aside className="note-practice-callout" aria-label="Practice reminder">
-                  <span>Practice, don’t just read</span>
-                  <p>
-                    Read this note, build one small example, then explain it aloud
-                    without looking. That is what makes the knowledge interview-ready.
-                  </p>
-                </aside>
-                <MarkdownRenderer
-                  key={`${track.title}:${note.slug}`}
-                  markdown={body}
-                />
-              </>
+              <MarkdownRenderer
+                key={`${track.title}:${note.slug}`}
+                markdown={body}
+              />
             ) : (
               <div className="max-w-190 border-t border-(--color-line) pt-8">
                 <h2 className="m-0 text-[28px] tracking-normal">
