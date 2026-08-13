@@ -10,7 +10,7 @@ priority: "Must Know"
 - Its time to take those knowledge and build something.
 - Akshay decided to go with Food Ordering App aka Swiggy Clone.
 
-## Before Making Any Project 🛠️
+## Before Making Any Project
 
 - Before making any web app we must have wireframe in mind.
 - How will it look? And other planning. For example I created below wireframe for my app (inspired by Swiggy)
@@ -37,17 +37,17 @@ priority: "Must Know"
 
 - Above example is just a outline for our app. But it could have much more complex strucutres.
 
-### Let's Talk About JSX ✨
+### Let's Talk About JSX
 
 - We talk about JSX in last lecture as well but in this lecture something were discussed
 
-## JSX Returns Only One Parent Element 🚨
+## JSX Returns Only One Parent Element
 
 - In JSX, you must return a **single parent element** or **component** from a function component or render method.
 
 ## Options:
 
-### Wrap in a Single Element 📦
+### Wrap in a Single Element
 
 - We can use parent element like `<div>`, `<section>`, etc
 
@@ -64,7 +64,7 @@ function MyComponent() {
 
 - But using parent element will add another node to our `root` element. To avoid this we can use below method.
 
-### Use React Fragment 🧩
+### Use React Fragment
 
 - To avoid extra DOM nodes, use `React.Fragment` or the shorthand <>...</>.
 - `<React.Fragment></React.Fragment>` is a Function Componet of React.
@@ -81,12 +81,12 @@ function MyComponent() {
 }
 ```
 
-### Why Only One Parent? 🤔
+### Why Only One Parent?
 
-- JSX returns a single object representing the UI tree 🌳.
+- JSX returns a single object representing the UI tree .
 - JSX Ensures components are valid trees with one root node, essential for React rendering.
 
-### Can We Use React Fragments Inside React Fragments? 🤔
+### Can We Use React Fragments Inside React Fragments?
 
 - Yes! You can nest React Fragments within other React Fragments.
 
@@ -112,10 +112,10 @@ function NestedFragments() {
 }
 ```
 
-### Why Use Nested Fragments? 🤓
+### Why Use Nested Fragments?
 
-- It helps in logically organizing section without affecting the DOM strucutre 📦.
-- It is also useful for rendering parts of the UI conditionally 🔄.
+- It helps in logically organizing section without affecting the DOM strucutre .
+- It is also useful for rendering parts of the UI conditionally .
 
 Here is example:-
 
@@ -153,11 +153,11 @@ const user = { name: "John Doe", email: "john@example.com", location: "New York"
 
 ```
 
-### Note 📝
+### Note
 
 - Nested Fragments won't add extra elements to the DOM but will keep our JSX clean and organized!
 
-## Config Driven UI 📦
+## Config Driven UI
 
 - **Config Driven UI** is a design pattern where the structure and behavior of a user interface (UI) are determined by a configuration file or set of configuration data, rather than being hard-coded.
 - We control our front using a config that is why it is known as config driven UI.
@@ -165,11 +165,11 @@ const user = { name: "John Doe", email: "john@example.com", location: "New York"
 - **Swiggy:** Displays restaurant lists and offers based on the user's location. The UI adapts dynamically to show relevant data without hardcoding specific restaurants or offers.
 - **YouTube:** Provides personalized video recommendations. Each user sees different content based on their preferences, location, and viewing history, driven by configuration rather than hardcoded lists.
 
-### Key Point 📌
+### Key Point
 
 - **Config Driven UI** means the UI is not hardcoded. Instead, it is dynamically generated based on configuration data, making it flexible and adaptable to different users or scenarios.
 
-## Props ⚛️
+## Props
 
 - Props (short for "properties") allow us to pass data from a parent component to a child component.
 - Props are how components in React communicate with each other.
@@ -177,7 +177,7 @@ const user = { name: "John Doe", email: "john@example.com", location: "New York"
 - We can pass multiple props.
 - As Function Components are normal JavaScript Function so props are nothing but properties.
 
-### Key Concepts 🧩
+### Key Concepts
 
 1. **Immutable:**
 
@@ -191,7 +191,7 @@ const user = { name: "John Doe", email: "john@example.com", location: "New York"
 
 - Props can pass various types of data, including strings, numbers, arrays, objects, and functions.
 
-#### Example 🚀
+#### Example
 
 Here's a simple example to illustrate:
 
@@ -217,7 +217,7 @@ function App() {
 - When `UserProfile` is called in the `App`component, React bundles all the attributes (`name` and `age` in this case) into a single `props` object.
   This `props` object is passed to the UserProfile component, which can then access its properties using `props.name`, `props.age`, etc.
 
-### Destructuring Props ✂️
+### Destructuring Props
 
 - To make our code cleaner, we can destructure props object directly in the function signature:
 
@@ -232,13 +232,13 @@ function UserProfile({ name, age }) {
 }
 ```
 
-## Virtual DOM in React 🌐
+## Virtual DOM in React
 
 - The Virtual DOM is a key concept in React that helps optimize the process of updating the user interface (UI) efficiently.
 - It acts as an intermediary between the actual DOM (Document Object Model) and the React components, enabling faster updates and better performance.
 - Virtual DOM is needed for `Reconcilliation.`
 
-## Key Concepts 🧩
+## Key Concepts
 
 ### What is the Virtual DOM?
 
@@ -256,12 +256,12 @@ function UserProfile({ name, age }) {
 - **Efficient Updates:** Only the differences between the previous and current Virtual DOM are calculated.
   - React then efficiently updates only those parts of the real DOM that changed, rather than re-rendering the entire DOM.
 
-### Benefits 🌟
+### Benefits
 
 - **Performance:** By minimizing direct manipulations of the real DOM, React significantly improves performance and responsiveness.
 - **Efficiency:** The Virtual DOM allows React to batch and optimize updates, reducing the number of expensive DOM operations.
 
-## Why Not Use Index as Key in React? 🚫
+## Why Not Use Index as Key in React?
 
 1. **Unstable Keys:**
 

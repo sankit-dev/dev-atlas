@@ -7,6 +7,16 @@ track: "Object-Oriented Programming"
 
 # SOLID Principles
 
+# What problem is this solving?
+
+Object-oriented code often becomes hard to change when classes take too many responsibilities, depend on concrete tools, or expose contracts that do not match real behavior.
+
+SOLID gives names to these design problems and helps you fix them before every change becomes risky.
+
+---
+
+# Simple definition
+
 SOLID is a group of five object-oriented design principles.
 
 They help you write code that is easier to:
@@ -22,7 +32,7 @@ It is a way to notice design problems when code starts becoming hard to change.
 
 ---
 
-# What does SOLID stand for?
+# Better explanation
 
 ```plain text
 S → Single Responsibility Principle
@@ -47,6 +57,40 @@ Bad object-oriented code usually has these problems:
 - Business logic is tightly coupled to concrete tools like database clients, email clients, or payment SDKs.
 
 SOLID gives names to these problems and suggests better structure.
+
+---
+
+# Real example
+
+Imagine an application that handles invoice payment.
+
+Bad design often puts everything in one class:
+
+```java
+class InvoiceService {
+    void payInvoice(Invoice invoice) {
+        // validate invoice
+        // calculate tax
+        // save payment in database
+        // send receipt email
+        // write audit log
+    }
+}
+```
+
+This looks convenient at first.
+
+But later, different changes hit the same class:
+
+- Tax rules change.
+- Database storage changes.
+- Email provider changes.
+- Audit logging changes.
+- Payment validation changes.
+
+That is where SOLID becomes useful.
+
+It helps separate responsibilities, hide change behind contracts, and make extension safer.
 
 ---
 
@@ -106,37 +150,13 @@ Understand the problem each principle solves.
 
 ---
 
-# One Common Example
+# Common mistake
 
-Imagine an application that handles invoice payment.
+Do not apply SOLID by creating unnecessary abstractions everywhere.
 
-Bad design often puts everything in one class:
+SOLID should reduce complexity.
 
-```java
-class InvoiceService {
-    void payInvoice(Invoice invoice) {
-        // validate invoice
-        // calculate tax
-        // save payment in database
-        // send receipt email
-        // write audit log
-    }
-}
-```
-
-This looks convenient at first.
-
-But later, different changes hit the same class:
-
-- Tax rules change.
-- Database storage changes.
-- Email provider changes.
-- Audit logging changes.
-- Payment validation changes.
-
-That is where SOLID becomes useful.
-
-It helps separate responsibilities, hide change behind contracts, and make extension safer.
+If it adds ceremony without a real change boundary, keep the code simple.
 
 ---
 

@@ -7,6 +7,16 @@ track: "Databases & SQL"
 
 # Key-Value Databases
 
+# What problem is this solving?
+
+Some data only needs one fast lookup by a known key.
+
+For that kind of access, tables, joins, and complex query planning can be unnecessary overhead.
+
+---
+
+# Simple definition
+
 A key-value database stores data like a dictionary:
 
 ```plain text
@@ -43,7 +53,7 @@ Just fast lookup.
 
 ---
 
-# Redis Example
+# Real example
 
 Redis is commonly used for:
 
@@ -65,7 +75,7 @@ If the counter crosses the limit, block or slow down the user.
 
 ---
 
-# When key-value databases fit well
+# Better explanation
 
 Use a key-value database when:
 
@@ -100,6 +110,14 @@ Example:
 An order/payment system should usually not be modeled only as Redis keys.
 
 SQL is a better default there.
+
+---
+
+# Common mistake
+
+Do not use Redis as your main source of truth just because it is fast.
+
+Speed is useful, but if the data needs relationships, durable transactions, and reporting, SQL is usually a better fit.
 
 ---
 

@@ -6,9 +6,9 @@ track: "React / Namaste React"
 priority: "Must Know"
 ---
 
-## Methods of Writing CSS in React 🎨
+## Methods of Writing CSS in React
 
-### 1. **Inline Styles** 🖌️
+### 1. **Inline Styles**
 Inline styles involve applying CSS directly within React components using the `style` attribute.
 
 **Pros:**
@@ -21,7 +21,7 @@ Inline styles involve applying CSS directly within React components using the `s
 - **No Reusability**: Styles are tied to the component, making it harder to reuse across different components.
 - **Performance Concerns**: Frequent re-rendering may cause performance issues as styles are recalculated.
 
-### 2. **CSS Modules** 📦
+### 2. **CSS Modules**
 CSS Modules allow you to write CSS in separate files, but with scoped classes that are local to the component.
 
 **Pros:**
@@ -33,7 +33,7 @@ CSS Modules allow you to write CSS in separate files, but with scoped classes th
 - **Naming Complexity**: CSS class names are automatically scoped and may result in longer, less readable names.
 - **Increased Setup**: Additional configuration needed to set up CSS Modules in your build tool.
 
-### 3. **Styled Components** ✨
+### 3. **Styled Components**
 Styled Components is a library for styling React components using tagged template literals.
 
 **Pros:**
@@ -46,7 +46,7 @@ Styled Components is a library for styling React components using tagged templat
 - **Learning Curve**: Requires understanding of tagged template literals and additional syntax.
 - **Performance**: Can impact performance in large applications if not managed carefully.
 
-### 4. **Emotion** 🌈
+### 4. **Emotion**
 Emotion is a CSS-in-JS library that provides both styled components and a CSS object syntax.
 
 **Pros:**
@@ -59,7 +59,7 @@ Emotion is a CSS-in-JS library that provides both styled components and a CSS ob
 - **Learning Curve**: Requires learning additional API and syntax.
 - **Complexity**: May introduce complexity in understanding and managing styles.
 
-### 5. **Tailwind CSS** ⚡
+### 5. **Tailwind CSS**
 Tailwind CSS is a utility-first CSS framework that provides a large set of utility classes.
 
 **Pros:**
@@ -72,7 +72,7 @@ Tailwind CSS is a utility-first CSS framework that provides a large set of utili
 - **Steeper Learning Curve**: Requires learning the utility classes and how to configure the framework.
 - **Potential Overuse**: Can encourage overuse of utility classes, making HTML harder to read.
 
-### 6. **Bootstrap** 🧩
+### 6. **Bootstrap**
 Bootstrap is a widely-used CSS framework that provides a comprehensive set of responsive design components.
 
 **Pros:**
@@ -85,7 +85,7 @@ Bootstrap is a widely-used CSS framework that provides a comprehensive set of re
 - **Additional CSS**: Adds extra CSS to the project, which may impact performance.
 - **Customization Required**: May require significant customization to achieve a unique look.
 
-### 7. **Sass (SCSS)** 🧵
+### 7. **Sass (SCSS)**
 Sass (Syntactically Awesome Style Sheets) is a CSS preprocessor that extends CSS with features like variables, nesting, and mixins.
 
 **Pros:**
@@ -98,7 +98,7 @@ Sass (Syntactically Awesome Style Sheets) is a CSS preprocessor that extends CSS
 - **Complexity**: May introduce complexity in understanding and using advanced features.
 - **Overhead**: Adds an extra layer of preprocessing which might not be necessary for small projects.
 
-### 8. **Less** 🧵
+### 8. **Less**
 Less is another CSS preprocessor similar to Sass, with features for variables, mixins, and nesting.
 
 **Pros:**
@@ -111,9 +111,9 @@ Less is another CSS preprocessor similar to Sass, with features for variables, m
 - **Less Popular**: Not as widely used as Sass, resulting in fewer community resources and support.
 - **Customization**: May require additional configuration for advanced features.
 
-## Important CSS Libraries 🌐
+## Important CSS Libraries
 
-### 1. **Bootstrap** 🧩
+### 1. **Bootstrap**
 **Pros:**
 - **Comprehensive Components**: A wide range of pre-built, responsive components.
 - **Strong Documentation**: Extensive documentation and resources.
@@ -124,7 +124,7 @@ Less is another CSS preprocessor similar to Sass, with features for variables, m
 - **CSS Overhead**: Adds extra CSS, which can impact performance if not optimized.
 - **Customization Required**: Requires customization to achieve a unique design.
 
-### 2. **Tailwind CSS** ⚡
+### 2. **Tailwind CSS**
 **Pros:**
 - **Utility-First Approach**: Allows for quick styling with utility classes.
 - **Highly Customizable**: Configurable through a central configuration file.
@@ -135,7 +135,7 @@ Less is another CSS preprocessor similar to Sass, with features for variables, m
 - **Learning Curve**: Requires learning utility class names and configuration.
 - **Potential for Overuse**: Over-reliance on utility classes can lead to messy HTML.
 
-### 3. **Bulma** 🌿
+### 3. **Bulma**
 **Pros:**
 - **Flexbox-Based**: Utilizes Flexbox for modern layout capabilities.
 - **Simple Syntax**: Clean and readable syntax for styling.
@@ -146,7 +146,7 @@ Less is another CSS preprocessor similar to Sass, with features for variables, m
 - **Smaller Ecosystem**: Less extensive community and third-party support compared to Bootstrap.
 - **Less Comprehensive**: Fewer pre-built components compared to other frameworks.
 
-### 4. **Foundation** 🌉
+### 4. **Foundation**
 **Pros:**
 - **Responsive Design**: Built-in responsive design and layout options.
 - **Customizable**: Highly customizable to fit specific design needs.
@@ -157,7 +157,7 @@ Less is another CSS preprocessor similar to Sass, with features for variables, m
 - **Steeper Learning Curve**: Can be more complex to set up and customize.
 - **Performance Considerations**: May introduce additional CSS and JavaScript.
 
-### 5. **Materialize** 📦
+### 5. **Materialize**
 **Pros:**
 - **Material Design Principles**: Implements Google's Material Design for a cohesive look.
 - **Ready-to-Use Components**: Includes a variety of pre-built components.
@@ -168,7 +168,7 @@ Less is another CSS preprocessor similar to Sass, with features for variables, m
 - **Performance Impact**: Adds extra CSS and JavaScript to the project.
 - **Customization Challenges**: Customizing beyond Material Design principles can be challenging.
 
-### 6. **Ant Design** 🏛️
+### 6. **Ant Design**
 **Pros:**
 - **Enterprise-Grade**: Focuses on enterprise applications with a comprehensive set of components.
 - **Strong Documentation**: Well-documented with clear guidelines.
@@ -179,7 +179,7 @@ Less is another CSS preprocessor similar to Sass, with features for variables, m
 - **Bundle Size**: May increase the bundle size with many components.
 - **Uniform Look**: Results in a uniform design unless customized.
 
-### 7. **Semantic UI** 📜
+### 7. **Semantic UI**
 **Pros:**
 - **Human-Friendly HTML**: Uses human-readable class names for styling.
 - **Comprehensive Components**: Includes a wide range of components and themes.
@@ -190,7 +190,7 @@ Less is another CSS preprocessor similar to Sass, with features for variables, m
 - **Customization**: Customizing beyond default themes can be challenging.
 - **Performance**: Large library size may affect performance.
 
-### 8. **Chakra UI** ⚙️
+### 8. **Chakra UI**
 **Pros:**
 - **Accessibility Focused**: Emphasizes accessibility and ease of use.
 - **Component-Based**: Provides a set of accessible, reusable components.
@@ -201,7 +201,7 @@ Less is another CSS preprocessor similar to Sass, with features for variables, m
 - **Learning Curve**: May require learning new API and concepts.
 - **Performance Overhead**: Can add extra performance overhead if not optimized.
 
-## Summary 📋
+## Summary
 
 Each method and library has its own set of advantages and disadvantages. Choosing the right approach depends on the needs of your project, including factors like ease of use, performance, and maintainability. Here’s a quick overview:
 
@@ -223,4 +223,4 @@ Each method and library has its own set of advantages and disadvantages. Choosin
 - **Semantic UI**: Uses human-friendly class names and includes many components but adds significant library size and customization challenges.
 - **Chakra UI**: Accessibility-focused with customizable components but adds extra dependencies and may have performance overhead.
 
-Choose the method or library that aligns with your project requirements and team preferences to ensure the best results for your application. 🌟
+Choose the method or library that aligns with your project requirements and team preferences to ensure the best results for your application.

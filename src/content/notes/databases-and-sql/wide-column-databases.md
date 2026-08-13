@@ -7,6 +7,16 @@ track: "Databases & SQL"
 
 # Wide-Column Databases
 
+# What problem is this solving?
+
+Some systems write huge amounts of data continuously across many machines.
+
+Traditional relational modeling may not be the best fit when the workload is massive, distributed, and mostly query-pattern based.
+
+---
+
+# Simple definition
+
 A wide-column database stores rows with flexible columns across distributed machines.
 
 Popular examples:
@@ -19,7 +29,7 @@ These databases are often used for huge write-heavy workloads.
 
 ---
 
-# What problem do they solve?
+# Real example
 
 Imagine millions of devices continuously sending events:
 
@@ -41,7 +51,7 @@ Wide-column databases can fit this type of workload.
 
 ---
 
-# Example data
+# Better explanation
 
 ```plain text
 device_id   timestamp           temperature
@@ -92,6 +102,14 @@ Avoid wide-column databases when:
 - data volume is moderate and SQL works fine
 
 For many normal backend apps, PostgreSQL or MySQL is simpler.
+
+---
+
+# Common mistake
+
+Do not choose Cassandra for a normal CRUD application just because it scales.
+
+It is powerful, but it expects careful data modeling around known access patterns.
 
 ---
 

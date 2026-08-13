@@ -7,6 +7,18 @@ track: "Object-Oriented Programming"
 
 # Interface Segregation Principle
 
+# What problem is this solving?
+
+Some interfaces become too large and force classes to implement methods they do not need.
+
+That leads to fake methods, empty methods, or `UnsupportedOperationException`.
+
+ISP solves this by keeping interfaces focused.
+
+---
+
+# Simple definition
+
 The **Interface Segregation Principle** says:
 
 > **Clients should not be forced to depend on methods they do not use.**
@@ -39,7 +51,7 @@ The guideline is:
 
 ---
 
-# Bad Example
+# Bad/naive example
 
 Suppose we create one big interface:
 
@@ -83,7 +95,7 @@ This is bad.
 
 ---
 
-# Better Design
+# Better explanation
 
 Split the interface:
 
@@ -119,7 +131,7 @@ This follows ISP.
 
 ---
 
-# Backend Example
+# Real example
 
 Bad interface:
 
@@ -166,6 +178,14 @@ class UserProfileService {
     }
 }
 ```
+
+---
+
+# Common mistake
+
+Do not create one giant interface just because the methods are related to the same broad domain.
+
+Interfaces should match what callers actually need.
 
 ---
 

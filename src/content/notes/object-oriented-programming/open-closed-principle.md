@@ -7,6 +7,18 @@ track: "Object-Oriented Programming"
 
 # Open/Closed Principle
 
+# What problem is this solving?
+
+Some code becomes risky because every new variation requires editing the same old class.
+
+When a payment service has a long `if/else` chain, adding a new payment type means changing already-tested payment logic again.
+
+OCP solves this by letting you add new behavior through extension.
+
+---
+
+# Simple definition
+
 The **Open/Closed Principle** says:
 
 > **Software entities should be open for extension but closed for modification.**
@@ -45,7 +57,7 @@ Modification means changing existing code that already works.
 
 ---
 
-# Bad Example
+# Bad/naive example
 
 Suppose payment logic is written like this:
 
@@ -79,7 +91,7 @@ That is the problem.
 
 ---
 
-# Better Design
+# Better explanation
 
 Create a contract:
 
@@ -137,7 +149,7 @@ That is Open/Closed Principle.
 
 ---
 
-# When not to use it
+# Common mistake
 
 Do not create abstractions for imaginary future cases.
 

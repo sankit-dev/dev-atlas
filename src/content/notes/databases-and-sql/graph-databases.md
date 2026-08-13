@@ -7,6 +7,16 @@ track: "Databases & SQL"
 
 # Graph Databases
 
+# What problem is this solving?
+
+Some data is mostly about relationships.
+
+If the main question is "how are these things connected?", a graph model can be easier than many joins across relational tables.
+
+---
+
+# Simple definition
+
 A graph database stores data as:
 
 - nodes
@@ -19,7 +29,7 @@ Popular examples:
 
 ---
 
-# What is a graph?
+# Real example
 
 A graph is a structure made of objects and connections.
 
@@ -39,7 +49,7 @@ Here:
 
 ---
 
-# Why graph databases exist
+# Better explanation
 
 Some questions are mostly about relationships.
 
@@ -93,6 +103,14 @@ Avoid graph databases when:
 Example:
 
 A simple product inventory system usually does not need a graph database.
+
+---
+
+# Common mistake
+
+Do not use a graph database only because your data has relationships.
+
+SQL also handles relationships well. Graph databases are useful when relationship traversal is the core operation.
 
 ---
 

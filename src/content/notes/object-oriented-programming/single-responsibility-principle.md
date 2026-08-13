@@ -7,6 +7,18 @@ track: "Object-Oriented Programming"
 
 # Single Responsibility Principle
 
+# What problem is this solving?
+
+Some classes become difficult to change because they contain many unrelated jobs.
+
+When validation, calculation, database saving, and email sending all live in one class, many unrelated changes touch the same file.
+
+SRP solves this by keeping each class focused.
+
+---
+
+# Simple definition
+
 The **Single Responsibility Principle** says:
 
 > **A class should have one reason to change.**
@@ -47,7 +59,7 @@ You apply it when one class is becoming hard to understand or change.
 
 ---
 
-# Bad Example
+# Bad/naive example
 
 Suppose we have this class:
 
@@ -85,7 +97,7 @@ That violates SRP.
 
 ---
 
-# Better Design
+# Better explanation
 
 Split responsibilities into focused classes:
 
@@ -152,7 +164,7 @@ Now each class has one clear reason to change.
 
 ---
 
-# Important Clarification
+# Common mistake
 
 SRP does not mean:
 

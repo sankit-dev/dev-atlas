@@ -2,7 +2,11 @@ import { useState, type CSSProperties, type MouseEvent } from 'react'
 import type { Note, Track } from '../data/tracks'
 import { flattenNotes } from '../data/tracks'
 import { getMarkdownNote } from '../data/markdownNotes'
-import { MarkdownRenderer } from './MarkdownRenderer'
+import {
+  getMarkdownToc,
+  MarkdownRenderer,
+  type MarkdownTocItem,
+} from './MarkdownRenderer'
 import { Wrap } from './PageShell'
 
 type NoteReaderProps = {
@@ -52,6 +56,95 @@ function removeDuplicateTitle(markdown: string, title: string) {
     .trim()
 }
 
+function getNotePath(notes: Note[], targetSlug: string): Note[] {
+  for (const candidate of notes) {
+    if (candidate.slug === targetSlug) {
+      return [candidate]
+    }
+
+    if (candidate.children) {
+      const childPath = getNotePath(candidate.children, targetSlug)
+
+      if (childPath.length) {
+        return [candidate, ...childPath]
+      }
+    }
+  }
+
+  return []
+}
+
+function createStarterMarkdown(note: Note, track: Track, parentPath: Note[]) {
+  const branchLabel = parentPath.length
+    ? parentPath.map((pathNote) => pathNote.title).join(' -> ')
+    : track.title
+
+  return [
+    `This is a starter note for **${note.title}**.`,
+    '',
+    `It belongs to **${branchLabel}** in the **${track.title}** track.`,
+    '',
+    '## What this topic is about',
+    '',
+    note.description,
+    '',
+    '## Why it matters',
+    '',
+    `You need this topic because it connects directly to ${track.shortTitle} work, interviews, and practical implementation. Do not treat it as a definition-only topic; try to connect it with code you would actually write.`,
+    '',
+    '## How to practice',
+    '',
+    '- Write one tiny example from scratch.',
+    '- Change the example and predict the output before running it.',
+    '- Explain the topic aloud in two minutes.',
+    '- Note one common mistake or edge case.',
+    '',
+    '## Interview angle',
+    '',
+    `If asked about ${note.title}, start with the problem it solves, then give a small example, then mention one real-world use case.`,
+  ].join('\n')
+}
+
+function NoteTableOfContents({
+  items,
+  variant,
+}: {
+  items: MarkdownTocItem[]
+  variant: 'desktop' | 'mobile'
+}) {
+  if (items.length < 2) {
+    return null
+  }
+
+  const tocList = (
+    <nav aria-label="On this page">
+      <ol>
+        {items.map((item) => (
+          <li data-level={item.level} key={item.id}>
+            <a href={`#${item.id}`}>{item.title}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+
+  if (variant === 'mobile') {
+    return (
+      <details className="note-toc-mobile">
+        <summary>On this page</summary>
+        {tocList}
+      </details>
+    )
+  }
+
+  return (
+    <aside className="note-toc-desktop" aria-label="On this page">
+      <p>On this page</p>
+      {tocList}
+    </aside>
+  )
+}
+
 export function NoteReader({
   completedNoteSlugs,
   note,
@@ -66,11 +159,14 @@ export function NoteReader({
   const [collapsedBranches, setCollapsedBranches] = useState<Set<string>>(
     () => new Set(),
   )
+  const flatNotes = flattenNotes(track.topics)
+  const notePath = getNotePath(track.topics, note.slug)
+  const parentPath = notePath.slice(0, -1)
   const markdownNote = getMarkdownNote(track.title, note.slug)
   const body = markdownNote?.body
     ? removeDuplicateTitle(markdownNote.body, note.title)
-    : undefined
-  const flatNotes = flattenNotes(track.topics)
+    : createStarterMarkdown(note, track, parentPath)
+  const tocItems = getMarkdownToc(body)
   const currentNoteIndex = flatNotes.findIndex(
     (trackNote) => trackNote.slug === note.slug,
   )
@@ -84,6 +180,9 @@ export function NoteReader({
     ((currentNoteIndex + 1) / flatNotes.length) * 100,
   )
   const nextCourseNote = !nextNote ? nextTrack?.topics[0] : undefined
+  const nextIncompleteNote = flatNotes.find(
+    (trackNote) => !completedNoteSlugs.has(trackNote.slug),
+  )
 
   const handleNoteClick = (
     event: MouseEvent<HTMLAnchorElement>,
@@ -94,6 +193,7 @@ export function NoteReader({
     },
   ) => {
     event.preventDefault()
+    setIsMobileSidebarOpen(false)
     onNavigateNote(targetNote, options)
   }
 
@@ -130,6 +230,7 @@ export function NoteReader({
   const renderSidebarNote = (trackNote: Note, depth = 0) => {
     const isActive = trackNote.slug === note.slug
     const isCompleted = completedNoteSlugs.has(trackNote.slug)
+    const isNextIncomplete = nextIncompleteNote?.slug === trackNote.slug
     const hasChildren = Boolean(trackNote.children?.length)
     const childNotes = trackNote.children ? flattenNotes(trackNote.children) : []
     const completedChildCount = childNotes.filter((childNote) =>
@@ -161,6 +262,7 @@ export function NoteReader({
                 : 'text-(--color-muted) hover:text-(--color-accent-strong)'
             }`}
             data-completed={isCompleted}
+            data-next-incomplete={isNextIncomplete}
             href={`#/notes/${trackNote.slug}`}
             onClick={(event) => handleNoteClick(event, trackNote)}
           >
@@ -214,7 +316,7 @@ export function NoteReader({
   return (
     <main className="note-reader-shell">
       <Wrap>
-        <div className="note-reader-grid grid grid-cols-[260px_minmax(0,1fr)] gap-12 max-[980px]:grid-cols-1">
+        <div className="note-reader-grid grid grid-cols-[260px_minmax(0,1fr)_190px] gap-12 max-[1180px]:grid-cols-[240px_minmax(0,1fr)] max-[980px]:grid-cols-1">
           <aside className="note-reader-sidebar border-r border-(--color-line) pr-6 max-[980px]:border-r-0 max-[980px]:border-b max-[980px]:pr-0 max-[980px]:pb-6">
             <div className="note-reader-sidebar__summary">
               <div className="min-w-0">
@@ -249,6 +351,22 @@ export function NoteReader({
               }`}
               id="note-reader-topic-list"
             >
+              <div className="note-topic-drawer__header">
+                <div>
+                  <p>{track.shortTitle}</p>
+                  <span>
+                    {currentNoteIndex + 1} of {flatNotes.length} notes
+                  </span>
+                </div>
+                <button
+                  aria-label="Close topics"
+                  type="button"
+                  onClick={() => setIsMobileSidebarOpen(false)}
+                >
+                  Close
+                </button>
+              </div>
+
               <a
                 className="mb-5 inline-block text-xs font-extrabold text-(--color-muted) transition-colors hover:text-(--color-accent-strong)"
                 href="#library"
@@ -262,12 +380,42 @@ export function NoteReader({
               </ol>
               </nav>
             </div>
+            {isMobileSidebarOpen && (
+              <button
+                aria-label="Close topics"
+                className="note-topic-drawer__backdrop"
+                type="button"
+                onClick={() => setIsMobileSidebarOpen(false)}
+              />
+            )}
           </aside>
 
           <article className="note-reader-content min-w-0">
             <header className="mb-10 max-w-205">
-              <p className="kicker">{track.title}</p>
-              <h1 className="m-0 text-[clamp(42px,6vw,76px)] font-bold leading-[0.92] tracking-normal">
+              <nav className="note-breadcrumb" aria-label="Breadcrumb">
+                <ol>
+                  <li>
+                    <a href="#library">Library</a>
+                  </li>
+                  <li>
+                    <span>{track.title}</span>
+                  </li>
+                  {parentPath.map((pathNote) => (
+                    <li key={pathNote.slug}>
+                      <a
+                        href={`#/notes/${pathNote.slug}`}
+                        onClick={(event) => handleNoteClick(event, pathNote)}
+                      >
+                        {pathNote.title}
+                      </a>
+                    </li>
+                  ))}
+                  <li aria-current="page">
+                    <span>{note.title}</span>
+                  </li>
+                </ol>
+              </nav>
+              <h1 className="m-0 max-w-205 text-[clamp(34px,4.8vw,56px)] font-bold leading-[1.02] tracking-normal">
                 {note.title}
               </h1>
               <p className="mt-6 mb-0 text-base leading-[1.8] text-(--color-muted)">
@@ -280,22 +428,12 @@ export function NoteReader({
               )}
             </header>
 
-            {body ? (
-              <MarkdownRenderer
-                key={`${track.title}:${note.slug}`}
-                markdown={body}
-              />
-            ) : (
-              <div className="max-w-190 border-t border-(--color-line) pt-8">
-                <h2 className="m-0 text-[28px] tracking-normal">
-                  Note body pending
-                </h2>
-                <p className="text-sm leading-[1.8] text-(--color-muted)">
-                  This note is listed in the study roadmap, but its local Markdown
-                  body has not been written yet.
-                </p>
-              </div>
-            )}
+            <NoteTableOfContents items={tocItems} variant="mobile" />
+
+            <MarkdownRenderer
+              key={`${track.title}:${note.slug}`}
+              markdown={body}
+            />
 
             <nav
               aria-label="Previous and next notes"
@@ -362,6 +500,8 @@ export function NoteReader({
               )}
             </nav>
           </article>
+
+          <NoteTableOfContents items={tocItems} variant="desktop" />
         </div>
       </Wrap>
     </main>

@@ -6,6 +6,12 @@ type MarkdownRendererProps = {
   markdown: string
 }
 
+export type MarkdownTocItem = {
+  id: string
+  level: number
+  title: string
+}
+
 type MermaidFlowStep = {
   from: string
   label: string | undefined
@@ -156,7 +162,7 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
 
 function renderInline(text: string): ReactNode[] {
   const nodes: ReactNode[] = []
-  const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g
+  const pattern = /(`[^`]+`|\*\*[^*]+\*\*|<u>[^<]+<\/u>|\[[^\]]+\]\([^)]+\))/g
   let lastIndex = 0
 
   for (const match of text.matchAll(pattern)) {
@@ -170,7 +176,13 @@ function renderInline(text: string): ReactNode[] {
       nodes.push(<code key={`${value}-${match.index}`}>{value.slice(1, -1)}</code>)
     } else if (value.startsWith('**')) {
       nodes.push(
-        <strong key={`${value}-${match.index}`}>{value.slice(2, -2)}</strong>,
+        <strong key={`${value}-${match.index}`}>
+          {renderInline(value.slice(2, -2))}
+        </strong>,
+      )
+    } else if (value.startsWith('<u>')) {
+      nodes.push(
+        <u key={`${value}-${match.index}`}>{value.slice(3, -4)}</u>,
       )
     } else {
       const labelEnd = value.indexOf(']')
@@ -194,6 +206,58 @@ function renderInline(text: string): ReactNode[] {
   return nodes
 }
 
+function getPlainHeadingText(value: string) {
+  return value
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/<u>([^<]+)<\/u>/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .trim()
+}
+
+function slugifyHeading(value: string) {
+  return getPlainHeadingText(value)
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+function createHeadingId(value: string, seenHeadings: Map<string, number>) {
+  const baseSlug = slugifyHeading(value) || 'section'
+  const count = seenHeadings.get(baseSlug) ?? 0
+
+  seenHeadings.set(baseSlug, count + 1)
+
+  return count === 0 ? baseSlug : `${baseSlug}-${count + 1}`
+}
+
+export function getMarkdownToc(markdown: string): MarkdownTocItem[] {
+  const lines = markdown.split('\n')
+  const seenHeadings = new Map<string, number>()
+
+  return lines.flatMap((line, index) => {
+    if (!/^#{1,3}\s/.test(line)) {
+      return []
+    }
+
+    const level = line.match(/^#+/)?.[0].length ?? 2
+    const content = line.slice(level + 1).trim()
+
+    if (isInterviewHeading(content) && introducesInterviewQuestion(lines, index)) {
+      return []
+    }
+
+    return [
+      {
+        id: createHeadingId(content, seenHeadings),
+        level,
+        title: getPlainHeadingText(content),
+      },
+    ]
+  })
+}
+
 function getMarkdownImage(line: string) {
   const match = line.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)$/)
 
@@ -202,6 +266,30 @@ function getMarkdownImage(line: string) {
   return {
     alt: match[1],
     src: match[2],
+  }
+}
+
+const calloutLabels: Record<string, string> = {
+  definition: 'Definition',
+  example: 'Example',
+  mistake: 'Common mistake',
+  'common-mistake': 'Common mistake',
+  interview: 'Interview answer',
+  'interview-answer': 'Interview answer',
+  remember: 'Remember',
+}
+
+function getCalloutStart(line: string) {
+  const match = line.match(/^\[!([a-z-]+)\]\s*(.*)$/i)
+
+  if (!match) return null
+
+  const type = match[1].toLowerCase()
+
+  return {
+    type,
+    label: calloutLabels[type] ?? type.replace(/-/g, ' '),
+    firstLine: match[2].trim(),
   }
 }
 
@@ -464,6 +552,7 @@ function introducesInterviewQuestion(lines: string[], index: number) {
 export function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
   const lines = markdown.split('\n')
   const nodes: ReactNode[] = []
+  const seenHeadings = new Map<string, number>()
   let index = 0
 
   while (index < lines.length) {
@@ -666,6 +755,29 @@ export function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
         index += 1
       }
 
+      const callout = getCalloutStart(quoteLines[0])
+
+      if (callout) {
+        const bodyLines = [
+          ...(callout.firstLine ? [callout.firstLine] : []),
+          ...quoteLines.slice(1),
+        ]
+
+        nodes.push(
+          <aside
+            className="markdown-callout"
+            data-callout={callout.type}
+            key={index}
+          >
+            <span className="markdown-callout__label">{callout.label}</span>
+            {bodyLines.length > 0 && (
+              <p>{bodyLines.map(renderInline).flat()}</p>
+            )}
+          </aside>,
+        )
+        continue
+      }
+
       nodes.push(
         <blockquote key={index}>{quoteLines.map(renderInline).flat()}</blockquote>,
       )
@@ -682,9 +794,12 @@ export function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
         continue
       }
 
+      const headingId = createHeadingId(content, seenHeadings)
+
       nodes.push(
         <Heading
           className={isInterviewHeading(content) ? 'markdown-interview-heading' : undefined}
+          id={headingId}
           key={index}
         >
           {renderInline(content)}

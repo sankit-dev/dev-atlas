@@ -7,6 +7,16 @@ track: "Databases & SQL"
 
 # When to Use SQL vs NoSQL
 
+# What problem is this solving?
+
+Choosing the wrong database creates pain later.
+
+You may get slow queries, awkward schemas, weak consistency, difficult reporting, or unnecessary operational complexity.
+
+---
+
+# Simple definition
+
 The wrong question is:
 
 > **Which one is better, SQL or NoSQL?**
@@ -17,7 +27,7 @@ The right question is:
 
 ---
 
-# Use SQL when
+# Better explanation
 
 Use SQL when:
 
@@ -30,7 +40,7 @@ Use SQL when:
 
 ---
 
-# SQL Example: Banking System
+# Real example: Banking system
 
 Use SQL.
 
@@ -53,7 +63,7 @@ SQL is a strong fit.
 
 ---
 
-# SQL Example: Orders and Payments
+# Real example: Orders and payments
 
 Use SQL.
 
@@ -76,7 +86,7 @@ SQL is usually a better default.
 
 ---
 
-# Use NoSQL when
+# When NoSQL is a better fit
 
 Use NoSQL when:
 
@@ -89,7 +99,7 @@ Use NoSQL when:
 
 ---
 
-# NoSQL Example: Product Catalog
+# Real example: Product catalog
 
 Use MongoDB or another document database.
 
@@ -121,7 +131,7 @@ A document database can model this naturally.
 
 ---
 
-# NoSQL Example: Sessions and Cache
+# Real example: Sessions and cache
 
 Use Redis or another key-value store.
 
@@ -139,7 +149,7 @@ You do not need joins.
 
 ---
 
-# NoSQL Example: Social Graph
+# Real example: Social graph
 
 Use a graph database.
 
@@ -155,7 +165,9 @@ Graph databases fit this naturally.
 
 ---
 
-# Many real systems use both
+# Common mistake
+
+Do not treat SQL vs NoSQL like a religion.
 
 You do not need to choose only one forever.
 

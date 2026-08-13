@@ -7,6 +7,16 @@ track: "Object-Oriented Programming"
 
 # Dependency Inversion Principle
 
+# What problem is this solving?
+
+Business logic often becomes hard to test and change when it directly creates concrete tools like email clients, payment SDKs, database clients, or storage clients.
+
+DIP solves this by making high-level code depend on stable abstractions.
+
+---
+
+# Simple definition
+
 The **Dependency Inversion Principle** says:
 
 > **High-level modules should not depend on low-level modules. Both should depend on abstractions.**
@@ -45,7 +55,7 @@ The guideline is:
 
 ---
 
-# Bad Example
+# Bad/naive example
 
 Suppose order logic directly uses an email client:
 
@@ -74,7 +84,7 @@ Testing is also harder because it creates a real email client inside the method.
 
 ---
 
-# Better Design
+# Better explanation
 
 Create an abstraction:
 
@@ -166,6 +176,14 @@ OrderService(NotificationSender notificationSender) {
 ```
 
 That constructor is dependency injection.
+
+---
+
+# Common mistake
+
+Do not confuse Dependency Inversion with simply passing objects around.
+
+The important idea is that high-level logic depends on an abstraction, not on a concrete low-level class.
 
 ---
 

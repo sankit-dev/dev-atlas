@@ -7,6 +7,18 @@ track: "Databases & SQL"
 
 # NoSQL
 
+# What problem is this solving?
+
+Some data does not fit naturally into strict tables and joins.
+
+For example, user preferences, product attributes, cached sessions, graph relationships, and large event streams can have very different shapes.
+
+NoSQL databases exist to support these different data models.
+
+---
+
+# Simple definition
+
 NoSQL is a broad category of databases that do not primarily use the traditional relational table model.
 
 SQL databases store data in tables:
@@ -27,7 +39,7 @@ NoSQL databases use other models, such as:
 
 ---
 
-# What NoSQL does not mean
+# Common mistake
 
 NoSQL does **not** mean:
 
@@ -41,11 +53,9 @@ NoSQL means the database uses a non-relational model as its main way of storing 
 
 ---
 
-# Why does NoSQL exist?
+# Real example
 
-Some data does not fit naturally into tables and joins.
-
-Example:
+Suppose you are storing a user profile:
 
 ```json
 {
@@ -76,7 +86,7 @@ In SQL, you may split it into multiple tables.
 
 ---
 
-# NoSQL as a tree
+# Better explanation
 
 ```plain text
 NoSQL

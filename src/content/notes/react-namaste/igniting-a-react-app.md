@@ -140,7 +140,7 @@ Now when we do `npm init` we get `package.json` along with this we also get `pac
 
 ## Question by Akshay: Should We Add `node_modules` to Our Git?
 
-- No, we should not push **node_modules** to our Git because it is the heaviest object in the universe. 🤣
+- No, we should not push **node_modules** to our Git because it is the heaviest object in the universe.
 - Actually, `package-lock.json` contains sufficient information about our project’s dependencies and configuration. So, we can easily recreate the `node_modules` directory using the information in `package-lock.json`.
 - Therefore, push `package-lock.json` and `package.json`, but not **node_modules** (the heaviest object in the universe).
 
@@ -200,7 +200,7 @@ Now we are ready to start our development server. To start just write the below 
 - If _React_ is **ModiJi**, then **Amit Shah** represents the _bundler_.
 - The `node_modules` are like other ministers who help **Amit Shah** with the processes required.
 - So **Amit Shah** (bundler) is depend on other pacakges and then those pacakges would depend on some other package. This is also known as `Transitive Dependency`
-- VS Code is Ratan Tata (some guy said).🤣
+- VS Code is Ratan Tata (some guy said).
 
 **Answer to tell to interviewer by Akshay**
 
