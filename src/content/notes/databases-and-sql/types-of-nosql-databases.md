@@ -7,6 +7,18 @@ track: "Databases & SQL"
 
 # Types of NoSQL Databases
 
+# What problem is this solving?
+
+Saying "NoSQL" is not enough.
+
+Different NoSQL databases solve different problems.
+
+A cache, a document store, a graph database, and a write-heavy distributed database are not interchangeable.
+
+---
+
+# Simple definition
+
 NoSQL is not one database type.
 
 It is a broad category.
@@ -25,7 +37,7 @@ Each type stores and reads data differently.
 
 ---
 
-# Quick Comparison
+# Real example
 
 <table header-row="true">
 <tr>
@@ -62,7 +74,7 @@ Each type stores and reads data differently.
 
 ---
 
-# How to choose the type
+# Better explanation
 
 Ask:
 
@@ -74,6 +86,14 @@ Examples:
 - Session lookup by ID → key-value database
 - Millions of time-series writes → wide-column database
 - Friends of friends recommendation → graph database
+
+---
+
+# Common mistake
+
+Do not choose a NoSQL database only because it is popular.
+
+Choose it because its data model matches the way your application reads and writes data.
 
 ---
 

@@ -326,6 +326,38 @@ export const tracks: Track[] = [
     ],
   },
   {
+    title: 'Git & GitHub',
+    shortTitle: 'Git',
+    eyebrow: 'Version control',
+    description:
+      'Git fundamentals, branching, collaboration, and GitHub workflows from scratch.',
+    accent: 'yellow',
+    status: '17 notes',
+    topics: [
+      note('What is Git?', 'Why version control exists, what Git solves, and what happens without it.', 'https://git-scm.com/doc', 'Must Know', undefined, [
+        note('Repository, Working Tree, Staging Area and Commit', 'The core Git mental model: where changes live before they become history.', 'https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository', 'Must Know'),
+        note('Installing and Configuring Git', 'Set name, email, editor, default branch, and authentication basics.', 'https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup', 'Must Know'),
+      ]),
+      note('Daily Git Workflow', 'The commands used in normal development: status, add, commit, log, diff, and restore.', 'https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository', 'Must Know', undefined, [
+        note('git status, diff, add and commit', 'See changes, choose what to save, and create meaningful commits.', 'https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository', 'Must Know'),
+        note('Reading Git History', 'Use log, show, blame, and diff to understand how code changed.', 'https://git-scm.com/book/en/v2/Git-Basics-Viewing-the-Commit-History', 'Important'),
+        note('Undoing Changes Safely', 'Restore files, amend commits, revert bad commits, and know when reset is risky.', 'https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things', 'Must Know'),
+        note('Ignoring Files with .gitignore', 'Keep dependencies, secrets, builds, and local files out of Git.', 'https://git-scm.com/docs/gitignore', 'Must Know'),
+      ]),
+      note('Branches and Merging', 'Work on isolated lines of development and combine changes safely.', 'https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell', 'Must Know', undefined, [
+        note('Merge vs Rebase', 'Two ways to integrate branch work and when each one makes sense.', 'https://git-scm.com/book/en/v2/Git-Branching-Rebasing', 'Must Know'),
+        note('Merge Conflicts', 'Why conflicts happen and how to resolve them without panic.', 'https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging', 'Must Know'),
+        note('Stash and Temporary Work', 'Put unfinished work aside when you need to switch context.', 'https://git-scm.com/docs/git-stash', 'Important'),
+      ]),
+      note('Remote Repositories', 'How local Git history connects to shared repositories through clone, fetch, pull, and push.', 'https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes', 'Must Know', undefined, [
+        note('Clone, Fetch, Pull and Push', 'Understand the commands that move commits between your machine and a remote.', 'https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes', 'Must Know'),
+        note('GitHub Basics', 'What GitHub adds on top of Git: hosting, issues, pull requests, reviews, and collaboration.', 'https://docs.github.com/en/get-started/start-your-journey/about-github-and-git', 'Must Know'),
+        note('Pull Requests and Code Review', 'Use PRs to discuss, review, test, and merge code as a team.', 'https://docs.github.com/en/pull-requests', 'Must Know'),
+        note('Forks, Upstream and Open Source Workflow', 'Contribute to repositories you do not own using forks and upstream remotes.', 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks', 'Important'),
+      ]),
+    ],
+  },
+  {
     title: 'GitHub CI/CD',
     shortTitle: 'CI/CD',
     eyebrow: 'DevOps / Tools',

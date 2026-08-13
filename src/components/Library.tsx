@@ -60,10 +60,12 @@ export function Library() {
             <h2 className="library-panel__title">
               A cleaner path through backend fundamentals.
             </h2>
-            <p className="m-0 mt-5 max-w-162.5 text-base leading-[1.75] text-(--color-muted)">
-              Search, pick a track, and start reading real Markdown notes in the
-              order they are meant to be learned.
-            </p>
+            <div className="library-panel__flow" aria-label="Library workflow">
+              <span>Search</span>
+              <span>Pick a track</span>
+              <span>Read in order</span>
+              <span>Revise faster</span>
+            </div>
           </div>
           <div className="library-panel__stats" aria-label="Library summary">
             <div>

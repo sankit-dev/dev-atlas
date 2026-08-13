@@ -7,6 +7,18 @@ track: "Databases & SQL"
 
 # MongoDB & Document Databases
 
+# What problem is this solving?
+
+Some application data is naturally object-shaped.
+
+If one screen usually needs the full object, splitting the data into many relational tables can make reads more awkward.
+
+Document databases solve this by storing related nested data together.
+
+---
+
+# Simple definition
+
 A document database stores data as JSON-like documents.
 
 Popular examples:
@@ -19,7 +31,7 @@ MongoDB is the most common example discussed in interviews.
 
 ---
 
-# MongoDB mental model
+# Better explanation
 
 In SQL, you usually think like this:
 
@@ -43,7 +55,7 @@ Document   : one user object
 
 ---
 
-# MongoDB document example
+# Real example
 
 ```json
 {
@@ -71,7 +83,7 @@ This works well when the application usually reads the user profile, cart, and p
 
 ---
 
-# When document databases fit well
+# When this fits well
 
 Use a document database when:
 
@@ -123,7 +135,7 @@ MongoDB can fit better here.
 
 ---
 
-# When MongoDB may not fit
+# Common mistake
 
 MongoDB is not always the right choice.
 

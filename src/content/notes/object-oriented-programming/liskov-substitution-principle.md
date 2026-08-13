@@ -7,6 +7,18 @@ track: "Object-Oriented Programming"
 
 # Liskov Substitution Principle
 
+# What problem is this solving?
+
+Some inheritance hierarchies look correct but break when a child class is used through the parent type.
+
+If a child class overrides a method by throwing "not supported", the parent contract was probably wrong.
+
+LSP helps you design parent and child types that behave consistently.
+
+---
+
+# Simple definition
+
 The **Liskov Substitution Principle** says:
 
 > **If a program expects a parent type, it should work correctly with any child type.**
@@ -39,7 +51,7 @@ The guideline is:
 
 ---
 
-# Bad Example
+# Bad/naive example
 
 Suppose we model birds like this:
 
@@ -85,7 +97,7 @@ That violates LSP.
 
 ---
 
-# Better Design
+# Better explanation
 
 Do not put `fly()` in `Bird` if all birds cannot fly.
 
@@ -123,7 +135,7 @@ class BirdTrainer {
 
 ---
 
-# Backend Example
+# Real example
 
 Suppose we have:
 
@@ -172,6 +184,14 @@ interface FileDownloader {
 ```
 
 Now a write-only storage only implements `FileUploader`.
+
+---
+
+# Common mistake
+
+Do not use inheritance only because two classes share a few fields.
+
+Use inheritance only when the child can fully honor the behavior promised by the parent.
 
 ---
 
