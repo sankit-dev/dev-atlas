@@ -1,8 +1,16 @@
 import type { PropsWithChildren } from 'react'
 
-export function PageShell({ children }: PropsWithChildren) {
+type PageShellProps = PropsWithChildren<{
+  variant?: 'default' | 'dsa'
+}>
+
+export function PageShell({ children, variant = 'default' }: PageShellProps) {
   return (
-    <div className="min-h-svh bg-(--color-page) text-(--color-text) transition-colors duration-300">
+    <div
+      className={`min-h-svh bg-(--color-page) text-(--color-text) transition-colors duration-300 ${
+        variant === 'dsa' ? 'dsa-page-shell' : ''
+      }`}
+    >
       {children}
     </div>
   )

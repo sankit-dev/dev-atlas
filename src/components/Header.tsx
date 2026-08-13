@@ -3,6 +3,7 @@ import { Wrap } from './PageShell'
 
 const navigationLinks = [
   { label: 'Library', href: '#library' },
+  { label: 'DSA', href: '#/dsa' },
   { label: 'Roadmap', href: '#roadmap' },
   { label: 'Contribute', href: '#contribute' },
 ] as const

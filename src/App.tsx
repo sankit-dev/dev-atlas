@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import type { Note } from './data/tracks'
 import { Contribute } from './components/Contribute'
+import { DsaCourse } from './components/DsaCourse'
 import { Footer } from './components/Footer'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
@@ -29,6 +30,19 @@ function getNoteSlugFromHash(hashRoute: string) {
   return hashRoute.startsWith('#/notes/')
     ? hashRoute.replace('#/notes/', '')
     : null
+}
+
+function getDsaQuestIdFromHash(hashRoute: string) {
+  if (!hashRoute.startsWith('#/dsa/')) {
+    return null
+  }
+
+  const questId = hashRoute.replace('#/dsa/', '').trim()
+  return questId || null
+}
+
+function isDsaRoute(hashRoute: string) {
+  return hashRoute === '#/dsa' || hashRoute.startsWith('#/dsa/')
 }
 
 function getInitialTheme(): Theme {
@@ -135,6 +149,8 @@ function App() {
   const transitionTimers = useRef<number[]>([])
 
   const activeNoteSlug = getNoteSlugFromHash(hashRoute)
+  const activeDsaQuestId = getDsaQuestIdFromHash(hashRoute)
+  const isDsa = isDsaRoute(hashRoute)
   const activeNoteMatch = tracks
     .flatMap((track) =>
       flattenNotes(track.topics).map((note) => ({
@@ -182,6 +198,11 @@ function App() {
     }, 980)
 
     transitionTimers.current = [routeTimer, clearTimer]
+  }
+
+  const navigateToDsaQuest = (questId: string) => {
+    window.location.hash = `#/dsa/${questId}`
+    scrollToPageTop()
   }
 
   useEffect(() => {
@@ -234,7 +255,7 @@ function App() {
   )
 
   return (
-    <PageShell>
+    <PageShell variant={isDsa ? 'dsa' : 'default'}>
       <Header
         theme={theme}
         onThemeToggle={() =>
@@ -243,7 +264,12 @@ function App() {
           )
         }
       />
-      {activeNoteMatch ? (
+      {isDsa ? (
+        <DsaCourse
+          activeQuestId={activeDsaQuestId}
+          onNavigateQuest={navigateToDsaQuest}
+        />
+      ) : activeNoteMatch ? (
         <NoteReader
           note={activeNoteMatch.note}
           track={activeNoteMatch.track}
