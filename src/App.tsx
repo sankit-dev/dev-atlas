@@ -10,7 +10,7 @@ import { NoteReader } from './components/NoteReader'
 import { PageShell } from './components/PageShell'
 import { Roadmap } from './components/Roadmap'
 import { Statement } from './components/Statement'
-import { tracks } from './data/tracks'
+import { flattenNotes, tracks } from './data/tracks'
 
 export type Theme = 'light' | 'dark'
 
@@ -137,7 +137,7 @@ function App() {
   const activeNoteSlug = getNoteSlugFromHash(hashRoute)
   const activeNoteMatch = tracks
     .flatMap((track) =>
-      track.topics.map((note) => ({
+      flattenNotes(track.topics).map((note) => ({
         note,
         track,
       })),

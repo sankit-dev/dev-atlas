@@ -194,6 +194,17 @@ function renderInline(text: string): ReactNode[] {
   return nodes
 }
 
+function getMarkdownImage(line: string) {
+  const match = line.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)$/)
+
+  if (!match) return null
+
+  return {
+    alt: match[1],
+    src: match[2],
+  }
+}
+
 function isTable(lines: string[], index: number) {
   return (
     lines[index]?.includes('|') &&
@@ -402,7 +413,7 @@ function getNextMeaningfulLineIndex(lines: string[], index: number) {
 }
 
 function startsMarkdownBlock(line: string) {
-  return /^(```|#{1,4}\s|[-*]\s|\d+\.\s|> |---$|<table)/.test(line)
+  return /^(```|#{1,4}\s|[-*]\s|\d+\.\s|> |---$|<table|!\[[^\]]*\]\([^)]+\))/.test(line)
 }
 
 function isParagraphAnswerStart(lines: string[], index: number) {
@@ -555,6 +566,19 @@ export function MarkdownRenderer({ markdown }: MarkdownRendererProps) {
 
     if (line === '---') {
       nodes.push(<hr key={index} />)
+      index += 1
+      continue
+    }
+
+    const image = getMarkdownImage(line)
+
+    if (image) {
+      nodes.push(
+        <figure className="markdown-image" key={index}>
+          <img alt={image.alt} loading="lazy" src={image.src} />
+          {image.alt && <figcaption>{image.alt}</figcaption>}
+        </figure>,
+      )
       index += 1
       continue
     }

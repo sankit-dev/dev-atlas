@@ -7,14 +7,28 @@ track: "Operating Systems"
 
 # 1. Process vs Thread
 ## Program
-A program is an executable file that contains instructions/code to run.
+Before understanding **Process**, let's first define what a **Program** is.
+
+A **program** is a file that contains instructions or code.
+
+It is stored on disk, but it is not running yet.
 
 **Examples:** Chrome, VS Code, Microsoft Word, Spotify.
+
+When you install Chrome on your laptop, Chrome exists as a program.
+
+But at this point, it is just software stored on disk.
+
+Now the question is:
+
+> **What happens when you double-click Chrome and it starts running?**
+
+At that moment, the Operating System loads that program into memory and starts executing it.
 
 A **program in execution** is called a **Process**.
 ---
 ## Process
-A process is an instance of a running program.
+A **process** is an instance of a running program.
 
 In simple words, a process is a **running program**.
 

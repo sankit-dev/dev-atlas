@@ -1,75 +1,103 @@
 ---
 title: "NoSQL"
 slug: "nosql"
-description: "SQL vs NoSQL, document DB, key-value DB, column-family DB, graph DB, and when to use each."
+description: "Non-relational database models and when they fit better than SQL."
 track: "Databases & SQL"
 ---
 
-NoSQL is a broad category of databases that do not use the traditional relational table model as their primary model.
+# NoSQL
 
-## Types
+NoSQL is a broad category of databases that do not primarily use the traditional relational table model.
 
-### Document Database
+SQL databases store data in tables:
 
-Stores JSON-like documents.
+```plain text
+users
+orders
+payments
+products
+```
 
-Examples: MongoDB, CouchDB.
+NoSQL databases use other models, such as:
 
-Good for flexible object-shaped data.
+- documents
+- key-value pairs
+- wide-column rows
+- graphs
 
-### Key-Value Store
+---
 
-Stores values by key.
+# What NoSQL does not mean
 
-Examples: Redis, DynamoDB key-value patterns.
+NoSQL does **not** mean:
 
-Good for caching, sessions, counters, simple lookups.
+> **No queries**
 
-### Wide-Column Store
+It also does **not** mean:
 
-Stores rows with flexible columns across distributed nodes.
+> **Always faster than SQL**
 
-Examples: Cassandra, HBase.
+NoSQL means the database uses a non-relational model as its main way of storing and accessing data.
 
-Good for massive write-heavy workloads.
+---
 
-### Graph Database
+# Why does NoSQL exist?
 
-Stores nodes and relationships.
+Some data does not fit naturally into tables and joins.
 
-Examples: Neo4j.
+Example:
 
-Good for relationship-heavy data like recommendations, fraud graphs, social networks.
+```json
+{
+  "name": "Riya",
+  "email": "riya@example.com",
+  "addresses": [
+    {
+      "type": "home",
+      "city": "Pune"
+    },
+    {
+      "type": "work",
+      "city": "Mumbai"
+    }
+  ],
+  "preferences": {
+    "theme": "dark",
+    "language": "en"
+  }
+}
+```
 
-## SQL vs NoSQL
+This is object-shaped data.
 
-| SQL | NoSQL |
-| --- | --- |
-| Tables and schema | Flexible models |
-| Strong relationships | Often denormalized |
-| SQL query language | DB-specific APIs |
-| ACID common | Varies by system |
-| Great for structured relational data | Great for scale/flexible access patterns |
+A document database like MongoDB can store it as one document.
 
-## When to Use SQL
+In SQL, you may split it into multiple tables.
 
-- Strong relationships.
-- Complex joins.
-- Transactions.
-- Structured data.
-- Reporting and ad hoc queries.
+---
 
-## When to Use NoSQL
+# NoSQL as a tree
 
-- Flexible schema.
-- Very high scale.
-- Simple key-based access.
-- Document-oriented data.
-- Graph traversal.
+```plain text
+NoSQL
+├── Types of NoSQL Databases
+├── MongoDB & Document Databases
+├── Key-Value Databases
+├── Wide-Column Databases
+├── Graph Databases
+└── When to Use SQL vs NoSQL
+```
 
-## Interview Notes
+Read the types first, then study each model separately.
 
-- NoSQL does not mean no queries.
-- NoSQL does not automatically mean faster.
-- Choose based on data model and access patterns.
-- Many systems use both SQL and NoSQL together.
+---
+
+# Interview Answer
+
+If an interviewer asks:
+
+> **What is NoSQL?**
+
+You can answer:
+
+NoSQL is a category of databases that do not primarily use the relational table model. It includes document databases like MongoDB, key-value stores like Redis, wide-column databases like Cassandra, and graph databases like Neo4j. NoSQL is useful when the data model is flexible, document-shaped, key-based, graph-heavy, or designed for distributed scale.
