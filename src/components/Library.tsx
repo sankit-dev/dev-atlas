@@ -11,6 +11,51 @@ const trackAccentColor: Record<Accent, string> = {
   violet: 'var(--track-violet)',
 }
 
+type LibraryBranch = {
+  description: string
+  label: string
+  trackTitles: string[]
+}
+
+const libraryBranches: LibraryBranch[] = [
+  {
+    description: 'OS, networks, OOP, and databases before framework-specific work.',
+    label: 'Computer Fundamentals',
+    trackTitles: [
+      'Operating Systems',
+      'Computer Networks',
+      'Object-Oriented Programming',
+      'Databases & SQL',
+    ],
+  },
+  {
+    description: 'JavaScript, React, APIs, databases, and full-stack projects.',
+    label: 'MERN / Full Stack',
+    trackTitles: [
+      'JavaScript',
+      'React / Namaste React',
+      'Node.js',
+      'Express.js',
+      'MongoDB',
+      'MERN Integration',
+      'Git & GitHub',
+      'Docker',
+    ],
+  },
+  {
+    description: 'Source control, containers, cloud, and automated delivery.',
+    label: 'DevOps & Tools',
+    trackTitles: ['Git & GitHub', 'Docker', 'AWS Fundamentals', 'GitHub CI/CD'],
+  },
+  {
+    description: 'LLM concepts, RAG, agents, and backend AI integration.',
+    label: 'AI / ML',
+    trackTitles: ['AI for Backend Developers'],
+  },
+]
+
+const allBranchLabel = 'All'
+
 function getTrackSearchText(track: Track) {
   return [
     track.title,
@@ -27,24 +72,48 @@ function getTrackSearchText(track: Track) {
 
 export function Library() {
   const [query, setQuery] = useState('')
+  const [activeBranch, setActiveBranch] = useState<string>(allBranchLabel)
   const [activeTrack, setActiveTrack] = useState('All')
   const [expandedTrack, setExpandedTrack] = useState<string | null>(null)
   const featuredTrack = tracks[0]
+  const activeBranchConfig = libraryBranches.find(
+    (branch) => branch.label === activeBranch,
+  )
+  const branchTracks = activeBranchConfig
+    ? tracks.filter((track) => activeBranchConfig.trackTitles.includes(track.title))
+    : tracks
   const activeTrackLabel =
-    activeTrack === 'All'
-      ? 'All tracks'
-      : (tracks.find((track) => track.title === activeTrack)?.shortTitle ?? activeTrack)
+    activeTrack !== 'All'
+      ? (tracks.find((track) => track.title === activeTrack)?.shortTitle ?? activeTrack)
+      : activeBranch === allBranchLabel
+        ? 'All tracks'
+        : activeBranch
+  const trackFilters = ['All', ...branchTracks.map((track) => track.title)]
+
+  const branchNoteCount = (trackTitles: readonly string[]) =>
+    tracks
+      .filter((track) => trackTitles.includes(track.title))
+      .reduce((count, track) => count + countNotes(track.topics), 0)
 
   const visibleTracks = useMemo(() => {
     const term = query.trim().toLowerCase()
+    const scopedTracks = activeBranchConfig
+      ? tracks.filter((track) => activeBranchConfig.trackTitles.includes(track.title))
+      : tracks
 
-    return tracks.filter((track) => {
+    return scopedTracks.filter((track) => {
       const matchesFilter = activeTrack === 'All' || track.title === activeTrack
       const matchesSearch = !term || getTrackSearchText(track).includes(term)
 
       return matchesFilter && matchesSearch
     })
-  }, [activeTrack, query])
+  }, [activeBranchConfig, activeTrack, query])
+
+  function handleBranchSelect(item: string) {
+    setActiveBranch(item)
+    setActiveTrack('All')
+    setExpandedTrack(null)
+  }
 
   function handleFilterSelect(item: string) {
     setActiveTrack(item)
@@ -61,7 +130,7 @@ export function Library() {
               A cleaner path through backend fundamentals.
             </h2>
             <div className="library-panel__flow" aria-label="Library workflow">
-              <span>Search</span>
+              <span>Choose branch</span>
               <span>Pick a track</span>
               <span>Read in order</span>
               <span>Revise faster</span>
@@ -102,6 +171,32 @@ export function Library() {
             </span>
           </div>
 
+          <div className="library-branches" aria-label="Learning branches">
+            <button
+              className={activeBranch === allBranchLabel ? 'is-active' : ''}
+              onClick={() => handleBranchSelect(allBranchLabel)}
+              type="button"
+            >
+              <span>All</span>
+              <strong>{tracks.length} tracks</strong>
+              <small>{totalNoteCount} notes across the full library.</small>
+            </button>
+
+            {libraryBranches.map((branch) => (
+              <button
+                className={activeBranch === branch.label ? 'is-active' : ''}
+                key={branch.label}
+                onClick={() => handleBranchSelect(branch.label)}
+                type="button"
+              >
+                <span>{branch.label}</span>
+                <strong>{branch.trackTitles.length} tracks</strong>
+                <small>{branch.description}</small>
+                <em>{branchNoteCount(branch.trackTitles)} notes</em>
+              </button>
+            ))}
+          </div>
+
           <div className="library-toolbar">
             <label className="library-search">
               <span aria-hidden="true">/</span>
@@ -114,7 +209,7 @@ export function Library() {
             </label>
 
             <div aria-label="Filter learning tracks" className="library-filters">
-              {['All', ...tracks.map((track) => track.title)].map((item) => {
+              {trackFilters.map((item) => {
                 const isActive = activeTrack === item
                 const track = tracks.find((candidate) => candidate.title === item)
 
@@ -172,8 +267,14 @@ type TrackCardProps = {
 }
 
 function TrackCard({ index, isExpanded, onToggle, track }: TrackCardProps) {
-  const topics = isExpanded ? track.topics : track.topics.slice(0, 3)
   const firstTopic = track.topics[0]
+  const previewRootTopics =
+    !isExpanded &&
+    firstTopic?.children?.length &&
+    firstTopic.title.toLowerCase().includes('roadmap')
+      ? firstTopic.children
+      : track.topics
+  const topics = isExpanded ? track.topics : previewRootTopics.slice(0, 3)
   const accent = trackAccentColor[track.accent]
   const noteCount = countNotes(track.topics)
   const flatNotes = flattenNotes(track.topics)

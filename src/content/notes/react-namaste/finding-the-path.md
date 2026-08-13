@@ -20,7 +20,7 @@ npm install react-router-dom
 2. Setting Up Routing with `createBrowserRouter`
 
 - To create a routing, we have to create a configuration for our router.
-- We use `createBrowserRouter` for more explicit and flexible route management. 
+- We use `createBrowserRouter` for more explicit and flexible route management.
 - First import `createBrowserRouter` component from `react-router-dom`
 
 Here’s how you can set it up:
@@ -86,9 +86,9 @@ export default Navbar;
 
 ```
 
-## Nested Routes, Outlets, and Dynamic Routing in React 🚀
+## Nested Routes, Outlets, and Dynamic Routing in React
 
-1. Nested Routes 🧩
+1. Nested Routes
 
 - Nested routes allow you to define routes within other routes, creating a hierarchical structure.
 - This is useful when you have components that should render as part of a parent component but on different routes.
@@ -134,7 +134,7 @@ const root = ReactDOM.createRoot(document.querySelector("#root"));
 root.render(<RouterProvider router={appRouter} />);
 ```
 
-2. **Outlets** 🛤️
+2. **Outlets**
 
 - `Outlets` are placeholders within a parent component where the nested route components will be rendered.
 - To use `Outlets` we have to import it in our root component.
@@ -187,21 +187,21 @@ const appRouter = createBrowserRouter([
 - With this user will know what the reason behind the error.
 - We should always try to provide useful info of the error.
 
-## Types of Routing 🛤️
+## Types of Routing
 
-### Client-Side Routing 🖥️
+### Client-Side Routing
 Client-side routing helps us to naviage between different components without reloading the entire page. This is commonly used in single-page applications (SPAs).
 
 - In client-side routing is handled within the browser so the page will not reload.
 - The content changes dynamically based on current URL, but the browser doesn't refresh.
 - We use React Router `react-router-dom` to do client-side rounting.
 
-### Server-Side Routing 🌐
+### Server-Side Routing
 - In server-side routing the routing is handled by server and whenever we click on any routes  (components) the request is sent to server which then sends back the HTML for the new page.
 - The browser then reloades to display the new content.
 - This is typical for multi-page applications (MPAs) or when SEO is a significant concern, as search engines can easily crawl server-rendered pages.
 
-### Dynamic Routing 🔄
+### Dynamic Routing
 - Dynamic routing allows routes to be generated or accessed based on dynamic data, such as user IDs or other parameters.
 - It is useful for situation where we need to render components based on varying data.
 - We need to add dynamic segment in the URL (e.g., `/user/:userId`)
@@ -216,7 +216,7 @@ const router = createBrowserRouter([
 ```
 
 ## useParams Hooks
-- The `useParams` hook in React is used with `react-router-dom` to access the URL parameters of the current route. 
+- The `useParams` hook in React is used with `react-router-dom` to access the URL parameters of the current route.
 - This is particularly useful when you want to extract dynamic values from the URL to display or process data related to those values in your components.
 - When a route path includes dynamic segments, such as `/user/:userId`, `useParams` allows you to access the `userId` parameter directly within your component.
 

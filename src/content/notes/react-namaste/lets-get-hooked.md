@@ -6,11 +6,11 @@ track: "React / Namaste React"
 priority: "Must Know"
 ---
 
-## Export and Import in JavaScript (ES6) 🚀
+## Export and Import in JavaScript (ES6)
 
 - JavaScript (ES6) provides two main ways to export and import modules: **default export** and **named export**.
 
-### 1. Default Export 🟢
+### 1. Default Export
 
 - **Usage:** When a module exports a single entity, you use export default.
 - **Importing:** You can import it with any name.
@@ -30,7 +30,7 @@ greetFunction(); // Outputs: Hello, world!
 
 - **Note:** The name `greetFunction` used in the import can be anything
 
-### 2. Named Export 🔵
+### 2. Named Export
 
 - **Usage:** When a module exports multiple entities, you use export without `default`.
 - **Importing:** You must import using the exact names, enclosed in `{}`.
@@ -55,7 +55,7 @@ console.log(PI); // Outputs: 3.14159
 - We can also imports whole as objects
   **Note:** The names in the import statement must match the export names.
 
-### Importing Multiple Named Exports as an Object 🧩
+### Importing Multiple Named Exports as an Object
 
 - If we have multiple named exports and want to import them all at once as an object, we can do so by using the` * as` syntax.
 
@@ -86,12 +86,12 @@ console.log(myModule.multiply(2, 3)); // Outputs: 6
 - Accessing the Exports:
   - We can access each exported function or variable using dot notation, like `myModule.greet`, `myModule.PI`, and `myModule.multiply`.
 
-#### When to Use 📝
+#### When to Use
 
 - **Namespace:** It’s useful when you want to group related functions or constants together under a single namespace.
 - **Avoiding Name Conflicts:** If you have multiple modules with overlapping export names, importing them as objects can prevent name conflicts.
 
-### 4. Combining Default and Named Exports 🔄
+### 4. Combining Default and Named Exports
 
 - You can use both default and named exports in the same module.
 
@@ -114,7 +114,7 @@ console.log(PI); // Outputs: 3.14159
 
 **Note:** `greetFunction` imports the default export, while `{ PI }` imports the named export.
 
-## constant.js 📜
+## constant.js
 
 - We use `constant.js` to store values that are fixed and unchanging throughout the application.
 - Its a centeral place to store constant data for us to use easily anywhere in our react app.
@@ -128,18 +128,18 @@ export const MAX_USERS = 100;
 export const DEFAULT_LANGUAGE = "en";
 ```
 
-## What is Hook in React? 🎣
+## What is Hook in React?
 
 - Hook is a `special function` in React that lets us use state and other React features in function components.
 - Hooks were introduced in React 16.8 to allow developers to manage state, lifecycle events, and side effects within functional components, which were previously only possible in class components.
 
-### Why use Hooks? 🌟
+### Why use Hooks?
 
 - Enable state and lifecycle management in functional components.
 - Simplify code, elimination the need for classes
 - We can create our own hook for certain features and reuse it anywhere in our project.
 
-### Common React Hooks 🔄
+### Common React Hooks
 
 - `useState:` Adds state to functional components.
 - `useEffect:` Handles side effects like data fetching, subscriptions, and DOM updates.
@@ -148,11 +148,11 @@ export const DEFAULT_LANGUAGE = "en";
 - `useRef:` Provides a way to access and manipulate DOM elements directly.
 - `useMemo:` Optimizes performance by memoizing expensive calculations.
 
-## What is One-Way Data Binding? ➡️
+## What is One-Way Data Binding?
 
 - In one-way data binding, data flows in a single direction—from the parent component (or state) to the child component or from the state to the UI.
 
-## Why Do We Need State Variables in React? 🌱
+## Why Do We Need State Variables in React?
 
 - When we declare a normal variable like `const a = 10`, and the value of `a` is changed later in the code, React won’t reflect this change in the UI.
 - This happens because React doesn't keep track of these normal variables.
@@ -167,13 +167,13 @@ export const DEFAULT_LANGUAGE = "en";
 1. **State Variable:** The current value of the state.
 2. **Setter Function:** A function to update the state value.
 
-### Syntax 📜
+### Syntax
 
 ```javascript
 const [state, setState] = useState(initialValue);
 ```
 
-### Elements Returned 🧩
+### Elements Returned
 
 1. **State Variable**(`state`):
 
@@ -187,7 +187,7 @@ const [state, setState] = useState(initialValue);
 - When called, it schedules a re-render of the component with the new state value.
 - Example: Calling `setState(1)` will update the state to `1` and trigger a re-render.
 
-### Example 🚀
+### Example
 
 ```javascript
 import React, { useState } from "react";

@@ -6,9 +6,9 @@ track: "React / Namaste React"
 priority: "Must Know"
 ---
 
-## Babel and `browserslist` 🌐
+## Babel and `browserslist`
 
-**Transpiling Code:** 🔄
+**Transpiling Code:**
 
 - When we specify a `browserslist` configuration, Babel uses it to determine which JavaScript features need to be transpiled (converted to an older, more widely supported syntax) to ensure compatibility with the specified browsers.
 - This means Babel will transform modern JavaScript features (like arrow functions, `const`, `let`, etc.) into versions that older browsers can understand and execute.
@@ -23,7 +23,7 @@ var add = function (a, b) {
 };
 ```
 
-**Polyfills** 🧩
+**Polyfills**
 
 - For features that can't be transpiled directly (such as new APIs or methods that don't exist in older browsers), Babel can leverage polyfills.
 - Polyfills are code snippets that provide implementations of modern JavaScript features in environments where they are not natively supported.
@@ -41,7 +41,7 @@ if (polyfill_includes(myArray, 5)) {
 }
 ```
 
-### 💡Important Note:
+### Important Note:
 
 - When we write `last 10 Chrome versions`, it doesn't mean our web app will _only_ support the last 10 Chrome versions.
 - It will support all browsers, but it _will definitely_ support the `last 10 Chrome versions.`
@@ -68,11 +68,11 @@ So now that we have set up scripts, we can run our project using `npm run start`
 
 - Think of `npm run` == `npx`.
 - We can go one more step ahead to shortent the command by writing `npm start` which will also start the server. It is one and the same thing.
-- Therefore `npm run start === npm start` (More concise).👍
+- Therefore `npm run start === npm start` (More concise).
 
 When we are using `Parcel` our `console.log()` statements are not removed by default from our build. So, we will need to configure Parcel to remove`console.log` as well.
 
-## Configuring Parcel to remove console.logs 🧹
+## Configuring Parcel to remove console.logs
 
 Search for `babel-plugin-transform-remove-console` OR [click here](https://babeljs.io/docs/babel-plugin-transform-remove-console/)
 
@@ -83,14 +83,14 @@ npm install babel-plugin-transform-remove-console --save-dev
 ```
 
 - After installing we will need to configure it.
-- Go to above website for configuration and add the configuration to `.babelrc` (Mine didn't remove the `console.log()` even after doing everything.🤷‍♂️😂)
+- Go to above website for configuration and add the configuration to `.babelrc` (Mine didn't remove the `console.log()` even after doing everything.‍)
 
-### Keys in React 🔑
+### Keys in React
 
 - When there are multiple siblings within a parent div, keys should be used to identify each child.
 - This helps React know where a new child is added when we add one. It improves performance and reconciliation
 
-### How does `React.createElement()` API works? ⚛️
+### How does `React.createElement()` API works?
 
 - The `React.createElement()` API creates an object, and that object is rendered into HTML and then added to the DOM.
 
@@ -125,7 +125,7 @@ root.render(div);
 ```
 
 - As we can observe from the above code, it is very lengthy and verbose.
-- Writing a whole website like this would create a mess. 🤯
+- Writing a whole website like this would create a mess.
 
 ### To Solve this Issue, React Introduce JSX
 
@@ -149,13 +149,13 @@ function App() {
 }
 ```
 
-- With JSX, our code looks more readable, with an HTML-like structure. But behind the scenes, everything is converted to native React code and then to JavaScript before being added to the DOM. ✨
+- With JSX, our code looks more readable, with an HTML-like structure. But behind the scenes, everything is converted to native React code and then to JavaScript before being added to the DOM.
 
 **Note**- JSX is not a requiremnet for using React. Using React without JSX is especially convenient when you don’t want to set up compilation in your build environment.
 
 [Read More](https://legacy.reactjs.org/docs/react-without-jsx.html)
 
-## React Elements 🧱
+## React Elements
 
 - Elements are the smallest building blocks of React apps.
 - A React element is nothing but a normal JavaScript variable.
@@ -172,7 +172,7 @@ const element = <h1>Hello, world</h1>;
  root.render(element)
 ```
 
-## React Component 📦
+## React Component
 
 - React component is nothing but a normal javascript function that returns some jsx (markup).
 - These components are reusable UI element for our apps.
@@ -216,6 +216,6 @@ const Component = () => {
 - But to call **React Component** we use angle brackets `{<HeaderComponent/>}`.
 - But is there any other way yes we can call directly `{HeaderComponent()}`, like we call in our JS file. because at the end of the day components are normal JS funtion nothing else.
 
-### Component Composition 🤝
+### Component Composition
 
 - If we use component inside a component. It is call Component Composition.

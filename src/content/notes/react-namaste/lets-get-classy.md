@@ -6,41 +6,41 @@ track: "React / Namaste React"
 priority: "Must Know"
 ---
 
-- **Earlier Days of React** 🕰️:
+- **Earlier Days of React** :
   - React originally relied heavily on **class-based components**.
   - No `useState`, `useEffect`, or hooks—just classes and lifecycle methods.
   - Writing and maintaining code in class components was challenging, especially as applications grew in size.
 
-- **Why Developers Loved It** 💻:
+- **Why Developers Loved It** :
   - Despite the challenges, class-based components were a game-changer for developers moving from jQuery to React.
   - The concept of **reconciliation** (React's ability to efficiently update the DOM) was always a part of React, but it has seen performance optimizations over time.
 
-- **Challenges with Class-Based Components** 😓:
+- **Challenges with Class-Based Components** :
   - As the codebase expanded, **maintainability** became an issue.
   - Code in class components tended to get **messy** and harder to understand over time.
   - **New developers** often found it difficult to grasp the concepts behind class-based components.
 
-- **Understanding Class-Based Components** 🧠:
+- **Understanding Class-Based Components** :
   - Class-based components share the same purpose as functional components but are more complex.
   - It's important to understand them, as **legacy codebases** in some companies may still rely on this structure.
   - They are still **relevant in interviews**, so it's good to be familiar with common questions around them.
 
 **Note:** Class-based components are **not widely used** in modern React development, but knowledge of them can be valuable for working with older projects or answering interview questions.
 
-## Let's Explore More 🌟
+## Let's Explore More
 
-- **Functional Components** 🔧:
+- **Functional Components** :
   - At the end of the day, functional components are just **regular JavaScript functions**.
-  
-- **Class-Based Components** 🏛️:
+
+- **Class-Based Components** :
   - Similarly, class-based components are essentially **JavaScript classes** under the hood.
-  
-- **The `render()` Method** 🖼️:
+
+- **The `render()` Method** :
   - The most important part of a class-based component is the `render()` method.
   - You **cannot create** a valid class-based component without a `render()` method.
   - Just like functional components return JSX, the `render()` method in class-based components also returns **JSX**.
 
-- **Injecting into the DOM** 🛠️:
+- **Injecting into the DOM** :
   - Whatever you return from a functional component or the `render()` method in a class-based component gets **injected into the DOM**.
 
 ### Example code of Class-based Component vs Function Component.
@@ -58,15 +58,15 @@ class ProfileClass extends React.Component{
 }
 export default ProfileClass
 ```
-- We define a class-based component with the `class` keyword followed by the name of the `component`. 🏷️ This syntax allows us to create a new class that extends the base `Component` class provided by React.
+- We define a class-based component with the `class` keyword followed by the name of the `component`.  This syntax allows us to create a new class that extends the base `Component` class provided by React.
 
-- After this, we `extend` with `React.Component`, which is imported from the `React` library. 📦 The `extends` keyword signifies that our class will inherit all the properties and methods of `React.Component`, allowing us to build upon React’s core functionalities.
+- After this, we `extend` with `React.Component`, which is imported from the `React` library.  The `extends` keyword signifies that our class will inherit all the properties and methods of `React.Component`, allowing us to build upon React’s core functionalities.
 
-- By using the `extends` keyword, we inherit the superpowers of `React.Component`. ✨ This inheritance grants us access to lifecycle methods, state management, and other built-in features of React components.
+- By using the `extends` keyword, we inherit the superpowers of `React.Component`.  This inheritance grants us access to lifecycle methods, state management, and other built-in features of React components.
 
-- The `render()` method is the most important; whatever needs to be returned should be written inside it. 🔄 This method must return a React element (JSX) that represents the UI of the component. It is called automatically by React to update the UI when the component’s state or props change.
+- The `render()` method is the most important; whatever needs to be returned should be written inside it.  This method must return a React element (JSX) that represents the UI of the component. It is called automatically by React to update the UI when the component’s state or props change.
 
-- `import` and `export` work the same way as in functional components. 📥📤 These keywords are used to bring in external code (modules) and make parts of your code available to other modules. This modular approach helps in organizing and maintaining code more efficiently.
+- `import` and `export` work the same way as in functional components.  These keywords are used to bring in external code (modules) and make parts of your code available to other modules. This modular approach helps in organizing and maintaining code more efficiently.
 
 
 #### Functional Component
@@ -76,19 +76,19 @@ const Profile = ()=>{
 }
 export default Profile
 ```
-- A `Functional Component` works the same way as a normal `JavaScript` function. 🧩 It is a simpler way to create components in React by just defining a function that returns JSX.
+- A `Functional Component` works the same way as a normal `JavaScript` function.  It is a simpler way to create components in React by just defining a function that returns JSX.
 
-- It is the new concise and developer-friendly form of writing `React` components. 🌟 Functional components eliminate the boilerplate code required for class-based components, making them easier to read and maintain.
+- It is the new concise and developer-friendly form of writing `React` components.  Functional components eliminate the boilerplate code required for class-based components, making them easier to read and maintain.
 
-- In a `functional component`, we don't have the `render()` method, but we still use the word `render` often when describing the `lifecycle` of the component due to legacy habits. 🔄 This is because the concept of rendering is central to both class-based and functional components, even though functional components handle rendering implicitly through their return statements.
+- In a `functional component`, we don't have the `render()` method, but we still use the word `render` often when describing the `lifecycle` of the component due to legacy habits.  This is because the concept of rendering is central to both class-based and functional components, even though functional components handle rendering implicitly through their return statements.
 
 ## Props in Class-Based Component
 
-- In a functional component, we receive props directly and can access them using `props.nameOfProps` or by destructuring them directly. 🛠️ This makes it easy to handle and manipulate properties passed from a parent component.
+- In a functional component, we receive props directly and can access them using `props.nameOfProps` or by destructuring them directly.  This makes it easy to handle and manipulate properties passed from a parent component.
 
-- But in a class-based component, we receive props inside the component using `this.props.name`. 📦 This means you access props through the `this` context, which refers to the current instance of the class component.
+- But in a class-based component, we receive props inside the component using `this.props.name`.  This means you access props through the `this` context, which refers to the current instance of the class component.
 
-- So, **how does a class-based component know that it has received props?** 🤔 React is constantly tracking our class component. When props are passed from a parent to a child component, React attaches these props to the class component automatically. This allows the class-based component to access and use the props as needed.
+- So, **how does a class-based component know that it has received props?**  React is constantly tracking our class component. When props are passed from a parent to a child component, React attaches these props to the class component automatically. This allows the class-based component to access and use the props as needed.
 
 ### Example of receiving props in class-based component
 ```javascript
@@ -100,7 +100,7 @@ class ProfileClass extends React.Component{
       <>
         <h1>Profile Class Test</h1>
         <h2>{this.props.hello}</h2>
-        <h3>{hello} </h3> 
+        <h3>{hello} </h3>
        </>
        )
 
@@ -123,13 +123,13 @@ const Profile = ({hello})=>{
 }
 export default Profile
 ```
-## State in Class-Based Component 🧩
+## State in Class-Based Component
 
-- **State variables** are essential in React to manage the UI and keep everything in sync. Without state variables, React wouldn’t be able to track changes and update the UI accordingly. 🔄
+- **State variables** are essential in React to manage the UI and keep everything in sync. Without state variables, React wouldn’t be able to track changes and update the UI accordingly.
 
-- In a **functional component**, we use a hook called `useState()` to manage state. 🎣 This hook requires two values: the initial state and a setter function to update the state and the UI.
+- In a **functional component**, we use a hook called `useState()` to manage state.  This hook requires two values: the initial state and a setter function to update the state and the UI.
 
-- In a **class-based component**, we manage state using the `constructor` method. 🏗️ The `constructor` is where we initialize the state object and bind methods. State is defined as an object within the `constructor`, and we use `this.setState()` to update it.
+- In a **class-based component**, we manage state using the `constructor` method.  The `constructor` is where we initialize the state object and bind methods. State is defined as an object within the `constructor`, and we use `this.setState()` to update it.
 
 ```javascript
 import React from 'react'
@@ -151,11 +151,11 @@ class ProfileClass extends React.Component{
       </button>
         )
     </>
-    } 
+    }
 }
 ```
 
-- Inside the `constructor` method, within the `this.state` object, we can declare any number of state variables. 🛠️ This is where we initialize our component’s state, setting up the initial values that will control the component’s behavior and appearance.
+- Inside the `constructor` method, within the `this.state` object, we can declare any number of state variables.  This is where we initialize our component’s state, setting up the initial values that will control the component’s behavior and appearance.
 
     ```javascript
     class MyComponent extends React.Component {
@@ -170,8 +170,8 @@ class ProfileClass extends React.Component{
     ```
     In this example, `count` and `message` are state variables initialized in the `constructor`.
 
-- We pass the `props` keyword inside the `constructor(props)` method and also inside the `super(props)` method. 
-- 🔗 This is crucial because `super(props)` initializes the `this` context and allows us to use `this.props` within the constructor.
+- We pass the `props` keyword inside the `constructor(props)` method and also inside the `super(props)` method.
+-  This is crucial because `super(props)` initializes the `this` context and allows us to use `this.props` within the constructor.
 
     ```javascript
     constructor(props) {
@@ -183,7 +183,7 @@ class ProfileClass extends React.Component{
 
     If we skip `super(props)`, React will throw an error, as it’s required to correctly inherit from `React.Component`.
 
-- Every state variable in a class-based component is stored inside `this.state = { all the state variables }`. 🗃️ This object holds all the state variables, which can be updated later using `this.setState()`.
+- Every state variable in a class-based component is stored inside `this.state = { all the state variables }`.  This object holds all the state variables, which can be updated later using `this.setState()`.
 
     ```javascript
     this.state = {
@@ -194,7 +194,7 @@ class ProfileClass extends React.Component{
 
     Here, `count` and `isVisible` are part of the state, and their values can control different aspects of the component's rendering.
 
-- We do not mutate state directly. ❌ Never do `this.state = something`. Instead, always use `this.setState()` to update the state. This ensures React is aware of the state change and can re-render the component as needed.
+- We do not mutate state directly.  Never do `this.state = something`. Instead, always use `this.setState()` to update the state. This ensures React is aware of the state change and can re-render the component as needed.
 
     ```javascript
     // Incorrect way (never do this):
@@ -206,15 +206,15 @@ class ProfileClass extends React.Component{
 
     Using `this.setState()` tells React to update the component's state and re-render it to reflect the changes in the UI.
 
-- React doesn't care whether we use a `functional` component or a `class-based` component. 🔄 The process of `reconciliation`—where React updates the DOM to match the virtual DOM—happens the same way in both types of components. This means that React treats both component types equally when it comes to rendering and updating the UI.
+- React doesn't care whether we use a `functional` component or a `class-based` component.  The process of `reconciliation`—where React updates the DOM to match the virtual DOM—happens the same way in both types of components. This means that React treats both component types equally when it comes to rendering and updating the UI.
 
-- Although we use the `useState` hook to manage state in the newer functional component approach, behind the scenes, state is managed the same way as in class-based components. 🧠 This means that even though the syntax is different and more concise in functional components, the underlying mechanism of state management—where React tracks state changes and triggers re-renders—is consistent across both paradigms.
+- Although we use the `useState` hook to manage state in the newer functional component approach, behind the scenes, state is managed the same way as in class-based components.  This means that even though the syntax is different and more concise in functional components, the underlying mechanism of state management—where React tracks state changes and triggers re-renders—is consistent across both paradigms.
 
-## React Lifecycle 🔄
+## React Lifecycle
 
 The React component lifecycle consists of a series of methods that are invoked at different stages of a component’s existence. These stages include **mounting**, **updating**, and **unmounting**.
 
-### 1. Mounting 🛠️
+### 1. Mounting
 This phase occurs when a component is being inserted into the DOM for the first time. The following methods are invoked in this order:
 
 - **`constructor()`**: This method is called when the component is first created. It’s where you typically initialize the component’s state and bind event handlers.
@@ -251,7 +251,7 @@ This phase occurs when a component is being inserted into the DOM for the first 
     }
     ```
 
-### Example to understand this LifeCycle Method 🔄
+### Example to understand this LifeCycle Method
 ```javascript
 import {Component} from "react";
 import ProfileClass from "./ProfileClass";
@@ -340,8 +340,8 @@ class ProfileClass extends React.Component{
 }
 export default ProfileClass
 ```
-- **Now, what will be the output?** 🤔
-  
+- **Now, what will be the output?**
+
 - First, the parent component runs, and then its child as soon as React encounters it. This means the React lifecycle methods for the parent component will be invoked first until it reaches the child component.
 
 - As soon as React encounters a `child component` within the parent, it temporarily `pauses` the parent’s lifecycle to fully process the child component's lifecycle methods. React ensures the child component is properly constructed, rendered, and mounted before resuming and completing the parent’s lifecycle.
@@ -350,7 +350,7 @@ export default ProfileClass
 
 - Here, as we can see, once React reaches the child component, it completes the child’s entire lifecycle before returning to the parent to complete its lifecycle methods. This order ensures that the child component is fully initialized and mounted before the parent component finishes mounting.
 
-- But what happens if we have more than one child? 🤔 How does the lifecycle work in that case? Let’s explore that scenario.
+- But what happens if we have more than one child?  How does the lifecycle work in that case? Let’s explore that scenario.
 
 ```javascript
 ...
@@ -368,13 +368,13 @@ return (
 
 #### Note: Sometimes `componentDidMount` will be rendered twice. So dont panice its noting wrong with React. Its just the `<strict>` mode doings.
 
-## React's Two Phases of Rendering ⚙️
+## React's Two Phases of Rendering
 ![React LifeCycle](/notes/namaste-react/lets-get-classy/image-3.png)
 - When React is rendering components, it does so in two distinct phases:
-  - **Render Phase** 🖼️
-  - **Commit Phase** ✅
+  - **Render Phase**
+  - **Commit Phase**
 
-### Render Phase 🖼️
+### Render Phase
 
 - React first completes the **render phase**. During this phase, React prepares what needs to be rendered by calculating the changes that will be made to the UI. However, it does not actually make any changes to the DOM during this phase.
 
@@ -382,7 +382,7 @@ return (
 
 - The **render phase** is quick and efficient because React is only determining the changes, not applying them. This allows React to optimize performance and ensure everything is prepared correctly before moving to the next phase.
 
-### Commit Phase ✅
+### Commit Phase
 
 - After completing the render phase, React then transitions to the **commit phase**. This is where the actual changes are made to the DOM, and side effects such as API calls are triggered.
 
@@ -392,8 +392,8 @@ return (
 
 - By separating these two phases, React ensures that it can efficiently prepare and then accurately apply changes, leading to a smoother and more consistent user experience.
 
-## Let's Make an API Call 
-- We will make an API call inside class-based component to understand React `LifeCycle` more deeply. 
+## Let's Make an API Call
+- We will make an API call inside class-based component to understand React `LifeCycle` more deeply.
 ```javascript
  import React from "react"
 
@@ -437,12 +437,12 @@ class ProfileClass extends React.Component{
 export default ProfileClass
 ```
 ![Output](/notes/namaste-react/lets-get-classy/image-4.png)
-- The above `ProfileClass` component is nested inside a parent component to help us understand the React **Lifecycle** 🔄.
+- The above `ProfileClass` component is nested inside a parent component to help us understand the React **Lifecycle** .
 - In the output, we can observe that the render process starts with the `ParentComponent`.
 - However, in the `ChildComponent`, due to an asynchronous API call, the `Parent - componentDidMount` is called before the `ChildComponent`'s `componentDidMount`. This occurs because the API operation is asynchronous.
 - Since the data from the API takes some time to arrive, React completes the parent component's lifecycle first. After receiving the data, React will **re-render** the `ChildComponent` with the updated information.
 
-### Understanding the Update Cycle 🔁
+### Understanding the Update Cycle
 
 - This **re-render** cycle is known as the **Updating** phase.
 - Initially, the **Mounting** process happens, but as soon as React detects a `setState()` call after an API response, it triggers the **Updating** lifecycle.
@@ -450,10 +450,10 @@ export default ProfileClass
 - When `setState()` is called, React re-renders the DOM with the updated data, which subsequently triggers the `componentDidUpdate()` method.
 - The `componentDidMount()` method runs after the initial `render()`, while `componentDidUpdate()` runs after every subsequent re-render.
 
-### Modern Approach with Hooks 🪝
+### Modern Approach with Hooks
 
 - The same behavior can be easily managed using `useEffect()` in functional components. What used to require more code in class components has become much simpler and more efficient with hooks in modern React.
- 
+
  - **Basic Usage**: If you want to run a piece of code after every render (including updates), you can use `useEffect()` without a dependency array:
 
     ```javascript
@@ -470,7 +470,7 @@ export default ProfileClass
       console.log("Component updated!");
     }, [prop, state]);
     ```
-### Unmounting in React Components 🧹
+### Unmounting in React Components
 
 Unmounting refers to the phase in a React component's lifecycle when the component is being removed from the DOM. This phase is important because it allows you to perform cleanup operations to avoid memory leaks or other issues.
 
@@ -513,12 +513,12 @@ class MyComponent extends React.Component {
 #### Class-based Component
 ![alt text](/notes/namaste-react/lets-get-classy/image-8.png)
 
-### How Many Pages Does a SPA Have? (Website Built on React) 📝
+### How Many Pages Does a SPA Have? (Website Built on React)
 
 - **Single Page**: A Single Page Application (SPA) has only one page. Although it might seem like you are navigating between different pages, you are actually just changing the components or views within the same page.
 - **Component Cleanup**: When you change views or components in an SPA, it's important to clean up resources such as event listeners, intervals, or any other side effects to avoid memory leaks and ensure smooth performance.
 
-### Unmounting in `useEffect()` 🧹
+### Unmounting in `useEffect()`
 
 In React functional components, the `useEffect()` hook is used to manage side effects like data fetching, subscriptions, and manual DOM manipulations. When a component unmounts, it's important to clean up these side effects to prevent memory leaks and other issues.
 
@@ -550,7 +550,7 @@ function MyComponent() {
 
 // Note: In strict mode side Effects run two times and unmouting doesn't works properly
 ```
-### Why Can You Use `async` Before `componentDidMount()` but Not Before `useEffect()`? 🤔
+### Why Can You Use `async` Before `componentDidMount()` but Not Before `useEffect()`?
 
 #### **`componentDidMount()` in Class Components**
 - In class components, `componentDidMount()` is a method where you can perform side effects like data fetching. Since it’s a regular method, you can easily make it `async` by adding the `async` keyword before it:
@@ -579,7 +579,7 @@ function MyComponent() {
     }, []);
     ```
 
-- **Why Not?** 
+- **Why Not?**
   - `useEffect()` expects a cleanup function (or nothing) to be returned, but if the effect callback is an `async` function, it would return a promise instead of a cleanup function. This would break the intended behavior of `useEffect()`.
   - The `async` function inherently returns a promise, which is not what React expects from the `useEffect()` hook.
 

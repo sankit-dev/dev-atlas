@@ -6,26 +6,26 @@ track: "React / Namaste React"
 priority: "Must Know"
 ---
 
-## Optimizing Data Management in React 🚀
+## Optimizing Data Management in React
 
 - **ReactDevTools Insight**: Inside ReactDevTools, we can see the Data Layer, which means we can inspect API data directly without needing to `console.log` it. This makes debugging and analyzing your application's data much easier.
   ![alt text](/notes/namaste-react/data-is-the-new-oil/image.png)
 
-### Data Best Practices 💡
+### Data Best Practices
 
 - **Don't Waste Your Data**: Be mindful of unnecessary data fetching or processing.
 - **Structure Your Data Well**: Organize your data efficiently for easier access and manipulation.
 - **Data is the New Oil**: Handle your data with care, as it’s a valuable resource in modern applications.
 - **Use it Wisely**: Optimize data usage to enhance performance and user experience.
 
-### UI Layer in React 🖼️
+### UI Layer in React
 
 - **Definition**: Manages the presentation and user interface, handling how data is displayed and interacted with.
 - **Components**: Built using React components that define the look and behavior of the UI.
 - **Purpose**: Displays data meaningfully to the user and handles user interactions, passing events to the data layer.
 - **Interaction**: Receives data as props or through context and sends user inputs back to the data layer.
 
-### Data Layer in React 📊
+### Data Layer in React
 
 - **Definition**: Manages state, data fetching, and business logic, dealing with data storage, retrieval, and processing.
 - **State Management**: Uses hooks (`useState`, `useReducer`) or libraries (Redux, Zustand) to manage application state.
@@ -39,11 +39,11 @@ priority: "Must Know"
 - **Logic**: UI layer handles how data looks; data layer handles how data is fetched and managed.
 - **Interaction**: UI layer displays data and sends user actions to the data layer for state updates.
 
-## What are Props? 📦
+## What are Props?
 
 - **Props**: Props are pieces of data that a parent component passes down to its child components. They allow components to communicate and share information in React.
 
-## Difference Between Props and State Variables ⚖️
+## Difference Between Props and State Variables
 
 ### Props:
 
@@ -57,7 +57,7 @@ priority: "Must Know"
 - **Component-Specific**: Maintained and controlled by the component itself.
 - **Triggers Re-renders**: Changing state triggers re-renders of the component.
 
-## Prop Drilling 🌀
+## Prop Drilling
 
 ### What is Prop Drilling?
 
@@ -66,7 +66,7 @@ priority: "Must Know"
   - **Performance Impact**: Changing props in a parent component causes all components that receive those props to re-render, potentially slowing down the application.
   - **State Lifting**: Sometimes requires lifting state up to a common ancestor, which can make the component tree more complex.
 
-## Context API in React 🌐
+## Context API in React
 
 ### What is Context API?
 
@@ -92,7 +92,7 @@ priority: "Must Know"
 const value = useContext(MyContext);
 ```
 
-### Benefits of Context API 🌟
+### Benefits of Context API
 
 - **Avoids Prop Drilling**:
   - **Reduction in Prop Passing**: Context API significantly reduces the need to pass props through intermediate components, which can simplify your component structure and make the code less cluttered.
