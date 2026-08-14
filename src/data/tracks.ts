@@ -588,8 +588,3 @@ export const source = {
   label: 'Always Be Job Ready Study Resource',
   url: notionRootUrl,
 }
-
-export const roadmapSteps = tracks.map((track) => ({
-  description: track.description,
-  title: track.title,
-}))
