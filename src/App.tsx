@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import type { Note } from './data/tracks'
 import { Contribute } from './components/Contribute'
+import { DsaCourse } from './components/DsaCourse'
 import { Footer } from './components/Footer'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
@@ -11,6 +12,12 @@ import { PageShell } from './components/PageShell'
 import { Roadmap } from './components/Roadmap'
 import { Statement } from './components/Statement'
 import { flattenNotes, tracks } from './data/tracks'
+import { authClient } from './lib/auth'
+import {
+  fetchCompletedNoteSlugs,
+  markNoteComplete,
+  syncCompletedNoteSlugs,
+} from './lib/noteProgress'
 
 export type Theme = 'light' | 'dark'
 
@@ -29,6 +36,19 @@ function getNoteSlugFromHash(hashRoute: string) {
   return hashRoute.startsWith('#/notes/')
     ? hashRoute.replace('#/notes/', '')
     : null
+}
+
+function getDsaQuestIdFromHash(hashRoute: string) {
+  if (!hashRoute.startsWith('#/dsa/')) {
+    return null
+  }
+
+  const questId = hashRoute.replace('#/dsa/', '').trim()
+  return questId || null
+}
+
+function isDsaRoute(hashRoute: string) {
+  return hashRoute === '#/dsa' || hashRoute.startsWith('#/dsa/')
 }
 
 function getInitialTheme(): Theme {
@@ -126,6 +146,7 @@ type NoteNavigationOptions = {
 }
 
 function App() {
+  const { data: session } = authClient.useSession()
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
   const [hashRoute, setHashRoute] = useState(getHashRoute)
   const [completedNoteSlugs, setCompletedNoteSlugs] = useState(
@@ -133,8 +154,13 @@ function App() {
   )
   const [transitionTitle, setTransitionTitle] = useState<string | null>(null)
   const transitionTimers = useRef<number[]>([])
+  const hasLoadedRemoteProgress = useRef(false)
+  const syncedProgressSignature = useRef('')
+  const savedRemoteNoteSlugs = useRef(new Set<string>())
 
   const activeNoteSlug = getNoteSlugFromHash(hashRoute)
+  const activeDsaQuestId = getDsaQuestIdFromHash(hashRoute)
+  const isDsa = isDsaRoute(hashRoute)
   const activeNoteMatch = tracks
     .flatMap((track) =>
       flattenNotes(track.topics).map((note) => ({
@@ -184,6 +210,28 @@ function App() {
     transitionTimers.current = [routeTimer, clearTimer]
   }
 
+  const completeNote = (noteSlug: string) => {
+    setCompletedNoteSlugs((currentSlugs) => {
+      if (currentSlugs.has(noteSlug)) {
+        return currentSlugs
+      }
+
+      return new Set(currentSlugs).add(noteSlug)
+    })
+
+    if (session?.user && !savedRemoteNoteSlugs.current.has(noteSlug)) {
+      savedRemoteNoteSlugs.current.add(noteSlug)
+      void markNoteComplete(noteSlug).catch(() => {
+        savedRemoteNoteSlugs.current.delete(noteSlug)
+      })
+    }
+  }
+
+  const navigateToDsaQuest = (questId: string) => {
+    window.location.hash = `#/dsa/${questId}`
+    scrollToPageTop()
+  }
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
     document.documentElement.dataset.theme = theme
@@ -205,20 +253,54 @@ function App() {
       setHashRoute(nextHashRoute)
 
       if (nextNoteSlug) {
-        setCompletedNoteSlugs((currentSlugs) => {
-          if (currentSlugs.has(nextNoteSlug)) {
-            return currentSlugs
-          }
-
-          return new Set(currentSlugs).add(nextNoteSlug)
-        })
+        completeNote(nextNoteSlug)
       }
     }
 
     window.addEventListener('hashchange', syncRoute)
 
     return () => window.removeEventListener('hashchange', syncRoute)
-  }, [])
+  }, [session?.user])
+
+  useEffect(() => {
+    if (!session?.user || hasLoadedRemoteProgress.current) {
+      return
+    }
+
+    hasLoadedRemoteProgress.current = true
+
+    void fetchCompletedNoteSlugs()
+      .then((remoteCompletedNoteSlugs) => {
+        remoteCompletedNoteSlugs.forEach((noteSlug) => {
+          savedRemoteNoteSlugs.current.add(noteSlug)
+        })
+
+        setCompletedNoteSlugs((currentSlugs) => {
+          const nextSlugs = new Set(currentSlugs)
+          remoteCompletedNoteSlugs.forEach((noteSlug) => nextSlugs.add(noteSlug))
+          return nextSlugs
+        })
+      })
+      .catch(() => undefined)
+  }, [session?.user])
+
+  useEffect(() => {
+    if (!session?.user || completedNoteSlugs.size === 0) {
+      return
+    }
+
+    const progressSignature = [...completedNoteSlugs].sort().join('|')
+
+    if (syncedProgressSignature.current === progressSignature) {
+      return
+    }
+
+    syncedProgressSignature.current = progressSignature
+
+    void syncCompletedNoteSlugs(completedNoteSlugs).catch(() => {
+      syncedProgressSignature.current = ''
+    })
+  }, [completedNoteSlugs, session?.user])
 
   useEffect(() => {
     if (activeNoteSlug) {
@@ -234,7 +316,7 @@ function App() {
   )
 
   return (
-    <PageShell>
+    <PageShell variant={isDsa ? 'dsa' : 'default'}>
       <Header
         theme={theme}
         onThemeToggle={() =>
@@ -243,12 +325,18 @@ function App() {
           )
         }
       />
-      {activeNoteMatch ? (
+      {isDsa ? (
+        <DsaCourse
+          activeQuestId={activeDsaQuestId}
+          onNavigateQuest={navigateToDsaQuest}
+        />
+      ) : activeNoteMatch ? (
         <NoteReader
           note={activeNoteMatch.note}
           track={activeNoteMatch.track}
           completedNoteSlugs={completedNoteSlugs}
           nextTrack={nextTrack}
+          onCompleteNote={completeNote}
           onNavigateNote={navigateToNote}
         />
       ) : (

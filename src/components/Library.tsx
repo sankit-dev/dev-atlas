@@ -1,6 +1,6 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import type { Accent, Note, Track } from '../data/tracks'
-import { countNotes, flattenNotes, totalNoteCount, tracks } from '../data/tracks'
+import { countNotes, flattenNotes, tracks } from '../data/tracks'
 import { Wrap } from './PageShell'
 
 const trackAccentColor: Record<Accent, string> = {
@@ -75,6 +75,7 @@ export function Library() {
   const [activeBranch, setActiveBranch] = useState<string>(allBranchLabel)
   const [activeTrack, setActiveTrack] = useState('All')
   const [expandedTrack, setExpandedTrack] = useState<string | null>(null)
+  const [isTrackListExpanded, setIsTrackListExpanded] = useState(false)
   const featuredTrack = tracks[0]
   const activeBranchConfig = libraryBranches.find(
     (branch) => branch.label === activeBranch,
@@ -90,11 +91,6 @@ export function Library() {
         : activeBranch
   const trackFilters = ['All', ...branchTracks.map((track) => track.title)]
 
-  const branchNoteCount = (trackTitles: readonly string[]) =>
-    tracks
-      .filter((track) => trackTitles.includes(track.title))
-      .reduce((count, track) => count + countNotes(track.topics), 0)
-
   const visibleTracks = useMemo(() => {
     const term = query.trim().toLowerCase()
     const scopedTracks = activeBranchConfig
@@ -108,16 +104,23 @@ export function Library() {
       return matchesFilter && matchesSearch
     })
   }, [activeBranchConfig, activeTrack, query])
+  const visibleTrackLimit = 3
+  const hasMoreTracks = visibleTracks.length > visibleTrackLimit
+  const displayedTracks = isTrackListExpanded
+    ? visibleTracks
+    : visibleTracks.slice(0, visibleTrackLimit)
 
   function handleBranchSelect(item: string) {
     setActiveBranch(item)
     setActiveTrack('All')
     setExpandedTrack(null)
+    setIsTrackListExpanded(false)
   }
 
   function handleFilterSelect(item: string) {
     setActiveTrack(item)
     setExpandedTrack(null)
+    setIsTrackListExpanded(false)
   }
 
   return (
@@ -127,38 +130,20 @@ export function Library() {
           <div className="library-panel__intro">
             <p className="kicker">The library</p>
             <h2 className="library-panel__title">
-              A cleaner path through backend fundamentals.
+              Pick a track. Follow the path.
             </h2>
-            <div className="library-panel__flow" aria-label="Library workflow">
-              <span>Choose branch</span>
-              <span>Pick a track</span>
-              <span>Read in order</span>
-              <span>Revise faster</span>
-            </div>
+            <p className="library-panel__copy">
+              Focused backend notes grouped into practical learning tracks.
+            </p>
           </div>
-          <div className="library-panel__stats" aria-label="Library summary">
-            <div>
-              <b>{totalNoteCount}</b>
-              <span>notes</span>
-            </div>
-            <div>
-              <b>{tracks.length}</b>
-              <span>tracks</span>
-            </div>
-            <a href={`#/notes/${featuredTrack.topics[0].slug}`}>
-              Start with {featuredTrack.shortTitle}
-            </a>
-          </div>
+          <a
+            className="library-panel__start"
+            href={`#/notes/${featuredTrack.topics[0].slug}`}
+          >
+            Start with {featuredTrack.shortTitle}
+            <span aria-hidden="true">→</span>
+          </a>
         </div>
-
-        <aside className="learning-practice-banner" aria-label="How to use this library">
-          <span className="learning-practice-banner__label">Make it stick</span>
-          <p>
-            <strong>Reading is the start, not the finish.</strong> For each topic:
-            read the note, build one tiny example, then explain it aloud without
-            looking. That is how you become interview-ready.
-          </p>
-        </aside>
 
         <div className="library-controls">
           <div className="library-controls__header">
@@ -178,8 +163,7 @@ export function Library() {
               type="button"
             >
               <span>All</span>
-              <strong>{tracks.length} tracks</strong>
-              <small>{totalNoteCount} notes across the full library.</small>
+              <strong>{tracks.length}</strong>
             </button>
 
             {libraryBranches.map((branch) => (
@@ -187,13 +171,11 @@ export function Library() {
                 className={activeBranch === branch.label ? 'is-active' : ''}
                 key={branch.label}
                 onClick={() => handleBranchSelect(branch.label)}
-                type="button"
-              >
-                <span>{branch.label}</span>
-                <strong>{branch.trackTitles.length} tracks</strong>
-                <small>{branch.description}</small>
-                <em>{branchNoteCount(branch.trackTitles)} notes</em>
-              </button>
+              type="button"
+            >
+              <span>{branch.label}</span>
+              <strong>{branch.trackTitles.length}</strong>
+            </button>
             ))}
           </div>
 
@@ -236,7 +218,7 @@ export function Library() {
         </div>
 
         <div className="library-grid">
-          {visibleTracks.map((track, trackIndex) => (
+          {displayedTracks.map((track, trackIndex) => (
             <TrackCard
               index={trackIndex}
               isExpanded={expandedTrack === track.title}
@@ -250,6 +232,21 @@ export function Library() {
             />
           ))}
         </div>
+
+        {hasMoreTracks && (
+          <div className="library-show-more">
+            <button
+              aria-expanded={isTrackListExpanded}
+              onClick={() =>
+                setIsTrackListExpanded((currentValue) => !currentValue)
+              }
+              type="button"
+            >
+              <span>{isTrackListExpanded ? 'Show fewer tracks' : 'Show more tracks'}</span>
+              <b aria-hidden="true">{isTrackListExpanded ? '↑' : '↓'}</b>
+            </button>
+          </div>
+        )}
 
         {visibleTracks.length === 0 && (
           <p className="library-empty">No topic found yet. Try SQL, HTTP, or AI.</p>
