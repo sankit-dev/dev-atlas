@@ -12,6 +12,12 @@ import { PageShell } from './components/PageShell'
 import { Roadmap } from './components/Roadmap'
 import { Statement } from './components/Statement'
 import { flattenNotes, tracks } from './data/tracks'
+import { authClient } from './lib/auth'
+import {
+  fetchCompletedNoteSlugs,
+  markNoteComplete,
+  syncCompletedNoteSlugs,
+} from './lib/noteProgress'
 
 export type Theme = 'light' | 'dark'
 
@@ -140,6 +146,7 @@ type NoteNavigationOptions = {
 }
 
 function App() {
+  const { data: session } = authClient.useSession()
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
   const [hashRoute, setHashRoute] = useState(getHashRoute)
   const [completedNoteSlugs, setCompletedNoteSlugs] = useState(
@@ -147,6 +154,9 @@ function App() {
   )
   const [transitionTitle, setTransitionTitle] = useState<string | null>(null)
   const transitionTimers = useRef<number[]>([])
+  const hasLoadedRemoteProgress = useRef(false)
+  const syncedProgressSignature = useRef('')
+  const savedRemoteNoteSlugs = useRef(new Set<string>())
 
   const activeNoteSlug = getNoteSlugFromHash(hashRoute)
   const activeDsaQuestId = getDsaQuestIdFromHash(hashRoute)
@@ -200,6 +210,23 @@ function App() {
     transitionTimers.current = [routeTimer, clearTimer]
   }
 
+  const completeNote = (noteSlug: string) => {
+    setCompletedNoteSlugs((currentSlugs) => {
+      if (currentSlugs.has(noteSlug)) {
+        return currentSlugs
+      }
+
+      return new Set(currentSlugs).add(noteSlug)
+    })
+
+    if (session?.user && !savedRemoteNoteSlugs.current.has(noteSlug)) {
+      savedRemoteNoteSlugs.current.add(noteSlug)
+      void markNoteComplete(noteSlug).catch(() => {
+        savedRemoteNoteSlugs.current.delete(noteSlug)
+      })
+    }
+  }
+
   const navigateToDsaQuest = (questId: string) => {
     window.location.hash = `#/dsa/${questId}`
     scrollToPageTop()
@@ -226,20 +253,54 @@ function App() {
       setHashRoute(nextHashRoute)
 
       if (nextNoteSlug) {
-        setCompletedNoteSlugs((currentSlugs) => {
-          if (currentSlugs.has(nextNoteSlug)) {
-            return currentSlugs
-          }
-
-          return new Set(currentSlugs).add(nextNoteSlug)
-        })
+        completeNote(nextNoteSlug)
       }
     }
 
     window.addEventListener('hashchange', syncRoute)
 
     return () => window.removeEventListener('hashchange', syncRoute)
-  }, [])
+  }, [session?.user])
+
+  useEffect(() => {
+    if (!session?.user || hasLoadedRemoteProgress.current) {
+      return
+    }
+
+    hasLoadedRemoteProgress.current = true
+
+    void fetchCompletedNoteSlugs()
+      .then((remoteCompletedNoteSlugs) => {
+        remoteCompletedNoteSlugs.forEach((noteSlug) => {
+          savedRemoteNoteSlugs.current.add(noteSlug)
+        })
+
+        setCompletedNoteSlugs((currentSlugs) => {
+          const nextSlugs = new Set(currentSlugs)
+          remoteCompletedNoteSlugs.forEach((noteSlug) => nextSlugs.add(noteSlug))
+          return nextSlugs
+        })
+      })
+      .catch(() => undefined)
+  }, [session?.user])
+
+  useEffect(() => {
+    if (!session?.user || completedNoteSlugs.size === 0) {
+      return
+    }
+
+    const progressSignature = [...completedNoteSlugs].sort().join('|')
+
+    if (syncedProgressSignature.current === progressSignature) {
+      return
+    }
+
+    syncedProgressSignature.current = progressSignature
+
+    void syncCompletedNoteSlugs(completedNoteSlugs).catch(() => {
+      syncedProgressSignature.current = ''
+    })
+  }, [completedNoteSlugs, session?.user])
 
   useEffect(() => {
     if (activeNoteSlug) {
@@ -275,6 +336,7 @@ function App() {
           track={activeNoteMatch.track}
           completedNoteSlugs={completedNoteSlugs}
           nextTrack={nextTrack}
+          onCompleteNote={completeNote}
           onNavigateNote={navigateToNote}
         />
       ) : (

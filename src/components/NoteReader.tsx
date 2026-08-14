@@ -20,6 +20,7 @@ type NoteReaderProps = {
       transitionTitle?: string
     },
   ) => void
+  onCompleteNote: (noteSlug: string) => void
   track: Track
 }
 
@@ -149,6 +150,7 @@ export function NoteReader({
   completedNoteSlugs,
   note,
   nextTrack,
+  onCompleteNote,
   onNavigateNote,
   track,
 }: NoteReaderProps) {
@@ -194,6 +196,7 @@ export function NoteReader({
   ) => {
     event.preventDefault()
     setIsMobileSidebarOpen(false)
+    onCompleteNote(note.slug)
     onNavigateNote(targetNote, options)
   }
 

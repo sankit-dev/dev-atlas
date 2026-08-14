@@ -1,11 +1,12 @@
+import { AuthControls } from './AuthControls'
 import { Brand } from './Brand'
 import { Wrap } from './PageShell'
 
 const navigationLinks = [
-  { label: 'Library', href: '#library' },
-  { label: 'DSA', href: '#/dsa' },
-  { label: 'Roadmap', href: '#roadmap' },
-  { label: 'Contribute', href: '#contribute' },
+  { label: 'Library', href: '#library', variant: 'standard' },
+  { label: "Don't click", href: '#/dsa', variant: 'challenge' },
+  { label: 'Roadmap', href: '#roadmap', variant: 'standard' },
+  { label: 'Contribute', href: '#contribute', variant: 'standard' },
 ] as const
 
 type HeaderProps = {
@@ -20,20 +21,27 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
     <Wrap>
       <nav
         aria-label="Primary navigation"
-        className="flex h-21.5 items-center justify-between max-[760px]:h-17.5"
+        className="flex min-h-21.5 items-center justify-between gap-6 py-5 max-[760px]:min-h-17.5 max-[760px]:py-4"
       >
         <Brand />
-        <div className="flex items-center gap-7.5 text-[13px] font-bold text-(--color-muted) max-[760px]:gap-4 max-[760px]:text-[11px]">
-          <div className="flex gap-7.5 max-[760px]:gap-4 max-[560px]:hidden">
+        <div className="site-header-actions">
+          <div className="site-header-links">
             {navigationLinks.map((link) => (
               <a
-                className="transition-colors hover:text-(--color-accent-strong)"
+                className={
+                  link.variant === 'challenge'
+                    ? 'site-nav-challenge'
+                    : 'site-nav-link'
+                }
                 href={link.href}
                 key={link.href}
               >
                 {link.label}
               </a>
             ))}
+          </div>
+          <div className="site-header-auth">
+            <AuthControls />
           </div>
           <button
             aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
