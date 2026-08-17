@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   dsaQuestById,
   dsaQuests,
@@ -7,6 +7,13 @@ import {
   type DsaQuest,
   type DsaSectionId,
 } from '../data/dsaCourse'
+import { authClient } from '../lib/auth'
+import {
+  fetchDsaProgress,
+  markDsaQuestOutcome,
+  markDsaReviewComplete,
+  syncDsaProgress,
+} from '../lib/dsaProgress'
 import { Wrap } from './PageShell'
 
 type ProgressOutcome = 'solved' | 'guided' | 'review'
@@ -154,12 +161,86 @@ function OriginalQuestBrief({ quest }: { quest: DsaQuest }) {
 }
 
 export function DsaCourse({ activeQuestId, onNavigateQuest }: DsaCourseProps) {
+  const { data: session } = authClient.useSession()
   const [progress, setProgress] = useState<DsaProgress>(getInitialProgress)
   const [revealedHints, setRevealedHints] = useState<Record<string, number>>({})
+  const hasLoadedRemoteProgress = useRef(false)
+  const syncedProgressSignature = useRef('')
 
+  // Persist to localStorage whenever progress changes
   useEffect(() => {
     window.localStorage.setItem(progressStorageKey, JSON.stringify(progress))
   }, [progress])
+
+  // On login: fetch remote progress and merge into local state
+  useEffect(() => {
+    if (!session?.user || hasLoadedRemoteProgress.current) {
+      return
+    }
+
+    hasLoadedRemoteProgress.current = true
+
+    void fetchDsaProgress()
+      .then((remoteRecords) => {
+        setProgress((currentProgress) => {
+          const next = { ...currentProgress }
+
+          remoteRecords.forEach((record) => {
+            const local = currentProgress[record.questId]
+
+            // Remote wins only if it is newer than local
+            if (
+              !local ||
+              new Date(record.updatedAt).getTime() >
+                new Date(local.updatedAt).getTime()
+            ) {
+              next[record.questId] = {
+                outcome: record.outcome,
+                reviewStep: record.reviewStep,
+                reviewDueAt: record.reviewDueAt ?? undefined,
+                updatedAt: record.updatedAt,
+              }
+            }
+          })
+
+          return next
+        })
+      })
+      .catch(() => undefined)
+  }, [session?.user])
+
+  // When user is logged in and progress changes: sync full state to server
+  useEffect(() => {
+    if (!session?.user || Object.keys(progress).length === 0) {
+      return
+    }
+
+    const signature = Object.entries(progress)
+      .map(([id, p]) => `${id}:${p.outcome}:${p.reviewStep}`)
+      .sort()
+      .join('|')
+
+    if (syncedProgressSignature.current === signature) {
+      return
+    }
+
+    syncedProgressSignature.current = signature
+
+    void syncDsaProgress(
+      Object.fromEntries(
+        Object.entries(progress).map(([questId, p]) => [
+          questId,
+          {
+            outcome: p.outcome,
+            reviewStep: p.reviewStep,
+            reviewDueAt: p.reviewDueAt,
+          },
+        ]),
+      ),
+    ).catch(() => {
+      syncedProgressSignature.current = ''
+    })
+  }, [progress, session?.user])
 
   const nextQuest = useMemo(() => getFirstIncompleteQuest(progress), [progress])
   const requestedQuest = activeQuestId ? dsaQuestById.get(activeQuestId) : undefined
@@ -196,6 +277,11 @@ export function DsaCourse({ activeQuestId, onNavigateQuest }: DsaCourseProps) {
         updatedAt: new Date().toISOString(),
       },
     }))
+
+    // Fire-and-forget: persist to backend if logged in
+    if (session?.user) {
+      void markDsaQuestOutcome(questId, outcome).catch(() => undefined)
+    }
   }
 
   const markReviewComplete = (questId: string) => {
@@ -219,6 +305,11 @@ export function DsaCourse({ activeQuestId, onNavigateQuest }: DsaCourseProps) {
         },
       }
     })
+
+    // Fire-and-forget: advance review step on backend if logged in
+    if (session?.user) {
+      void markDsaReviewComplete(questId).catch(() => undefined)
+    }
   }
 
   const revealNextHint = (questId: string) => {
