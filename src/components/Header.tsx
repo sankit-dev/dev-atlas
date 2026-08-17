@@ -26,19 +26,31 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
         <Brand />
         <div className="site-header-actions">
           <div className="site-header-links">
-            {navigationLinks.map((link) => (
-              <a
-                className={
-                  link.variant === 'challenge'
-                    ? 'site-nav-challenge'
-                    : 'site-nav-link'
-                }
-                href={link.href}
-                key={link.href}
-              >
-                {link.label}
-              </a>
-            ))}
+            {navigationLinks.map((link) =>
+              link.variant === 'challenge' ? (
+                <a
+                  className="site-nav-challenge"
+                  href={link.href}
+                  key={link.href}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.removeProperty('--mx')
+                    e.currentTarget.style.removeProperty('--my')
+                  }}
+                  onMouseMove={(e) => {
+                    const r = e.currentTarget.getBoundingClientRect()
+                    e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`)
+                    e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`)
+                  }}
+                >
+                  <span className="site-nav-challenge__dot" aria-hidden="true" />
+                  {link.label}
+                </a>
+              ) : (
+                <a className="site-nav-link" href={link.href} key={link.href}>
+                  {link.label}
+                </a>
+              )
+            )}
           </div>
           <div className="site-header-auth">
             <AuthControls />
