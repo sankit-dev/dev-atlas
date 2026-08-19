@@ -63,7 +63,15 @@ noteProgressRouter.get('/', async (request, response, next) => {
   }
 })
 
-noteProgressRouter.post('/sync', async (request, response, next) => {
+noteProgressRouter.post(
+  '/sync',
+  rateLimit({
+    getKey: (request) => (request as AuthenticatedRequest).userId,
+    keyPrefix: 'note-progress-sync',
+    limit: 10,
+    windowMs: 60_000,
+  }),
+  async (request, response, next) => {
   try {
     const { userId } = request as AuthenticatedRequest
 
