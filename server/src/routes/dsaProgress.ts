@@ -40,7 +40,15 @@ dsaProgressRouter.use(
 )
 
 // GET /api/dsa/progress — return all DSA progress for the current user
-dsaProgressRouter.get('/', async (request, response, next) => {
+dsaProgressRouter.get(
+  '/',
+  rateLimit({
+    getKey: (request) => (request as AuthenticatedRequest).userId,
+    keyPrefix: 'dsa-progress-get',
+    limit: 60,
+    windowMs: 60_000,
+  }),
+  async (request, response, next) => {
   try {
     const { userId } = request as AuthenticatedRequest
 
