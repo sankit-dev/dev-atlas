@@ -44,7 +44,15 @@ function getNoteSlugParam(value: string | string[] | undefined) {
   return typeof value === 'string' ? value.trim() : ''
 }
 
-noteProgressRouter.get('/', async (request, response, next) => {
+noteProgressRouter.get(
+  '/',
+  rateLimit({
+    getKey: (request) => (request as AuthenticatedRequest).userId,
+    keyPrefix: 'note-progress-get',
+    limit: 60,
+    windowMs: 60_000,
+  }),
+  async (request, response, next) => {
   try {
     const { userId } = request as AuthenticatedRequest
 
@@ -63,7 +71,15 @@ noteProgressRouter.get('/', async (request, response, next) => {
   }
 })
 
-noteProgressRouter.post('/sync', async (request, response, next) => {
+noteProgressRouter.post(
+  '/sync',
+  rateLimit({
+    getKey: (request) => (request as AuthenticatedRequest).userId,
+    keyPrefix: 'note-progress-sync',
+    limit: 10,
+    windowMs: 60_000,
+  }),
+  async (request, response, next) => {
   try {
     const { userId } = request as AuthenticatedRequest
 

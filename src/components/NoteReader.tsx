@@ -117,12 +117,21 @@ function NoteTableOfContents({
     return null
   }
 
+  function scrollToHeading(id: string) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   const tocList = (
     <nav aria-label="On this page">
       <ol>
         {items.map((item) => (
           <li data-level={item.level} key={item.id}>
-            <a href={`#${item.id}`}>{item.title}</a>
+            <button
+              type="button"
+              onClick={() => scrollToHeading(item.id)}
+            >
+              {item.title}
+            </button>
           </li>
         ))}
       </ol>

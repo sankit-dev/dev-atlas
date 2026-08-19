@@ -1895,18 +1895,27 @@ button {
 }
 
 .note-toc-desktop a,
-.note-toc-mobile a {
+.note-toc-desktop button,
+.note-toc-mobile a,
+.note-toc-mobile button {
   display: block;
   overflow: hidden;
+  border: none;
+  background: none;
+  padding: 0;
   color: var(--color-muted);
   font-size: 12px;
   line-height: 1.35;
+  text-align: left;
   text-overflow: ellipsis;
+  cursor: pointer;
   transition: color 160ms var(--motion-ease);
 }
 
 .note-toc-desktop a:hover,
-.note-toc-mobile a:hover {
+.note-toc-desktop button:hover,
+.note-toc-mobile a:hover,
+.note-toc-mobile button:hover {
   color: var(--color-accent-strong);
 }
 

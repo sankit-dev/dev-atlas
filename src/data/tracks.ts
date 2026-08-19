@@ -89,11 +89,6 @@ export const tracks: Track[] = [
     status: '32 notes',
     topics: [
       note('What is Computer Networking?', 'What networking is, why it exists, and real examples from everyday apps.', 'https://app.notion.com/p/3a3d15d9b1dd8056a754c607ee7f252a'),
-      note('Transport Layer', 'How applications choose reliable or fast delivery using TCP and UDP.', 'https://app.notion.com/p/3a3d15d9b1dd8056a754c607ee7f252a', undefined, undefined, [
-        note('TCP', 'Handshake, termination, sequence numbers, acknowledgements, retransmission, flow control, and congestion control.', 'https://app.notion.com/p/3a3d15d9b1dd8056a754c607ee7f252a'),
-        note('UDP', 'Difference from TCP, when to use UDP, and real-world examples.', 'https://app.notion.com/p/3a3d15d9b1dd8058966cd0dac2683bed'),
-        note('TCP vs UDP', 'Reliability, speed, ordering, error recovery, and use cases.', 'https://app.notion.com/p/3a3d15d9b1dd8067a860ea4725c15fb1'),
-      ]),
       note('OSI Model', 'The 7 OSI layers and what each layer is responsible for.', 'https://app.notion.com/p/3a3d15d9b1dd806eb5b8e017c3b057bd', undefined, undefined, [
         note('TCP/IP Model', 'The practical 4-layer networking model used by the Internet.', 'https://app.notion.com/p/3a3d15d9b1dd806eb5b8e017c3b057bd'),
         note('OSI vs TCP/IP & Encapsulation', 'How OSI maps to TCP/IP and how encapsulation moves data through layers.', 'https://app.notion.com/p/3a3d15d9b1dd806eb5b8e017c3b057bd'),
@@ -107,6 +102,11 @@ export const tracks: Track[] = [
         note('NAT', 'How many private devices share one public IP address.', 'https://app.notion.com/p/3a3d15d9b1dd80b8b37ad8416078bef7'),
         note('DHCP', 'How devices automatically receive IP configuration.', 'https://app.notion.com/p/3a3d15d9b1dd80b8b37ad8416078bef7'),
         note('ARP', 'How local networks resolve IP addresses to hardware addresses.', 'https://app.notion.com/p/3a3d15d9b1dd804e8d0df22d2e9f63f2'),
+      ]),
+      note('Transport Layer', 'How applications choose reliable or fast delivery using TCP and UDP.', 'https://app.notion.com/p/3a3d15d9b1dd8056a754c607ee7f252a', undefined, undefined, [
+        note('TCP', 'Handshake, termination, sequence numbers, acknowledgements, retransmission, flow control, and congestion control.', 'https://app.notion.com/p/3a3d15d9b1dd8056a754c607ee7f252a'),
+        note('UDP', 'Difference from TCP, when to use UDP, and real-world examples.', 'https://app.notion.com/p/3a3d15d9b1dd8058966cd0dac2683bed'),
+        note('TCP vs UDP', 'Reliability, speed, ordering, error recovery, and use cases.', 'https://app.notion.com/p/3a3d15d9b1dd8067a860ea4725c15fb1'),
       ]),
       note('DNS', 'DNS lookup process, caching, recursive resolvers, and why DNS is needed.', 'https://app.notion.com/p/3a3d15d9b1dd805ea798e340d2713368'),
       note('Web Communication', 'How web clients and servers exchange requests, responses, and real-time messages.', 'https://app.notion.com/p/3a3d15d9b1dd80269cb9c82621de14b3', undefined, undefined, [
