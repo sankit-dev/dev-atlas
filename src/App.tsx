@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
+import { Analytics } from '@vercel/analytics/react'
 import type { Note } from './data/tracks'
 import { Contribute } from './components/Contribute'
 import { DsaCourse } from './components/DsaCourse'
@@ -355,6 +356,7 @@ function App() {
         </div>
       )}
       <SpeedInsights />
+      <Analytics />
     </PageShell>
   )
 }
