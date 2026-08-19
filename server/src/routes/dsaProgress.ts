@@ -63,7 +63,15 @@ dsaProgressRouter.get('/', async (request, response, next) => {
 })
 
 // POST /api/dsa/progress/sync — bulk upsert (used on login to merge localStorage)
-dsaProgressRouter.post('/sync', async (request, response, next) => {
+dsaProgressRouter.post(
+  '/sync',
+  rateLimit({
+    getKey: (request) => (request as AuthenticatedRequest).userId,
+    keyPrefix: 'dsa-progress-sync',
+    limit: 10,
+    windowMs: 60_000,
+  }),
+  async (request, response, next) => {
   try {
     const { userId } = request as AuthenticatedRequest
     const body = request.body as unknown
