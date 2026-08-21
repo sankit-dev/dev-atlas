@@ -389,7 +389,7 @@ export const tracks: Track[] = [
         note('Node.js Must Know', 'Core runtime concepts every backend developer should understand first.', 'https://nodejs.org/en/learn', 'Must Know', 'nodejs-must-know', [
           note('What is Node.js?', 'What Node.js is, why it exists, and when to use it.', 'https://nodejs.org/en/learn/getting-started/introduction-to-nodejs', 'Must Know'),
           note('Node.js vs Browser JavaScript', 'Same language, different runtime capabilities and APIs.', 'https://nodejs.org/en/learn/getting-started/differences-between-nodejs-and-the-browser', 'Must Know'),
-          note('Node.js Event Loop and Non-blocking IO', 'How Node handles many IO tasks without one thread per request.', 'https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick', 'Must Know'),
+          note('Node.js Event Loop and Non-blocking IO', 'libuv, event loop phases, microtasks, macrotasks, and callback priority.', 'https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick', 'Must Know'),
           note('Modules and NPM', 'CommonJS, ES Modules, npm packages, and project dependencies.', 'https://nodejs.org/api/modules.html', 'Must Know'),
           note('File System and Path', 'Read, write, and resolve files safely in Node.js.', 'https://nodejs.org/api/fs.html', 'Must Know'),
           note('Events and EventEmitter', 'Build event-driven code using Node.js EventEmitter.', 'https://nodejs.org/api/events.html', 'Must Know'),
