@@ -3,7 +3,6 @@ import { Brand } from './Brand'
 import { Wrap } from './PageShell'
 
 const navigationLinks = [
-  { label: 'My Path', href: '#top', variant: 'standard' },
   { label: 'Library', href: '#library', variant: 'standard' },
   { label: 'Roadmap', href: '#roadmap', variant: 'standard' },
   { label: 'Contribute', href: '#contribute', variant: 'standard' },

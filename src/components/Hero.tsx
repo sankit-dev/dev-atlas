@@ -28,7 +28,7 @@ export function Hero({
   return (
     <Wrap>
       <section
-        className="grid min-h-140 grid-cols-[1.18fr_0.82fr] items-center gap-20 py-18 pb-22.5 max-[760px]:grid-cols-1 max-[760px]:gap-13 max-[760px]:py-16.25 max-[760px]:pb-18.75"
+        className="grid min-h-[calc(100svh-86px)] grid-cols-[1.18fr_0.82fr] items-center gap-20 py-8 max-[760px]:min-h-auto max-[760px]:grid-cols-1 max-[760px]:gap-13 max-[760px]:py-12"
         id="top"
       >
         <div>

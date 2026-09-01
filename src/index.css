@@ -260,10 +260,16 @@ button {
 }
 
 .auth-save-progress {
-  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.auth-save-progress__action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ── Avatar button + gradient ring ─────────────────────────────── */
@@ -545,7 +551,7 @@ button {
 .auth-save-progress__error {
   position: absolute;
   top: calc(100% + 6px);
-  right: 0;
+  left: 50%;
   width: max-content;
   max-width: 220px;
   margin: 0;
@@ -553,6 +559,8 @@ button {
   font-size: 11px;
   font-weight: 750;
   line-height: 1.35;
+  text-align: center;
+  transform: translateX(-50%);
 }
 
 .button-link {
