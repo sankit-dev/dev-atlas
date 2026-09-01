@@ -11,8 +11,12 @@ import { Library } from './components/Library'
 import { NoteReader } from './components/NoteReader'
 import { PageShell } from './components/PageShell'
 import { Roadmap } from './components/Roadmap'
-import { Statement } from './components/Statement'
 import { flattenNotes, tracks } from './data/tracks'
+import {
+  getCurrentLearningStep,
+  getLastCompletedNote,
+  getOverallProgress,
+} from './data/learningPath'
 import { authClient } from './lib/auth'
 import {
   fetchCompletedNoteSlugs,
@@ -86,19 +90,11 @@ function getInitialCompletedNotes() {
       return new Set<string>()
     }
 
-    const completedNotes = new Set(
+    return new Set(
       parsedNotes.filter((note): note is string => typeof note === 'string'),
     )
-    const activeNoteSlug = getNoteSlugFromHash(getHashRoute())
-
-    if (activeNoteSlug) {
-      completedNotes.add(activeNoteSlug)
-    }
-
-    return completedNotes
   } catch {
-    const activeNoteSlug = getNoteSlugFromHash(getHashRoute())
-    return activeNoteSlug ? new Set([activeNoteSlug]) : new Set<string>()
+    return new Set<string>()
   }
 }
 
@@ -175,6 +171,9 @@ function App() {
     : -1
   const nextTrack =
     activeTrackIndex >= 0 ? tracks[activeTrackIndex + 1] : undefined
+  const currentLearningStep = getCurrentLearningStep(completedNoteSlugs)
+  const lastCompletedNote = getLastCompletedNote(completedNoteSlugs)
+  const overallProgress = getOverallProgress(completedNoteSlugs)
 
   const navigateToNote = (
     targetNote: Note,
@@ -249,13 +248,7 @@ function App() {
   useEffect(() => {
     const syncRoute = () => {
       const nextHashRoute = getHashRoute()
-      const nextNoteSlug = getNoteSlugFromHash(nextHashRoute)
-
       setHashRoute(nextHashRoute)
-
-      if (nextNoteSlug) {
-        completeNote(nextNoteSlug)
-      }
     }
 
     window.addEventListener('hashchange', syncRoute)
@@ -342,9 +335,12 @@ function App() {
         />
       ) : (
         <main>
-          <Hero />
-          <Statement />
-          <Library />
+          <Hero
+            currentStep={currentLearningStep}
+            lastCompletedNote={lastCompletedNote}
+            overallProgress={overallProgress}
+          />
+          <Library completedNoteSlugs={completedNoteSlugs} />
           <Roadmap completedNoteSlugs={completedNoteSlugs} />
           <Contribute />
           <Footer />

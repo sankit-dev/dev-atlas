@@ -2,11 +2,8 @@ import { useState, type CSSProperties, type MouseEvent } from 'react'
 import type { Note, Track } from '../data/tracks'
 import { flattenNotes } from '../data/tracks'
 import { getMarkdownNote } from '../data/markdownNotes'
-import {
-  getMarkdownToc,
-  MarkdownRenderer,
-  type MarkdownTocItem,
-} from './MarkdownRenderer'
+import { getMarkdownToc, type MarkdownTocItem } from '../lib/markdownToc'
+import { MarkdownRenderer } from './MarkdownRenderer'
 import { Wrap } from './PageShell'
 
 type NoteReaderProps = {
@@ -27,6 +24,7 @@ type NoteReaderProps = {
 function normalizeTitle(value: string) {
   return value
     .toLowerCase()
+    .replace(/^\s*\d+[.)]\s+/, '')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
 }
@@ -181,6 +179,9 @@ export function NoteReader({
   const currentNoteIndex = flatNotes.findIndex(
     (trackNote) => trackNote.slug === note.slug,
   )
+  const completedTrackCount = flatNotes.filter((trackNote) =>
+    completedNoteSlugs.has(trackNote.slug),
+  ).length
   const previousNote =
     currentNoteIndex > 0 ? flatNotes[currentNoteIndex - 1] : undefined
   const nextNote =
@@ -188,7 +189,7 @@ export function NoteReader({
       ? flatNotes[currentNoteIndex + 1]
       : undefined
   const progressPercent = Math.round(
-    ((currentNoteIndex + 1) / flatNotes.length) * 100,
+    (completedTrackCount / flatNotes.length) * 100,
   )
   const nextCourseNote = !nextNote ? nextTrack?.topics[0] : undefined
   const nextIncompleteNote = flatNotes.find(
@@ -205,8 +206,23 @@ export function NoteReader({
   ) => {
     event.preventDefault()
     setIsMobileSidebarOpen(false)
-    onCompleteNote(note.slug)
     onNavigateNote(targetNote, options)
+  }
+
+  const handleUnderstandAndContinue = () => {
+    onCompleteNote(note.slug)
+
+    if (nextNote) {
+      onNavigateNote(nextNote)
+      return
+    }
+
+    if (nextCourseNote && nextTrack) {
+      onNavigateNote(nextCourseNote, {
+        animateCourseSwitch: true,
+        transitionTitle: nextTrack.title,
+      })
+    }
   }
 
   const isBranchActive = (branchNote: Note): boolean =>
@@ -279,7 +295,11 @@ export function NoteReader({
             onClick={(event) => handleNoteClick(event, trackNote)}
           >
             <span className="font-mono text-[10px]">
-              {isCompleted ? '✓' : String(noteIndex + 1).padStart(2, '0')}
+              {isCompleted
+                ? '✓'
+                : isNextIncomplete
+                  ? '→'
+                  : String(noteIndex + 1).padStart(2, '0')}
             </span>
             <span className="note-sidebar-link__content">
               <span className="note-sidebar-link__title">
@@ -336,7 +356,7 @@ export function NoteReader({
                   {track.title}
                 </p>
                 <p className="m-0 mt-2 font-mono text-[11px] text-(--color-muted)">
-                  {currentNoteIndex + 1} of {flatNotes.length} notes
+                  {completedTrackCount} / {flatNotes.length} understood
                 </p>
               </div>
               <button
@@ -367,7 +387,7 @@ export function NoteReader({
                 <div>
                   <p>{track.shortTitle}</p>
                   <span>
-                    {currentNoteIndex + 1} of {flatNotes.length} notes
+                    {completedTrackCount} / {flatNotes.length} understood
                   </span>
                 </div>
                 <button
@@ -433,6 +453,19 @@ export function NoteReader({
               <p className="mt-6 mb-0 text-base leading-[1.8] text-(--color-muted)">
                 {note.description}
               </p>
+              <div className="note-status-strip">
+                <span>
+                  {completedNoteSlugs.has(note.slug)
+                    ? 'Understood'
+                    : nextIncompleteNote?.slug === note.slug
+                      ? 'Next recommended'
+                      : 'In progress'}
+                </span>
+                <b>
+                  {completedTrackCount} / {flatNotes.length} understood in{' '}
+                  {track.shortTitle}
+                </b>
+              </div>
               {note.priority && (
                 <span className="mt-5 inline-flex rounded-full border border-(--color-line) px-3 py-2 text-[11px] font-extrabold text-(--color-muted)">
                   {note.priority}
@@ -443,9 +476,26 @@ export function NoteReader({
             <NoteTableOfContents items={tocItems} variant="mobile" />
 
             <MarkdownRenderer
+              context={track.title}
               key={`${track.title}:${note.slug}`}
               markdown={body}
             />
+
+            <div className="note-understand-panel">
+              <div>
+                <p className="eyebrow">Track understanding</p>
+                <h2>I understand this concept.</h2>
+                <span>
+                  Mark it only when you can explain the idea and why it matters
+                  in your own words.
+                </span>
+              </div>
+              <button type="button" onClick={handleUnderstandAndContinue}>
+                {nextNote || nextCourseNote
+                  ? 'Mark understood & continue'
+                  : 'Mark understood'}
+              </button>
+            </div>
 
             <nav
               aria-label="Previous and next notes"

@@ -16,7 +16,7 @@ Focus on runtime behavior before jumping to Express.
 
 - What Node.js is.
 - Node.js vs browser JavaScript.
-- Event loop and non-blocking IO.
+- Event loop, libuv, microtasks, macrotasks, and non-blocking IO.
 - Modules and npm.
 - File system and path.
 - Events and EventEmitter.
@@ -28,4 +28,3 @@ Focus on runtime behavior before jumping to Express.
 ## Practice rule
 
 Before Express, build one tiny HTTP server with Node's `http` module. It makes Express routing and middleware easier to understand.
-
