@@ -4,9 +4,9 @@ import { Wrap } from './PageShell'
 
 const navigationLinks = [
   { label: 'Library', href: '#library', variant: 'standard' },
-  { label: "Don't click", href: '#/dsa', variant: 'challenge' },
   { label: 'Roadmap', href: '#roadmap', variant: 'standard' },
   { label: 'Contribute', href: '#contribute', variant: 'standard' },
+  { label: "Don't click", href: '#/dsa', variant: 'challenge' },
 ] as const
 
 type HeaderProps = {
