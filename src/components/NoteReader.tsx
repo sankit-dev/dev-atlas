@@ -1,10 +1,17 @@
-import { useState, type CSSProperties, type MouseEvent } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+} from 'react'
 import type { Note, Track } from '../data/tracks'
 import { flattenNotes } from '../data/tracks'
 import { getMarkdownNote } from '../data/markdownNotes'
 import { getMarkdownToc, type MarkdownTocItem } from '../lib/markdownToc'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { Wrap } from './PageShell'
+import { WaterWaveEffect } from './WaterWaveEffect'
 
 type NoteReaderProps = {
   completedNoteSlugs: Set<string>
@@ -104,6 +111,44 @@ function createStarterMarkdown(note: Note, track: Track, parentPath: Note[]) {
   ].join('\n')
 }
 
+function playFocusReadingTone() {
+  const audioWindow = window as Window &
+    typeof globalThis & {
+      webkitAudioContext?: typeof AudioContext
+    }
+  const AudioContextConstructor =
+    audioWindow.AudioContext || audioWindow.webkitAudioContext
+
+  if (!AudioContextConstructor) {
+    return
+  }
+
+  const audioContext = new AudioContextConstructor()
+  const gain = audioContext.createGain()
+  const filter = audioContext.createBiquadFilter()
+
+  filter.type = 'lowpass'
+  filter.frequency.setValueAtTime(920, audioContext.currentTime)
+  gain.gain.setValueAtTime(0.0001, audioContext.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.035, audioContext.currentTime + 0.16)
+  gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 1.45)
+  filter.connect(gain)
+  gain.connect(audioContext.destination)
+
+  ;[220, 277.18, 329.63].forEach((frequency, index) => {
+    const oscillator = audioContext.createOscillator()
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime)
+    oscillator.connect(filter)
+    oscillator.start(audioContext.currentTime + index * 0.08)
+    oscillator.stop(audioContext.currentTime + 1.55)
+  })
+
+  window.setTimeout(() => {
+    void audioContext.close()
+  }, 1700)
+}
+
 function NoteTableOfContents({
   items,
   variant,
@@ -168,6 +213,12 @@ export function NoteReader({
   const [collapsedBranches, setCollapsedBranches] = useState<Set<string>>(
     () => new Set(),
   )
+  const [isFocusReading, setIsFocusReading] = useState(false)
+  const [isFocusBurstVisible, setIsFocusBurstVisible] = useState(false)
+  const [isWaterWaving, setIsWaterWaving] = useState(false)
+  const [waveOrigin, setWaveOrigin] = useState<{ x: number; y: number } | null>(null)
+  const readerShellRef = useRef<HTMLElement>(null)
+  const focusBurstTimer = useRef<number | undefined>(undefined)
   const flatNotes = flattenNotes(track.topics)
   const notePath = getNotePath(track.topics, note.slug)
   const parentPath = notePath.slice(0, -1)
@@ -195,6 +246,100 @@ export function NoteReader({
   const nextIncompleteNote = flatNotes.find(
     (trackNote) => !completedNoteSlugs.has(trackNote.slug),
   )
+
+  useEffect(() => {
+    document.body.classList.toggle('is-focus-reading', isFocusReading)
+
+    return () => {
+      document.body.classList.remove('is-focus-reading')
+    }
+  }, [isFocusReading])
+
+  useEffect(() => {
+    if (!isFocusReading) {
+      return
+    }
+
+    readerShellRef.current?.scrollTo({ top: 0, behavior: 'auto' })
+  }, [isFocusReading, note.slug])
+
+  useEffect(() => {
+    function handleFullscreenChange() {
+      if (!document.fullscreenElement) {
+        setIsFocusReading(false)
+      }
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }
+  }, [])
+
+  useEffect(
+    () => () => {
+      if (focusBurstTimer.current) {
+        window.clearTimeout(focusBurstTimer.current)
+      }
+    },
+    [],
+  )
+
+  const enterFocusReading = async () => {
+    setIsMobileSidebarOpen(false)
+    setIsFocusReading(true)
+    setIsFocusBurstVisible(true)
+    playFocusReadingTone()
+
+    if (focusBurstTimer.current) {
+      window.clearTimeout(focusBurstTimer.current)
+    }
+
+    focusBurstTimer.current = window.setTimeout(() => {
+      setIsFocusBurstVisible(false)
+      focusBurstTimer.current = undefined
+    }, 1800)
+
+    try {
+      await readerShellRef.current?.requestFullscreen()
+    } catch {
+      // Browser fullscreen can be blocked; the distraction-free layout still works.
+    }
+  }
+
+  const exitFocusReading = async () => {
+    setIsFocusReading(false)
+    setIsFocusBurstVisible(false)
+
+    if (focusBurstTimer.current) {
+      window.clearTimeout(focusBurstTimer.current)
+      focusBurstTimer.current = undefined
+    }
+
+    if (document.fullscreenElement) {
+      try {
+        await document.exitFullscreen()
+      } catch {
+        // Keep the in-page focus state off even if the browser rejects exit.
+      }
+    }
+  }
+
+  const handleFocusToggle = (event: MouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const x = event.clientX || rect.left + rect.width / 2
+    const y = event.clientY || rect.top + rect.height / 2
+
+    setWaveOrigin({ x, y })
+    setIsWaterWaving(true)
+
+    if (isFocusReading) {
+      void exitFocusReading()
+    } else {
+      void enterFocusReading()
+    }
+  }
 
   const handleNoteClick = (
     event: MouseEvent<HTMLAnchorElement>,
@@ -346,7 +491,24 @@ export function NoteReader({
   }
 
   return (
-    <main className="note-reader-shell">
+    <>
+      <WaterWaveEffect
+        isWaving={isWaterWaving}
+        origin={waveOrigin}
+        onWaveEnd={() => setIsWaterWaving(false)}
+      />
+      <main
+        className={`note-reader-shell ${isWaterWaving ? 'is-wavy-active' : ''}`}
+        data-focus-reading={isFocusReading}
+        ref={readerShellRef}
+      >
+      {isFocusBurstVisible && (
+        <div className="note-focus-burst" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      )}
       <Wrap>
         <div className="note-reader-grid grid grid-cols-[260px_minmax(0,1fr)_190px] gap-12 max-[1180px]:grid-cols-[240px_minmax(0,1fr)] max-[980px]:grid-cols-1">
           <aside className="note-reader-sidebar border-r border-(--color-line) pr-6 max-[980px]:border-r-0 max-[980px]:border-b max-[980px]:pr-0 max-[980px]:pb-6">
@@ -453,6 +615,33 @@ export function NoteReader({
               <p className="mt-6 mb-0 text-base leading-[1.8] text-(--color-muted)">
                 {note.description}
               </p>
+              <button
+                aria-label={
+                  isFocusReading ? 'Exit focus reading' : 'Enter focus reading'
+                }
+                className="note-focus-reading-toggle"
+                title={
+                  isFocusReading ? 'Exit focus reading' : 'Enter focus reading'
+                }
+                type="button"
+                onClick={handleFocusToggle}
+              >
+                {isFocusReading ? (
+                  <span className="note-focus-dot" />
+                ) : (
+                  <svg
+                    aria-hidden="true"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M8 3H3v5" />
+                    <path d="M16 3h5v5" />
+                    <path d="M8 21H3v-5" />
+                    <path d="M16 21h5v-5" />
+                  </svg>
+                )}
+                <span>{isFocusReading ? 'Focusing' : 'Focus'}</span>
+              </button>
               <div className="note-status-strip">
                 <span>
                   {completedNoteSlugs.has(note.slug)
@@ -567,5 +756,6 @@ export function NoteReader({
         </div>
       </Wrap>
     </main>
+    </>
   )
 }

@@ -1019,6 +1019,9 @@ button {
   .markdown-body a,
   .note-sidebar-branch-toggle,
   .note-reader-sidebar__toggle,
+  .note-focus-reading-toggle,
+  .note-focus-reading-toggle::before,
+  .note-reader-shell[data-focus-reading='true'] .note-reader-content,
   .note-reader-content nav[aria-label='Previous and next notes'] a,
   .note-reader-sidebar nav a,
   .roadmap-step,
@@ -1034,9 +1037,14 @@ button {
   .library-card__ghost:hover,
   .library-card__toggle:hover,
   .library-panel__start:hover,
+  .note-focus-reading-toggle:hover,
   .note-reader-content nav[aria-label='Previous and next notes'] a:hover,
   .note-reader-sidebar nav a:hover {
     transform: none;
+  }
+
+  .note-focus-burst {
+    display: none;
   }
 }
 
@@ -2308,6 +2316,114 @@ button {
   color: var(--color-muted);
 }
 
+.note-reader-content > header {
+  position: relative;
+}
+
+.note-reader-shell.is-wavy-active {
+  filter: url(#page-water-wave-filter);
+  will-change: filter;
+}
+
+.note-focus-reading-toggle {
+  position: absolute;
+  top: 0;
+  right: -74px;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 7px;
+  justify-content: center;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-surface) 75%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0 13px;
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-shadow) 12%, transparent);
+  transition:
+    border-color 200ms ease,
+    background 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease,
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.note-focus-reading-toggle::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--solid-white) 22%, transparent) 50%,
+    transparent 100%
+  );
+  content: '';
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: opacity 200ms ease, transform 600ms ease;
+  pointer-events: none;
+}
+
+.note-focus-reading-toggle:hover::after {
+  opacity: 1;
+  transform: translateX(100%);
+}
+
+.note-focus-reading-toggle svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  transition: transform 200ms ease;
+}
+
+.note-focus-reading-toggle svg path {
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  transition: stroke 200ms ease;
+}
+
+.note-focus-reading-toggle:hover,
+.note-focus-reading-toggle:focus-visible {
+  border-color: var(--color-accent-strong);
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  color: var(--color-text);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-accent-strong) 18%, transparent);
+  transform: translateY(-1px);
+}
+
+.note-focus-reading-toggle:hover svg {
+  transform: scale(1.1);
+}
+
+.note-focus-reading-toggle:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--color-accent-strong) 12%, transparent);
+}
+
+.note-focus-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+  animation: focusDotPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes focusDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
 .note-toc-desktop {
   position: sticky;
   top: 112px;
@@ -2392,6 +2508,217 @@ button {
 .note-toc-mobile nav {
   border-top: 1px solid var(--color-soft-line);
   padding: 13px 15px 15px;
+}
+
+body.is-focus-reading nav[aria-label='Primary navigation'] {
+  display: none;
+}
+
+.note-reader-shell[data-focus-reading='true'] {
+  min-height: 100svh;
+  overflow-y: auto;
+  background: var(--color-page);
+}
+
+.note-focus-burst {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at center, rgba(76, 209, 180, 0.16), transparent 9%),
+    rgba(9, 17, 27, 0);
+  animation: focusWaterWash 1800ms ease-out both;
+}
+
+.note-focus-burst::before,
+.note-focus-burst::after,
+.note-focus-burst span {
+  grid-area: 1 / 1;
+  border-radius: 999px;
+  content: '';
+}
+
+.note-focus-burst::before {
+  width: 24vmin;
+  height: 24vmin;
+  border: 1px solid rgba(132, 255, 223, 0.44);
+  background:
+    radial-gradient(circle, rgba(165, 255, 230, 0.34) 0 4%, rgba(70, 177, 255, 0.16) 5% 38%, transparent 68%);
+  box-shadow:
+    0 0 52px rgba(54, 232, 192, 0.18),
+    inset 0 0 30px rgba(120, 230, 255, 0.18);
+  filter: blur(0.2px);
+  animation: focusRippleMain 1800ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.note-focus-burst::after {
+  width: 18vmin;
+  height: 18vmin;
+  border: 1px solid rgba(86, 165, 255, 0.34);
+  background: radial-gradient(circle, rgba(61, 137, 255, 0.18), transparent 62%);
+  filter: blur(8px);
+  animation: focusRippleSoft 1800ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.note-focus-burst span {
+  width: 20vmin;
+  height: 20vmin;
+  border: 1px solid rgba(146, 245, 255, 0.24);
+  box-shadow: inset 0 0 28px rgba(74, 198, 255, 0.08);
+  animation: focusRippleLine 1800ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.note-focus-burst span:nth-child(2) {
+  width: 16vmin;
+  height: 16vmin;
+  border-color: rgba(110, 255, 211, 0.24);
+  animation-delay: 180ms;
+}
+
+.note-focus-burst span:nth-child(3) {
+  width: 12vmin;
+  height: 12vmin;
+  border-color: rgba(91, 157, 255, 0.22);
+  animation-delay: 330ms;
+}
+
+@keyframes focusWaterWash {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+
+  20% {
+    opacity: 1;
+    backdrop-filter: blur(1px);
+  }
+
+  100% {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+}
+
+@keyframes focusRippleMain {
+  0% {
+    opacity: 0;
+    transform: scale(0.08);
+  }
+
+  22% {
+    opacity: 0.74;
+    border-radius: 48% 52% 50% 50% / 52% 47% 53% 48%;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(9.6);
+  }
+}
+
+@keyframes focusRippleSoft {
+  0% {
+    opacity: 0;
+    transform: scale(0.14);
+  }
+
+  30% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(11);
+  }
+}
+
+@keyframes focusRippleLine {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+
+  26% {
+    opacity: 0.5;
+    border-radius: 47% 53% 52% 48% / 52% 49% 51% 48%;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(10.5);
+  }
+}
+
+.note-reader-shell[data-focus-reading='true'] .note-reader-grid {
+  display: block;
+  width: min(100%, 880px);
+  margin: 0 auto;
+  padding: clamp(28px, 4vw, 54px) 0 clamp(48px, 6vw, 80px);
+}
+
+.note-reader-shell[data-focus-reading='true'] .note-reader-sidebar,
+.note-reader-shell[data-focus-reading='true'] .note-toc-desktop,
+.note-reader-shell[data-focus-reading='true'] .note-toc-mobile,
+.note-reader-shell[data-focus-reading='true'] .note-breadcrumb,
+.note-reader-shell[data-focus-reading='true'] .note-status-strip,
+.note-reader-shell[data-focus-reading='true'] .note-understand-panel,
+.note-reader-shell[data-focus-reading='true'] .note-reader-content header > span {
+  display: none;
+}
+
+.note-reader-shell[data-focus-reading='true'] .note-reader-content {
+  max-width: none;
+  animation: focusContentReveal 900ms ease-out both;
+}
+
+.note-reader-shell[data-focus-reading='true'] .note-reader-content header {
+  max-width: none;
+  margin-bottom: 34px;
+}
+
+.note-reader-shell[data-focus-reading='true'] .note-focus-reading-toggle {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 3;
+}
+
+.note-reader-shell[data-focus-reading='true'] .note-reader-content header h1,
+.note-reader-shell[data-focus-reading='true'] .note-reader-content header > p,
+.note-reader-shell[data-focus-reading='true'] .markdown-body {
+  max-width: none;
+  width: 100%;
+}
+
+.note-reader-shell[data-focus-reading='true'] .note-reader-content header h1 {
+  font-size: clamp(36px, 4vw, 54px);
+}
+
+.note-reader-shell[data-focus-reading='true'] .markdown-body {
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+.note-reader-shell[data-focus-reading='true'] .markdown-code-block,
+.note-reader-shell[data-focus-reading='true'] .markdown-body .markdown-image,
+.note-reader-shell[data-focus-reading='true'] .markdown-table-wrap {
+  max-width: none;
+}
+
+@keyframes focusContentReveal {
+  0% {
+    opacity: 0.58;
+    filter: blur(2px);
+  }
+
+  100% {
+    opacity: 1;
+    filter: blur(0);
+  }
 }
 
 .note-understand-panel {
@@ -2914,6 +3241,10 @@ button {
   background: #0d1117;
 }
 
+.markdown-code-block__highlight {
+  display: block;
+}
+
 .markdown-code-block > header {
   display: flex;
   align-items: center;
@@ -2952,11 +3283,14 @@ button {
 
 .markdown-body .markdown-code-block pre,
 .markdown-code-block .shiki {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
   overflow: visible;
   margin: 0;
   border: 0;
   border-radius: 0;
-  padding: 22px 26px;
+  padding: 16px 26px 20px;
   background: #0d1117 !important;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -2964,6 +3298,9 @@ button {
 }
 
 .markdown-code-block .shiki {
+  display: block !important;
+  box-sizing: border-box;
+  width: 100%;
   white-space: pre-wrap;
 }
 
@@ -2974,7 +3311,10 @@ button {
 .markdown-body .markdown-code-block pre code,
 .markdown-code-block .shiki code {
   display: block;
+  box-sizing: border-box;
+  width: 100%;
   min-width: 0;
+  border: 0;
   background: transparent;
   padding: 0;
   line-height: 1.8;
@@ -3075,10 +3415,6 @@ button {
 
 .note-reader-content {
   max-width: 730px;
-}
-
-.note-reader-content header {
-  margin-bottom: 52px;
 }
 
 .note-reader-content header h1 {
@@ -3618,15 +3954,24 @@ button {
 
 .markdown-body .markdown-code-block pre,
 .markdown-code-block .shiki {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
   margin: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
-  padding: 24px 26px;
+  padding: 16px 26px 20px;
   background: #0c1117 !important;
 }
 
 .markdown-body .markdown-code-block pre code,
 .markdown-code-block .shiki code {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
   color: #d7dde5;
   font-size: 14px;
   line-height: 1.78;
@@ -3706,6 +4051,10 @@ button {
 }
 
 @media (max-width: 1180px) {
+  .note-focus-reading-toggle {
+    right: 0;
+  }
+
   .note-toc-desktop {
     display: none;
   }
@@ -3896,6 +4245,11 @@ button {
 }
 
 @media (max-width: 760px) {
+  .note-focus-reading-toggle {
+    position: static;
+    margin-top: 18px;
+  }
+
   .site-header-links {
     display: none;
   }
