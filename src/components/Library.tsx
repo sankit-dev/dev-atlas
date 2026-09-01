@@ -1,6 +1,7 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import type { Accent, Note, Track } from '../data/tracks'
-import { countNotes, flattenNotes, tracks } from '../data/tracks'
+import { getTrackProgress } from '../data/learningPath'
+import { flattenNotes, tracks } from '../data/tracks'
 import { Wrap } from './PageShell'
 
 const trackAccentColor: Record<Accent, string> = {
@@ -11,9 +12,26 @@ const trackAccentColor: Record<Accent, string> = {
   violet: 'var(--track-violet)',
 }
 
+const trackIcons: Partial<Record<string, string>> = {
+  'Operating Systems': '>_',
+  'Computer Networks': 'NET',
+  'Object-Oriented Programming': '</>',
+  'Databases & SQL': 'DB',
+  JavaScript: 'JS',
+  'Node.js': 'N',
+  'Express.js': 'EX',
+  MongoDB: 'MDB',
+  Docker: 'DO',
+  'AWS Fundamentals': 'AWS',
+  'Git & GitHub': 'Git',
+  'GitHub CI/CD': 'CI',
+  'AI for Backend Developers': 'AI',
+}
+
 type LibraryBranch = {
   description: string
   label: string
+  shortLabel: string
   trackTitles: string[]
 }
 
@@ -21,6 +39,7 @@ const libraryBranches: LibraryBranch[] = [
   {
     description: 'OS, networks, OOP, and databases before framework-specific work.',
     label: 'Computer Fundamentals',
+    shortLabel: 'Fundamentals',
     trackTitles: [
       'Operating Systems',
       'Computer Networks',
@@ -31,6 +50,7 @@ const libraryBranches: LibraryBranch[] = [
   {
     description: 'JavaScript, React, APIs, databases, and full-stack projects.',
     label: 'MERN / Full Stack',
+    shortLabel: 'MERN',
     trackTitles: [
       'JavaScript',
       'React / Namaste React',
@@ -45,11 +65,13 @@ const libraryBranches: LibraryBranch[] = [
   {
     description: 'Source control, containers, cloud, and automated delivery.',
     label: 'DevOps & Tools',
+    shortLabel: 'DevOps',
     trackTitles: ['Git & GitHub', 'Docker', 'AWS Fundamentals', 'GitHub CI/CD'],
   },
   {
     description: 'LLM concepts, RAG, agents, and backend AI integration.',
     label: 'AI / ML',
+    shortLabel: 'AI/ML',
     trackTitles: ['AI for Backend Developers'],
   },
 ]
@@ -70,26 +92,18 @@ function getTrackSearchText(track: Track) {
     .toLowerCase()
 }
 
-export function Library() {
+type LibraryProps = {
+  completedNoteSlugs: Set<string>
+}
+
+export function Library({ completedNoteSlugs }: LibraryProps) {
   const [query, setQuery] = useState('')
   const [activeBranch, setActiveBranch] = useState<string>(allBranchLabel)
-  const [activeTrack, setActiveTrack] = useState('All')
   const [expandedTrack, setExpandedTrack] = useState<string | null>(null)
   const [isTrackListExpanded, setIsTrackListExpanded] = useState(false)
-  const featuredTrack = tracks[0]
   const activeBranchConfig = libraryBranches.find(
     (branch) => branch.label === activeBranch,
   )
-  const branchTracks = activeBranchConfig
-    ? tracks.filter((track) => activeBranchConfig.trackTitles.includes(track.title))
-    : tracks
-  const activeTrackLabel =
-    activeTrack !== 'All'
-      ? (tracks.find((track) => track.title === activeTrack)?.shortTitle ?? activeTrack)
-      : activeBranch === allBranchLabel
-        ? 'All tracks'
-        : activeBranch
-  const trackFilters = ['All', ...branchTracks.map((track) => track.title)]
 
   const visibleTracks = useMemo(() => {
     const term = query.trim().toLowerCase()
@@ -98,12 +112,11 @@ export function Library() {
       : tracks
 
     return scopedTracks.filter((track) => {
-      const matchesFilter = activeTrack === 'All' || track.title === activeTrack
       const matchesSearch = !term || getTrackSearchText(track).includes(term)
 
-      return matchesFilter && matchesSearch
+      return matchesSearch
     })
-  }, [activeBranchConfig, activeTrack, query])
+  }, [activeBranchConfig, query])
   const visibleTrackLimit = 3
   const hasMoreTracks = visibleTracks.length > visibleTrackLimit
   const displayedTracks = isTrackListExpanded
@@ -112,13 +125,6 @@ export function Library() {
 
   function handleBranchSelect(item: string) {
     setActiveBranch(item)
-    setActiveTrack('All')
-    setExpandedTrack(null)
-    setIsTrackListExpanded(false)
-  }
-
-  function handleFilterSelect(item: string) {
-    setActiveTrack(item)
     setExpandedTrack(null)
     setIsTrackListExpanded(false)
   }
@@ -126,93 +132,39 @@ export function Library() {
   return (
     <Wrap>
       <section className="py-27.5 max-[760px]:py-20" id="library">
-        <div className="library-panel">
-          <div className="library-panel__intro">
-            <p className="kicker">The library</p>
-            <h2 className="library-panel__title">
-              Pick a track. Follow the path.
-            </h2>
-            <p className="library-panel__copy">
-              Focused backend notes grouped into practical learning tracks.
-            </p>
-          </div>
-          <a
-            className="library-panel__start"
-            href={`#/notes/${featuredTrack.topics[0].slug}`}
-          >
-            Start with {featuredTrack.shortTitle}
-            <span aria-hidden="true">→</span>
-          </a>
-        </div>
-
         <div className="library-controls">
           <div className="library-controls__header">
-            <div>
-              <p className="eyebrow">Browse notes</p>
-              <h3>{activeTrackLabel}</h3>
-            </div>
-            <span>
-              {visibleTracks.length} {visibleTracks.length === 1 ? 'track' : 'tracks'}
-            </span>
-          </div>
+            <h2>Your tracks</h2>
 
-          <div className="library-branches" aria-label="Learning branches">
-            <button
-              className={activeBranch === allBranchLabel ? 'is-active' : ''}
-              onClick={() => handleBranchSelect(allBranchLabel)}
-              type="button"
-            >
-              <span>All</span>
-              <strong>{tracks.length}</strong>
-            </button>
-
-            {libraryBranches.map((branch) => (
-              <button
-                className={activeBranch === branch.label ? 'is-active' : ''}
-                key={branch.label}
-                onClick={() => handleBranchSelect(branch.label)}
-              type="button"
-            >
-              <span>{branch.label}</span>
-              <strong>{branch.trackTitles.length}</strong>
-            </button>
-            ))}
-          </div>
-
-          <div className="library-toolbar">
             <label className="library-search">
-              <span aria-hidden="true">/</span>
+              <span aria-hidden="true">⌕</span>
               <input
                 aria-label="Search learning topics"
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search topics, for example: joins"
+                placeholder="Search tracks or topics..."
                 value={query}
               />
             </label>
 
-            <div aria-label="Filter learning tracks" className="library-filters">
-              {trackFilters.map((item) => {
-                const isActive = activeTrack === item
-                const track = tracks.find((candidate) => candidate.title === item)
+            <div className="library-branches" aria-label="Learning branches">
+              <button
+                className={activeBranch === allBranchLabel ? 'is-active' : ''}
+                onClick={() => handleBranchSelect(allBranchLabel)}
+                type="button"
+              >
+                All
+              </button>
 
-                return (
-                  <button
-                    className={isActive ? 'is-active' : ''}
-                    key={item}
-                    onClick={() => handleFilterSelect(item)}
-                    style={
-                      track
-                        ? ({
-                            '--filter-accent': trackAccentColor[track.accent],
-                          } as CSSProperties)
-                        : undefined
-                    }
-                    type="button"
-                  >
-                    {item === 'All' ? item : track?.shortTitle}
-                  </button>
-                )
-              })}
+              {libraryBranches.map((branch) => (
+                <button
+                  className={activeBranch === branch.label ? 'is-active' : ''}
+                  key={branch.label}
+                  onClick={() => handleBranchSelect(branch.label)}
+                  type="button"
+                >
+                  {branch.shortLabel}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -229,6 +181,7 @@ export function Library() {
                 )
               }
               track={track}
+              completedNoteSlugs={completedNoteSlugs}
             />
           ))}
         </div>
@@ -241,9 +194,9 @@ export function Library() {
                 setIsTrackListExpanded((currentValue) => !currentValue)
               }
               type="button"
-            >
-              <span>{isTrackListExpanded ? 'Show fewer tracks' : 'Show more tracks'}</span>
-              <b aria-hidden="true">{isTrackListExpanded ? '↑' : '↓'}</b>
+          >
+              <span>{isTrackListExpanded ? 'Show fewer tracks' : 'Browse all tracks'}</span>
+              <b aria-hidden="true">→</b>
             </button>
           </div>
         )}
@@ -258,37 +211,48 @@ export function Library() {
 
 type TrackCardProps = {
   index: number
+  completedNoteSlugs: Set<string>
   isExpanded: boolean
   onToggle: () => void
   track: Track
 }
 
-function TrackCard({ index, isExpanded, onToggle, track }: TrackCardProps) {
+function TrackCard({
+  completedNoteSlugs,
+  index,
+  isExpanded,
+  onToggle,
+  track,
+}: TrackCardProps) {
   const firstTopic = track.topics[0]
-  const previewRootTopics =
-    !isExpanded &&
-    firstTopic?.children?.length &&
-    firstTopic.title.toLowerCase().includes('roadmap')
-      ? firstTopic.children
-      : track.topics
-  const topics = isExpanded ? track.topics : previewRootTopics.slice(0, 3)
   const accent = trackAccentColor[track.accent]
-  const noteCount = countNotes(track.topics)
   const flatNotes = flattenNotes(track.topics)
+  const { completedCount, nextNote, noteCount } = getTrackProgress(
+    track,
+    completedNoteSlugs,
+  )
+  const continueNote = nextNote ?? firstTopic
+  const continueHref = continueNote ? `#/notes/${continueNote.slug}` : '#roadmap'
+  const progressPercent = Math.round((completedCount / noteCount) * 100)
+  const isCompleted = completedCount === noteCount
 
   const renderTopic = (topic: Note, depth = 0) => {
     const topicIndex = flatNotes.findIndex(
       (candidate) => candidate.slug === topic.slug,
     )
+    const isCompleted = completedNoteSlugs.has(topic.slug)
+    const isNext = topic.slug === nextNote?.slug
 
     return (
       <li
         className={depth > 0 ? 'library-topic-list__child' : undefined}
+        data-complete={isCompleted}
+        data-next={isNext}
         key={topic.slug}
         style={{ '--topic-depth': depth } as CSSProperties}
       >
         <span className="library-topic-list__index">
-          {String(topicIndex + 1).padStart(2, '0')}
+          {isCompleted ? '✓' : isNext ? '→' : String(topicIndex + 1).padStart(2, '0')}
         </span>
         <a href={`#/notes/${topic.slug}`}>
           <strong>{topic.title}</strong>
@@ -297,6 +261,7 @@ function TrackCard({ index, isExpanded, onToggle, track }: TrackCardProps) {
         {topic.priority && (
           <span className="library-topic-list__badge">{topic.priority}</span>
         )}
+        {isNext && <span className="library-topic-list__badge">Next</span>}
         {isExpanded && Boolean(topic.children?.length) && (
           <ol className="library-topic-list__children">
             {topic.children?.map((childTopic) => renderTopic(childTopic, depth + 1))}
@@ -315,8 +280,9 @@ function TrackCard({ index, isExpanded, onToggle, track }: TrackCardProps) {
         <span className="library-card__number">
           {String(index + 1).padStart(2, '0')}
         </span>
-        <span className="eyebrow">{track.eyebrow}</span>
-        <span className="library-card__count">{noteCount} notes</span>
+        <span className="library-card__icon" aria-hidden="true">
+          {trackIcons[track.title] ?? track.shortTitle}
+        </span>
       </div>
 
       <div className="library-card__body">
@@ -324,27 +290,41 @@ function TrackCard({ index, isExpanded, onToggle, track }: TrackCardProps) {
         <p>{track.description}</p>
       </div>
 
+      <div className="library-card__progress">
+        <span>
+          {completedCount} / {noteCount} completed
+        </span>
+        <i aria-hidden="true">
+          <b style={{ width: `${progressPercent}%` }} />
+        </i>
+      </div>
+
+      <div className="library-card__next">
+        <span>Next lesson</span>
+        <strong>{nextNote?.title ?? 'All lessons completed'}</strong>
+        <p>
+          {nextNote?.description ?? 'Great job. Review or explore advanced topics.'}
+        </p>
+      </div>
+
       <div className="library-card__actions">
-        <a className="library-card__primary" href={`#/notes/${firstTopic.slug}`}>
-          Start learning
+        <a className="library-card__primary" href={continueHref}>
+          {isCompleted
+            ? 'Review'
+            : completedCount > 0
+              ? 'Continue'
+              : 'Start'}
         </a>
         <button className="library-card__ghost" onClick={onToggle} type="button">
-          {isExpanded ? 'Collapse' : `${noteCount} topics`}
+          {isExpanded ? 'Hide curriculum' : 'View curriculum'}
         </button>
       </div>
 
-      <ol className="library-topic-list">
-        {topics.map((topic) => renderTopic(topic))}
-      </ol>
-
-      <button
-        className="library-card__toggle"
-        onClick={onToggle}
-        type="button"
-      >
-        {isExpanded ? 'Show less' : `View all ${noteCount} topics`}
-        <span>{isExpanded ? '↑' : '↓'}</span>
-      </button>
+      {isExpanded && (
+        <ol className="library-topic-list">
+          {track.topics.map((topic) => renderTopic(topic))}
+        </ol>
+      )}
     </article>
   )
 }

@@ -37,7 +37,11 @@ export function AuthControls() {
     [],
   );
   const [isProviderConfigPending, setIsProviderConfigPending] = useState(true);
-  const [lastProvider, setLastProvider] = useState<SocialProvider | null>(null);
+  const [lastProvider, setLastProvider] = useState<SocialProvider | null>(() => {
+    const storedProvider = window.localStorage.getItem(lastProviderStorageKey);
+
+    return storedProvider === "github" ? storedProvider : null;
+  });
   const [authError, setAuthError] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -79,14 +83,6 @@ export function AuthControls() {
     return () => {
       isMounted = false;
     };
-  }, []);
-
-  useEffect(() => {
-    const storedProvider = window.localStorage.getItem(lastProviderStorageKey);
-
-    if (storedProvider === "github") {
-      setLastProvider(storedProvider);
-    }
   }, []);
 
   // Close dropdown when clicking outside
