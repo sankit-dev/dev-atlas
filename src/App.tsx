@@ -336,6 +336,7 @@ function App() {
       ) : (
         <main>
           <Hero
+            completedNoteSlugs={completedNoteSlugs}
             currentStep={currentLearningStep}
             lastCompletedNote={lastCompletedNote}
             overallProgress={overallProgress}

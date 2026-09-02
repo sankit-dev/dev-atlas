@@ -4,7 +4,7 @@ type ButtonLinkProps = PropsWithChildren<{
   href: string
   rel?: string
   target?: string
-  variant?: 'dark' | 'light'
+  variant?: 'dark' | 'light' | 'accent'
 }>
 
 export function ButtonLink({

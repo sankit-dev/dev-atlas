@@ -103,4 +103,96 @@ export function getOverallProgress(completedNoteSlugs: Set<string>) {
   }
 }
 
+export type HeroMilestoneStatus = 'completed' | 'in-progress' | 'next' | 'locked'
+
+export type HeroMilestone = {
+  label: string
+  trackTitles: string[]
+}
+
+export const heroMilestones: HeroMilestone[] = [
+  {
+    label: 'Core Concepts',
+    trackTitles: ['Operating Systems', 'Object-Oriented Programming'],
+  },
+  {
+    label: 'Networking',
+    trackTitles: ['Computer Networks'],
+  },
+  {
+    label: 'Databases',
+    trackTitles: ['Databases & SQL', 'MongoDB'],
+  },
+  {
+    label: 'APIs',
+    trackTitles: ['JavaScript', 'Node.js', 'Express.js', 'MERN Integration'],
+  },
+  {
+    label: 'System Design',
+    trackTitles: [
+      'Docker',
+      'AWS Fundamentals',
+      'GitHub CI/CD',
+      'AI for Backend Developers',
+    ],
+  },
+]
+
+function getMilestoneProgress(
+  milestone: HeroMilestone,
+  completedNoteSlugs: Set<string>,
+) {
+  let noteCount = 0
+  let completedCount = 0
+
+  for (const title of milestone.trackTitles) {
+    const track = tracks.find((candidate) => candidate.title === title)
+
+    if (!track) {
+      continue
+    }
+
+    const progress = getTrackProgress(track, completedNoteSlugs)
+    noteCount += progress.noteCount
+    completedCount += progress.completedCount
+  }
+
+  return {
+    completedCount,
+    isComplete: noteCount > 0 && completedCount === noteCount,
+    noteCount,
+  }
+}
+
+export function getHeroMilestoneStates(completedNoteSlugs: Set<string>) {
+  const progress = heroMilestones.map((milestone) => ({
+    milestone,
+    ...getMilestoneProgress(milestone, completedNoteSlugs),
+  }))
+
+  const activeIndex = progress.findIndex((item) => !item.isComplete)
+  const resolvedActiveIndex =
+    activeIndex === -1 ? progress.length - 1 : activeIndex
+
+  return progress.map((item, index) => {
+    let status: HeroMilestoneStatus
+
+    if (item.isComplete) {
+      status = 'completed'
+    } else if (index === resolvedActiveIndex) {
+      status = 'in-progress'
+    } else if (index === resolvedActiveIndex + 1) {
+      status = 'next'
+    } else {
+      status = 'locked'
+    }
+
+    return {
+      ...item,
+      index,
+      status,
+    }
+  })
+}
+
 export { countNotes, flattenNotes }

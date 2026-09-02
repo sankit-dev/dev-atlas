@@ -1,12 +1,9 @@
-import { AuthControls } from './AuthControls'
 import { Brand } from './Brand'
-import { Wrap } from './PageShell'
 
 const navigationLinks = [
-  { label: 'Library', href: '#library', variant: 'standard' },
-  { label: 'Roadmap', href: '#roadmap', variant: 'standard' },
-  { label: 'Contribute', href: '#contribute', variant: 'standard' },
-  { label: "Don't click", href: '#/dsa', variant: 'challenge' },
+  { label: 'Roadmap', href: '#roadmap' },
+  { label: 'Library', href: '#library' },
+  { label: 'About', href: '#contribute' },
 ] as const
 
 type HeaderProps = {
@@ -18,65 +15,45 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
   const isDark = theme === 'dark'
 
   return (
-    <Wrap>
-      <nav
-        aria-label="Primary navigation"
-        className="flex min-h-21.5 items-center justify-between gap-6 py-5 max-[760px]:min-h-17.5 max-[760px]:py-4"
-      >
-        <Brand />
-        <div className="site-header-actions">
-          <div className="site-header-links">
-            {navigationLinks.map((link) =>
-              link.variant === 'challenge' ? (
-                <a
-                  className="site-nav-challenge"
-                  href={link.href}
-                  key={link.href}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.removeProperty('--mx')
-                    e.currentTarget.style.removeProperty('--my')
-                  }}
-                  onMouseMove={(e) => {
-                    const r = e.currentTarget.getBoundingClientRect()
-                    e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`)
-                    e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`)
-                  }}
-                >
-                  <span className="site-nav-challenge__dot" aria-hidden="true" />
-                  {link.label}
-                </a>
-              ) : (
-                <a className="site-nav-link" href={link.href} key={link.href}>
-                  {link.label}
-                </a>
-              )
-            )}
-          </div>
-          <div className="site-header-auth">
-            <AuthControls />
-          </div>
-          <button
-            aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-            aria-pressed={isDark}
-            className="relative grid h-9 w-17 grid-cols-[28px_28px] place-items-center rounded-full border border-(--color-line) bg-(--color-surface) p-1 text-[15px] leading-none text-(--color-muted) transition-colors"
-            onClick={onThemeToggle}
-            title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-            type="button"
-          >
-            <span
-              className={`absolute top-1 left-1 size-7 rounded-full bg-(--color-inverse-bg) transition-transform ${
-                isDark ? 'translate-x-8' : 'translate-x-0'
-              }`}
-            />
-            <span className={`relative z-10 grid size-7 place-items-center ${isDark ? '' : 'text-(--color-inverse-text)'}`}>
-              ☀
-            </span>
-            <span className={`relative z-10 grid size-7 place-items-center ${isDark ? 'text-(--color-inverse-text)' : ''}`}>
-              ☾
-            </span>
-          </button>
+    <nav
+      aria-label="Primary navigation"
+      className="site-header-nav"
+    >
+      <Brand />
+      <div className="site-header-actions">
+        <div className="site-header-links">
+          {navigationLinks.map((link) => (
+            <a className="site-nav-link" href={link.href} key={link.href}>
+              {link.label}
+            </a>
+          ))}
         </div>
-      </nav>
-    </Wrap>
+        <div className="site-header-auth">
+          <a className="site-header-start" href="#library">
+            Get started
+          </a>
+        </div>
+        <button
+          aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+          aria-pressed={isDark}
+          className="relative grid h-9 w-17 grid-cols-[28px_28px] place-items-center rounded-full border border-(--color-line) bg-(--color-surface) p-1 text-[15px] leading-none text-(--color-muted) shadow-none transition-[background-color,border-color,transform] duration-300"
+          onClick={onThemeToggle}
+          title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+          type="button"
+        >
+          <span
+            className={`absolute top-1 left-1 size-7 rounded-full bg-(--color-inverse-bg) transition-transform ${
+              isDark ? 'translate-x-8' : 'translate-x-0'
+            }`}
+          />
+          <span className={`relative z-10 grid size-7 place-items-center ${isDark ? '' : 'text-(--color-inverse-text)'}`}>
+            ☀
+          </span>
+          <span className={`relative z-10 grid size-7 place-items-center ${isDark ? 'text-(--color-inverse-text)' : ''}`}>
+            ☾
+          </span>
+        </button>
+      </div>
+    </nav>
   )
 }
