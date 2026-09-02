@@ -123,7 +123,7 @@ export function Hero({
               variant="accent"
             >
               {overallProgress.completedCount > 0 ? 'Continue' : 'Start your journey'}
-              <span className="text-base leading-none">→</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', lineHeight: 1 }}>→</span>
             </ButtonLink>
             <a href="#roadmap">Explore roadmap</a>
           </motion.div>
