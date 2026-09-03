@@ -143,53 +143,60 @@ export function Library({ completedNoteSlugs }: LibraryProps) {
   return (
     <Wrap>
       <section className="py-27.5 max-[760px]:py-20" id="library">
-        <motion.p
-          className="library-section-intro"
+        <motion.header
+          className="library-page-header"
           initial={reducedMotion ? false : 'hidden'}
           whileInView={reducedMotion ? undefined : 'visible'}
           viewport={viewportOnce}
           variants={fadeUp}
           {...motionConfig}
         >
-          Browse tracks or jump back into your next lesson. Each path is ordered
-          for focused revision — start anywhere, but follow the sequence within a track.
-        </motion.p>
+          <p className="kicker">Learning library</p>
+          <h1>Pick a track. Follow the order.</h1>
+          <p>
+            Focused backend topics, arranged for learning, revision, and
+            interview prep.
+          </p>
+        </motion.header>
+
+        <div className="library-section-heading">
+          <div>
+            <h2>Your tracks</h2>
+            <p>Search or jump into any topic.</p>
+          </div>
+          <span>Ordered within each track</span>
+        </div>
 
         <div className="library-controls">
-          <div className="library-controls__header">
-            <h2>Your tracks</h2>
-            <div className="library-controls__toolbar">
-              <label className="library-search">
-                <span aria-hidden="true">⌕</span>
-                <input
-                  aria-label="Search learning topics"
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search tracks or topics..."
-                  value={query}
-                />
-              </label>
+          <label className="library-search">
+            <span aria-hidden="true">⌕</span>
+            <input
+              aria-label="Search learning topics"
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search tracks or topics..."
+              value={query}
+            />
+          </label>
 
-              <div className="library-branches" aria-label="Learning branches">
-                <button
-                  className={activeBranch === allBranchLabel ? 'is-active' : ''}
-                  onClick={() => handleBranchSelect(allBranchLabel)}
-                  type="button"
-                >
-                  All
-                </button>
+          <div className="library-branches" aria-label="Learning branches">
+            <button
+              className={activeBranch === allBranchLabel ? 'is-active' : ''}
+              onClick={() => handleBranchSelect(allBranchLabel)}
+              type="button"
+            >
+              All
+            </button>
 
-                {libraryBranches.map((branch) => (
-                  <button
-                    className={activeBranch === branch.label ? 'is-active' : ''}
-                    key={branch.label}
-                    onClick={() => handleBranchSelect(branch.label)}
-                    type="button"
-                  >
-                    {branch.shortLabel}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {libraryBranches.map((branch) => (
+              <button
+                className={activeBranch === branch.label ? 'is-active' : ''}
+                key={branch.label}
+                onClick={() => handleBranchSelect(branch.label)}
+                type="button"
+              >
+                {branch.shortLabel}
+              </button>
+            ))}
           </div>
         </div>
 

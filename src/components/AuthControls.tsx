@@ -8,7 +8,6 @@ type AuthProvidersResponse = {
 };
 
 const apiOrigin = import.meta.env.VITE_API_ORIGIN ?? "http://localhost:4000";
-const lastProviderStorageKey = "dev-atlas:last-auth-provider";
 const providerLabels: Record<SocialProvider, string> = {
   github: "GitHub",
 };
@@ -37,11 +36,6 @@ export function AuthControls() {
     [],
   );
   const [isProviderConfigPending, setIsProviderConfigPending] = useState(true);
-  const [lastProvider, setLastProvider] = useState<SocialProvider | null>(() => {
-    const storedProvider = window.localStorage.getItem(lastProviderStorageKey);
-
-    return storedProvider === "github" ? storedProvider : null;
-  });
   const [authError, setAuthError] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -100,8 +94,6 @@ export function AuthControls() {
   const signIn = async (provider: SocialProvider) => {
     setPendingProvider(provider);
     setAuthError("");
-    setLastProvider(provider);
-    window.localStorage.setItem(lastProviderStorageKey, provider);
 
     try {
       await authClient.signIn.social({
@@ -193,36 +185,20 @@ export function AuthControls() {
 
   return (
     <div className='auth-save-progress'>
-      <span className='auth-save-progress__hint'>Login to save progress</span>
       <div className='auth-save-progress__action'>
         <button
-          className='auth-github-button'
+          className='auth-login-button'
           disabled={!isGithubEnabled || pendingProvider !== null}
           onClick={() => void signIn("github")}
           title={
             isGithubEnabled
-              ? "Save notes and DSA progress with GitHub"
+              ? "Login to save notes and DSA progress"
               : "GitHub login is not configured yet"
           }
           type='button'
         >
-          <svg
-            aria-hidden='true'
-            className='auth-github-button__icon'
-            viewBox='0 0 16 16'
-          >
-            <path
-              d='M8 0C3.58 0 0 3.67 0 8.2c0 3.62 2.29 6.69 5.47 7.77.4.08.55-.18.55-.4v-1.53c-2.23.5-2.7-.98-2.7-.98-.36-.95-.89-1.2-.89-1.2-.73-.51.06-.5.06-.5.8.06 1.22.85 1.22.85.72 1.25 1.88.89 2.34.68.07-.53.28-.89.51-1.1-1.78-.21-3.64-.91-3.64-4.05 0-.9.31-1.63.82-2.2-.08-.21-.36-1.04.08-2.17 0 0 .67-.22 2.2.84A7.43 7.43 0 0 1 8 3.93c.68 0 1.36.09 2 .28 1.52-1.06 2.19-.84 2.19-.84.44 1.13.16 1.96.08 2.17.51.57.82 1.3.82 2.2 0 3.15-1.87 3.84-3.65 4.04.29.26.54.76.54 1.54v2.26c0 .22.14.48.55.4A8.1 8.1 0 0 0 16 8.2C16 3.67 12.42 0 8 0Z'
-              fill='currentColor'
-            />
-          </svg>
-          <span>
-            {pendingProvider === "github"
-              ? "Opening GitHub..."
-              : lastProvider === "github"
-                ? "Continue with GitHub"
-                : "GitHub login"}
-          </span>
+          {pendingProvider === "github" ? "Opening..." : "Login"}
+          <span aria-hidden="true">→</span>
         </button>
         {(authError || !isGithubEnabled) && (
           <p className='auth-save-progress__error'>

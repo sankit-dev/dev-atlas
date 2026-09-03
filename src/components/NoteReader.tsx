@@ -563,7 +563,7 @@ export function NoteReader({
 
               <a
                 className="mb-5 inline-block text-xs font-extrabold text-(--color-muted) transition-colors hover:text-(--color-accent-strong)"
-                href="#library"
+                href="#/library"
               >
                 Back to library
               </a>
@@ -589,7 +589,7 @@ export function NoteReader({
               <nav className="note-breadcrumb" aria-label="Breadcrumb">
                 <ol>
                   <li>
-                    <a href="#library">Library</a>
+                    <a href="#/library">Library</a>
                   </li>
                   <li>
                     <span>{track.title}</span>

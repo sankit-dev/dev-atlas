@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react'
+import { AuthControls } from './AuthControls'
 import { Brand } from './Brand'
 
 const navigationLinks = [
   { label: 'Roadmap', href: '#roadmap' },
-  { label: 'Library', href: '#library' },
-  { label: 'About', href: '#contribute' },
+  { label: 'Library', href: '#/library' },
+  { label: 'Practice', href: '#/dsa' },
 ] as const
 
 type HeaderProps = {
@@ -13,6 +15,29 @@ type HeaderProps = {
 
 export function Header({ onThemeToggle, theme }: HeaderProps) {
   const isDark = theme === 'dark'
+  const [activeHash, setActiveHash] = useState(() =>
+    typeof window === 'undefined' ? '' : window.location.hash,
+  )
+
+  useEffect(() => {
+    const syncActiveHash = () => setActiveHash(window.location.hash)
+
+    window.addEventListener('hashchange', syncActiveHash)
+
+    return () => window.removeEventListener('hashchange', syncActiveHash)
+  }, [])
+
+  const getIsActive = (href: string) => {
+    if (href === '#/library') {
+      return activeHash === '#/library'
+    }
+
+    if (href === '#/dsa') {
+      return activeHash === '#/dsa' || activeHash.startsWith('#/dsa/')
+    }
+
+    return activeHash === href
+  }
 
   return (
     <nav
@@ -20,19 +45,24 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
       className="site-header-nav"
     >
       <Brand />
-      <div className="site-header-actions">
-        <div className="site-header-links">
-          {navigationLinks.map((link) => (
-            <a className="site-nav-link" href={link.href} key={link.href}>
+      <div className="site-header-links">
+        {navigationLinks.map((link) => {
+          const isActive = getIsActive(link.href)
+
+          return (
+            <a
+              aria-current={isActive ? 'page' : undefined}
+              className="site-nav-link"
+              data-active={isActive}
+              href={link.href}
+              key={link.href}
+            >
               {link.label}
             </a>
-          ))}
-        </div>
-        <div className="site-header-auth">
-          <a className="site-header-start" href="#library">
-            Get started
-          </a>
-        </div>
+          )
+        })}
+      </div>
+      <div className="site-header-actions">
         <button
           aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
           aria-pressed={isDark}
@@ -53,6 +83,9 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
             ☾
           </span>
         </button>
+        <div className="site-header-auth">
+          <AuthControls />
+        </div>
       </div>
     </nav>
   )

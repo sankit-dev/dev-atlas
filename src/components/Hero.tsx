@@ -119,11 +119,11 @@ export function Hero({
           </motion.p>
           <motion.div className="hero-landing__actions" variants={fadeUp}>
             <ButtonLink
-              href={nextNote ? `#/notes/${nextNote.slug}` : '#library'}
+              href={nextNote ? `#/notes/${nextNote.slug}` : '#/library'}
               variant="accent"
             >
               {overallProgress.completedCount > 0 ? 'Continue' : 'Start your journey'}
-              <span style={{ display: 'inline-flex', alignItems: 'center', lineHeight: 1 }}>→</span>
+              <span className="btn-arrow" aria-hidden="true">→</span>
             </ButtonLink>
             <a href="#roadmap">Explore roadmap</a>
           </motion.div>

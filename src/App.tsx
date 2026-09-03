@@ -5,6 +5,7 @@ import type { Note } from './data/tracks'
 import { Contribute } from './components/Contribute'
 import { DsaCourse } from './components/DsaCourse'
 import { Footer } from './components/Footer'
+import { FocusedLearningSection } from './components/FocusedLearningSection'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
 import { Library } from './components/Library'
@@ -54,6 +55,10 @@ function getDsaQuestIdFromHash(hashRoute: string) {
 
 function isDsaRoute(hashRoute: string) {
   return hashRoute === '#/dsa' || hashRoute.startsWith('#/dsa/')
+}
+
+function isLibraryRoute(hashRoute: string) {
+  return hashRoute === '#/library'
 }
 
 function getInitialTheme(): Theme {
@@ -158,6 +163,7 @@ function App() {
   const activeNoteSlug = getNoteSlugFromHash(hashRoute)
   const activeDsaQuestId = getDsaQuestIdFromHash(hashRoute)
   const isDsa = isDsaRoute(hashRoute)
+  const isLibrary = isLibraryRoute(hashRoute)
   const activeNoteMatch = tracks
     .flatMap((track) =>
       flattenNotes(track.topics).map((note) => ({
@@ -324,6 +330,11 @@ function App() {
           activeQuestId={activeDsaQuestId}
           onNavigateQuest={navigateToDsaQuest}
         />
+      ) : isLibrary ? (
+        <main>
+          <Library completedNoteSlugs={completedNoteSlugs} />
+          <Footer />
+        </main>
       ) : activeNoteMatch ? (
         <NoteReader
           note={activeNoteMatch.note}
@@ -341,7 +352,7 @@ function App() {
             lastCompletedNote={lastCompletedNote}
             overallProgress={overallProgress}
           />
-          <Library completedNoteSlugs={completedNoteSlugs} />
+          <FocusedLearningSection />
           <Roadmap completedNoteSlugs={completedNoteSlugs} />
           <Contribute />
           <Footer />
