@@ -1,7 +1,16 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import { useMemo, useState, type CSSProperties } from 'react'
 import type { Accent, Note, Track } from '../data/tracks'
 import { getTrackProgress } from '../data/learningPath'
 import { flattenNotes, tracks } from '../data/tracks'
+import { useReducedMotion } from '../hooks/useReducedMotion'
+import {
+  accordionContent,
+  fadeUp,
+  motionProps,
+  staggerContainer,
+  viewportOnce,
+} from './motion'
 import { Wrap } from './PageShell'
 
 const trackAccentColor: Record<Accent, string> = {
@@ -13,9 +22,9 @@ const trackAccentColor: Record<Accent, string> = {
 }
 
 const trackIcons: Partial<Record<string, string>> = {
-  'Operating Systems': '>_',
+  'Operating Systems': 'OS',
   'Computer Networks': 'NET',
-  'Object-Oriented Programming': '</>',
+  'Object-Oriented Programming': 'OOP',
   'Databases & SQL': 'DB',
   JavaScript: 'JS',
   'Node.js': 'N',
@@ -97,6 +106,8 @@ type LibraryProps = {
 }
 
 export function Library({ completedNoteSlugs }: LibraryProps) {
+  const reducedMotion = useReducedMotion()
+  const motionConfig = motionProps(reducedMotion)
   const [query, setQuery] = useState('')
   const [activeBranch, setActiveBranch] = useState<string>(allBranchLabel)
   const [expandedTrack, setExpandedTrack] = useState<string | null>(null)
@@ -117,7 +128,7 @@ export function Library({ completedNoteSlugs }: LibraryProps) {
       return matchesSearch
     })
   }, [activeBranchConfig, query])
-  const visibleTrackLimit = 3
+  const visibleTrackLimit = 6
   const hasMoreTracks = visibleTracks.length > visibleTrackLimit
   const displayedTracks = isTrackListExpanded
     ? visibleTracks
@@ -132,47 +143,74 @@ export function Library({ completedNoteSlugs }: LibraryProps) {
   return (
     <Wrap>
       <section className="py-27.5 max-[760px]:py-20" id="library">
-        <div className="library-controls">
-          <div className="library-controls__header">
+        <motion.header
+          className="library-page-header"
+          initial={reducedMotion ? false : 'hidden'}
+          whileInView={reducedMotion ? undefined : 'visible'}
+          viewport={viewportOnce}
+          variants={fadeUp}
+          {...motionConfig}
+        >
+          <p className="kicker">Learning library</p>
+          <h1>Pick a track. Follow the order.</h1>
+          <p>
+            Focused backend topics, arranged for learning, revision, and
+            interview prep.
+          </p>
+        </motion.header>
+
+        <div className="library-section-heading">
+          <div>
             <h2>Your tracks</h2>
+            <p>Search or jump into any topic.</p>
+          </div>
+          <span>Ordered within each track</span>
+        </div>
 
-            <label className="library-search">
-              <span aria-hidden="true">⌕</span>
-              <input
-                aria-label="Search learning topics"
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search tracks or topics..."
-                value={query}
-              />
-            </label>
+        <div className="library-controls">
+          <label className="library-search">
+            <span aria-hidden="true">⌕</span>
+            <input
+              aria-label="Search learning topics"
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search tracks or topics..."
+              value={query}
+            />
+          </label>
 
-            <div className="library-branches" aria-label="Learning branches">
+          <div className="library-branches" aria-label="Learning branches">
+            <button
+              className={activeBranch === allBranchLabel ? 'is-active' : ''}
+              onClick={() => handleBranchSelect(allBranchLabel)}
+              type="button"
+            >
+              All
+            </button>
+
+            {libraryBranches.map((branch) => (
               <button
-                className={activeBranch === allBranchLabel ? 'is-active' : ''}
-                onClick={() => handleBranchSelect(allBranchLabel)}
+                className={activeBranch === branch.label ? 'is-active' : ''}
+                key={branch.label}
+                onClick={() => handleBranchSelect(branch.label)}
                 type="button"
               >
-                All
+                {branch.shortLabel}
               </button>
-
-              {libraryBranches.map((branch) => (
-                <button
-                  className={activeBranch === branch.label ? 'is-active' : ''}
-                  key={branch.label}
-                  onClick={() => handleBranchSelect(branch.label)}
-                  type="button"
-                >
-                  {branch.shortLabel}
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
 
-        <div className="library-grid">
-          {displayedTracks.map((track, trackIndex) => (
-            <TrackCard
-              index={trackIndex}
+        <motion.div
+          className="library-tracks"
+          key={activeBranch + query}
+          initial={reducedMotion ? false : 'hidden'}
+          animate={reducedMotion ? undefined : 'visible'}
+          variants={staggerContainer}
+          layout={!reducedMotion}
+        >
+          {displayedTracks.map((track) => (
+            <TrackRow
+              completedNoteSlugs={completedNoteSlugs}
               isExpanded={expandedTrack === track.title}
               key={track.title}
               onToggle={() =>
@@ -180,11 +218,11 @@ export function Library({ completedNoteSlugs }: LibraryProps) {
                   current === track.title ? null : track.title,
                 )
               }
+              reducedMotion={reducedMotion}
               track={track}
-              completedNoteSlugs={completedNoteSlugs}
             />
           ))}
-        </div>
+        </motion.div>
 
         {hasMoreTracks && (
           <div className="library-show-more">
@@ -194,7 +232,7 @@ export function Library({ completedNoteSlugs }: LibraryProps) {
                 setIsTrackListExpanded((currentValue) => !currentValue)
               }
               type="button"
-          >
+            >
               <span>{isTrackListExpanded ? 'Show fewer tracks' : 'Browse all tracks'}</span>
               <b aria-hidden="true">→</b>
             </button>
@@ -209,21 +247,21 @@ export function Library({ completedNoteSlugs }: LibraryProps) {
   )
 }
 
-type TrackCardProps = {
-  index: number
+type TrackRowProps = {
   completedNoteSlugs: Set<string>
   isExpanded: boolean
   onToggle: () => void
+  reducedMotion: boolean
   track: Track
 }
 
-function TrackCard({
+function TrackRow({
   completedNoteSlugs,
-  index,
   isExpanded,
   onToggle,
+  reducedMotion,
   track,
-}: TrackCardProps) {
+}: TrackRowProps) {
   const firstTopic = track.topics[0]
   const accent = trackAccentColor[track.accent]
   const flatNotes = flattenNotes(track.topics)
@@ -240,19 +278,19 @@ function TrackCard({
     const topicIndex = flatNotes.findIndex(
       (candidate) => candidate.slug === topic.slug,
     )
-    const isCompleted = completedNoteSlugs.has(topic.slug)
+    const topicComplete = completedNoteSlugs.has(topic.slug)
     const isNext = topic.slug === nextNote?.slug
 
     return (
       <li
         className={depth > 0 ? 'library-topic-list__child' : undefined}
-        data-complete={isCompleted}
+        data-complete={topicComplete}
         data-next={isNext}
         key={topic.slug}
         style={{ '--topic-depth': depth } as CSSProperties}
       >
         <span className="library-topic-list__index">
-          {isCompleted ? '✓' : isNext ? '→' : String(topicIndex + 1).padStart(2, '0')}
+          {topicComplete ? '✓' : isNext ? '→' : String(topicIndex + 1).padStart(2, '0')}
         </span>
         <a href={`#/notes/${topic.slug}`}>
           <strong>{topic.title}</strong>
@@ -272,59 +310,63 @@ function TrackCard({
   }
 
   return (
-    <article
-      className={`library-card ${isExpanded ? 'is-expanded' : ''}`}
+    <motion.article
+      className={`library-track-row ${isExpanded ? 'is-expanded' : ''}`}
       style={{ '--track-accent': accent } as CSSProperties}
+      variants={fadeUp}
+      layout={!reducedMotion}
     >
-      <div className="library-card__top">
-        <span className="library-card__number">
-          {String(index + 1).padStart(2, '0')}
-        </span>
-        <span className="library-card__icon" aria-hidden="true">
+      <div className="library-track-row__main">
+        <span className="library-track-row__icon" aria-hidden="true">
           {trackIcons[track.title] ?? track.shortTitle}
         </span>
+
+        <div className="library-track-row__info">
+          <span className="library-track-row__eyebrow">{track.eyebrow}</span>
+          <h3>{track.title}</h3>
+          <p className="library-track-row__description">{track.description}</p>
+        </div>
+
+        <div className="library-track-row__progress">
+          <span>
+            {noteCount} lessons · {completedCount} done
+          </span>
+          <i aria-hidden="true">
+            <b style={{ width: `${progressPercent}%` }} />
+          </i>
+        </div>
+
+        <div className="library-track-row__actions">
+          <a className="library-track-row__primary" href={continueHref}>
+            {isCompleted ? 'Review' : completedCount > 0 ? 'Continue' : 'Start'}
+          </a>
+          <button
+            aria-expanded={isExpanded}
+            aria-label={isExpanded ? 'Hide curriculum' : 'View curriculum'}
+            className="library-track-row__toggle"
+            onClick={onToggle}
+            type="button"
+          >
+            {isExpanded ? '−' : '+'}
+          </button>
+        </div>
       </div>
 
-      <div className="library-card__body">
-        <h3>{track.title}</h3>
-        <p>{track.description}</p>
-      </div>
-
-      <div className="library-card__progress">
-        <span>
-          {completedCount} / {noteCount} completed
-        </span>
-        <i aria-hidden="true">
-          <b style={{ width: `${progressPercent}%` }} />
-        </i>
-      </div>
-
-      <div className="library-card__next">
-        <span>Next lesson</span>
-        <strong>{nextNote?.title ?? 'All lessons completed'}</strong>
-        <p>
-          {nextNote?.description ?? 'Great job. Review or explore advanced topics.'}
-        </p>
-      </div>
-
-      <div className="library-card__actions">
-        <a className="library-card__primary" href={continueHref}>
-          {isCompleted
-            ? 'Review'
-            : completedCount > 0
-              ? 'Continue'
-              : 'Start'}
-        </a>
-        <button className="library-card__ghost" onClick={onToggle} type="button">
-          {isExpanded ? 'Hide curriculum' : 'View curriculum'}
-        </button>
-      </div>
-
-      {isExpanded && (
-        <ol className="library-topic-list">
-          {track.topics.map((topic) => renderTopic(topic))}
-        </ol>
-      )}
-    </article>
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            className="library-track-row__panel"
+            initial={reducedMotion ? false : 'collapsed'}
+            animate={reducedMotion ? undefined : 'expanded'}
+            exit={reducedMotion ? undefined : 'collapsed'}
+            variants={accordionContent}
+          >
+            <ol className="library-topic-list">
+              {track.topics.map((topic) => renderTopic(topic))}
+            </ol>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.article>
   )
 }
