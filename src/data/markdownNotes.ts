@@ -7,11 +7,13 @@ export type MarkdownNote = {
   track: string
 }
 
-const markdownFiles = import.meta.glob<string>('../content/notes/**/*.md', {
-  eager: true,
-  query: '?raw',
-  import: 'default',
-})
+const markdownLoaders = import.meta.glob<string>(
+  '../content/notes/**/*.md',
+  {
+    query: '?raw',
+    import: 'default',
+  },
+)
 
 function parseFrontmatter(markdown: string) {
   if (!markdown.startsWith('---')) {
@@ -46,26 +48,50 @@ function parseFrontmatter(markdown: string) {
   return { body, frontmatter }
 }
 
-export const markdownNotes = Object.values(markdownFiles).map((markdown) => {
-  const { body, frontmatter } = parseFrontmatter(markdown)
+const loaderBySlug = new Map<string, () => Promise<string>>()
 
-  return {
-    body,
-    description: frontmatter.description ?? '',
-    priority:
-      frontmatter.priority === 'Must Know' || frontmatter.priority === 'Important'
-        ? frontmatter.priority
-        : undefined,
-    slug: frontmatter.slug ?? '',
-    title: frontmatter.title ?? 'Untitled note',
-    track: frontmatter.track ?? '',
+for (const [path, loader] of Object.entries(markdownLoaders)) {
+  const slug = path.split('/').pop()?.replace(/\.md$/, '') || ''
+  if (slug) {
+    loaderBySlug.set(slug, loader)
   }
-})
-
-export const markdownNotesByTrackAndSlug = new Map(
-  markdownNotes.map((note) => [`${note.track}:${note.slug}`, note]),
-)
-
-export function getMarkdownNote(track: string, slug: string) {
-  return markdownNotesByTrackAndSlug.get(`${track}:${slug}`)
 }
+
+const noteCache = new Map<string, MarkdownNote>()
+
+export async function fetchMarkdownNote(
+  slug: string,
+): Promise<MarkdownNote | null> {
+  if (noteCache.has(slug)) {
+    return noteCache.get(slug)!
+  }
+
+  const loader = loaderBySlug.get(slug)
+
+  if (!loader) {
+    return null
+  }
+
+  try {
+    const markdown = await loader()
+    const { body, frontmatter } = parseFrontmatter(markdown)
+    const note: MarkdownNote = {
+      body,
+      description: frontmatter.description ?? '',
+      priority:
+        frontmatter.priority === 'Must Know' ||
+        frontmatter.priority === 'Important'
+          ? frontmatter.priority
+          : undefined,
+      slug: frontmatter.slug ?? slug,
+      title: frontmatter.title ?? 'Untitled note',
+      track: frontmatter.track ?? '',
+    }
+
+    noteCache.set(slug, note)
+    return note
+  } catch {
+    return null
+  }
+}
+

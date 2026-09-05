@@ -27,15 +27,14 @@ function getInitials(name: string | null | undefined, email: string | null | und
 }
 
 export function AuthControls() {
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
   const [pendingProvider, setPendingProvider] = useState<SocialProvider | null>(
     null,
   );
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [enabledProviders, setEnabledProviders] = useState<SocialProvider[]>(
-    [],
+    ["github"],
   );
-  const [isProviderConfigPending, setIsProviderConfigPending] = useState(true);
   const [authError, setAuthError] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -45,7 +44,9 @@ export function AuthControls() {
 
     async function loadProviders() {
       try {
-        const response = await fetch(`${apiOrigin}/api/auth/providers`);
+        const response = await fetch(`${apiOrigin}/api/auth/providers`, {
+          signal: AbortSignal.timeout(1500),
+        });
 
         if (!response.ok) {
           throw new Error("Unable to load auth providers");
@@ -62,13 +63,7 @@ export function AuthControls() {
           setEnabledProviders(providers);
         }
       } catch {
-        if (isMounted) {
-          setEnabledProviders([]);
-        }
-      } finally {
-        if (isMounted) {
-          setIsProviderConfigPending(false);
-        }
+        // Keep default github provider enabled if network fails/times out
       }
     }
 
@@ -117,10 +112,6 @@ export function AuthControls() {
       setIsSigningOut(false);
     }
   };
-
-  if (isPending || isProviderConfigPending) {
-    return <div aria-label='Checking session' className='auth-skeleton' />;
-  }
 
   if (session?.user) {
     const { name, email, image } = session.user;

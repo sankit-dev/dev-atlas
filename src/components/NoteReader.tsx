@@ -7,7 +7,7 @@ import {
 } from 'react'
 import type { Note, Track } from '../data/tracks'
 import { flattenNotes } from '../data/tracks'
-import { getMarkdownNote } from '../data/markdownNotes'
+import { fetchMarkdownNote } from '../data/markdownNotes'
 import { getMarkdownToc, type MarkdownTocItem } from '../lib/markdownToc'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { Wrap } from './PageShell'
@@ -219,13 +219,30 @@ export function NoteReader({
   const [waveOrigin, setWaveOrigin] = useState<{ x: number; y: number } | null>(null)
   const readerShellRef = useRef<HTMLElement>(null)
   const focusBurstTimer = useRef<number | undefined>(undefined)
+  const [fetchedBody, setFetchedBody] = useState<string | null>(null)
   const flatNotes = flattenNotes(track.topics)
   const notePath = getNotePath(track.topics, note.slug)
   const parentPath = notePath.slice(0, -1)
-  const markdownNote = getMarkdownNote(track.title, note.slug)
-  const body = markdownNote?.body
-    ? removeDuplicateTitle(markdownNote.body, note.title)
-    : createStarterMarkdown(note, track, parentPath)
+
+  useEffect(() => {
+    let cancelled = false
+
+    void fetchMarkdownNote(note.slug).then((markdownNote) => {
+      if (cancelled) return
+
+      if (markdownNote?.body) {
+        setFetchedBody(removeDuplicateTitle(markdownNote.body, note.title))
+      } else {
+        setFetchedBody(null)
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [note.slug, note.title])
+
+  const body = fetchedBody ?? createStarterMarkdown(note, track, parentPath)
   const tocItems = getMarkdownToc(body)
   const currentNoteIndex = flatNotes.findIndex(
     (trackNote) => trackNote.slug === note.slug,

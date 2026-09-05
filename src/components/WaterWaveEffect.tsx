@@ -13,7 +13,6 @@ export function WaterWaveEffect({ isWaving, origin, onWaveEnd }: WaterWaveEffect
 
   useEffect(() => {
     if (!isWaving || !origin) {
-      setFilterValues({ scale: 0, freqX: 0.012, freqY: 0.024 })
       return
     }
 
