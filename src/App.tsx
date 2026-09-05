@@ -1,18 +1,33 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Analytics } from '@vercel/analytics/react'
 import type { Note } from './data/tracks'
-import { Contribute } from './components/Contribute'
-import { DsaCourse } from './components/DsaCourse'
 import { Footer } from './components/Footer'
-import { FocusedLearningSection } from './components/FocusedLearningSection'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
-import { Library } from './components/Library'
-import { NoteReader } from './components/NoteReader'
 import { PageShell } from './components/PageShell'
-import { Roadmap } from './components/Roadmap'
 import { flattenNotes, tracks } from './data/tracks'
+
+const DsaCourse = lazy(() =>
+  import('./components/DsaCourse').then((m) => ({ default: m.DsaCourse })),
+)
+const Library = lazy(() =>
+  import('./components/Library').then((m) => ({ default: m.Library })),
+)
+const NoteReader = lazy(() =>
+  import('./components/NoteReader').then((m) => ({ default: m.NoteReader })),
+)
+const FocusedLearningSection = lazy(() =>
+  import('./components/FocusedLearningSection').then((m) => ({
+    default: m.FocusedLearningSection,
+  })),
+)
+const Roadmap = lazy(() =>
+  import('./components/Roadmap').then((m) => ({ default: m.Roadmap })),
+)
+const Contribute = lazy(() =>
+  import('./components/Contribute').then((m) => ({ default: m.Contribute })),
+)
 import {
   getCurrentLearningStep,
   getLastCompletedNote,
@@ -326,24 +341,30 @@ function App() {
         }
       />
       {isDsa ? (
-        <DsaCourse
-          activeQuestId={activeDsaQuestId}
-          onNavigateQuest={navigateToDsaQuest}
-        />
+        <Suspense fallback={<div className="min-h-screen" />}>
+          <DsaCourse
+            activeQuestId={activeDsaQuestId}
+            onNavigateQuest={navigateToDsaQuest}
+          />
+        </Suspense>
       ) : isLibrary ? (
         <main>
-          <Library completedNoteSlugs={completedNoteSlugs} />
+          <Suspense fallback={<div className="min-h-screen" />}>
+            <Library completedNoteSlugs={completedNoteSlugs} />
+          </Suspense>
           <Footer />
         </main>
       ) : activeNoteMatch ? (
-        <NoteReader
-          note={activeNoteMatch.note}
-          track={activeNoteMatch.track}
-          completedNoteSlugs={completedNoteSlugs}
-          nextTrack={nextTrack}
-          onCompleteNote={completeNote}
-          onNavigateNote={navigateToNote}
-        />
+        <Suspense fallback={<div className="min-h-screen" />}>
+          <NoteReader
+            note={activeNoteMatch.note}
+            track={activeNoteMatch.track}
+            completedNoteSlugs={completedNoteSlugs}
+            nextTrack={nextTrack}
+            onCompleteNote={completeNote}
+            onNavigateNote={navigateToNote}
+          />
+        </Suspense>
       ) : (
         <main>
           <Hero
@@ -352,9 +373,11 @@ function App() {
             lastCompletedNote={lastCompletedNote}
             overallProgress={overallProgress}
           />
-          <FocusedLearningSection />
-          <Roadmap completedNoteSlugs={completedNoteSlugs} />
-          <Contribute />
+          <Suspense fallback={<div className="min-h-40" />}>
+            <FocusedLearningSection />
+            <Roadmap completedNoteSlugs={completedNoteSlugs} />
+            <Contribute />
+          </Suspense>
           <Footer />
         </main>
       )}
