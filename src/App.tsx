@@ -270,6 +270,11 @@ function App() {
     const syncRoute = () => {
       const nextHashRoute = getHashRoute()
       setHashRoute(nextHashRoute)
+      if (typeof (window as unknown as { gtag?: Function }).gtag === 'function') {
+        ;(window as unknown as { gtag: Function }).gtag('config', 'G-PB60C0LPF5', {
+          page_path: window.location.hash || '/',
+        })
+      }
     }
 
     window.addEventListener('hashchange', syncRoute)

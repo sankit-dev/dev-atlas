@@ -31,7 +31,6 @@ const conceptSummaryCache = new Map<string, ConceptSummary | null>()
 const shikiLanguages = {
   bash: () => import('@shikijs/langs/bash'),
   c: () => import('@shikijs/langs/c'),
-  cpp: () => import('@shikijs/langs/cpp'),
   css: () => import('@shikijs/langs/css'),
   dockerfile: () => import('@shikijs/langs/dockerfile'),
   html: () => import('@shikijs/langs/html'),
@@ -77,7 +76,7 @@ function getShikiHighlighter(language: HighlightLanguage) {
 const languageAliases: Record<string, HighlightLanguage | undefined> = {
   bash: 'bash',
   c: 'c',
-  cpp: 'cpp',
+  cpp: 'c',
   css: 'css',
   dockerfile: 'dockerfile',
   html: 'html',
