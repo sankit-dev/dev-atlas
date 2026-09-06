@@ -18,7 +18,7 @@ export default defineConfig({
             if (id.includes('framer-motion')) {
               return 'vendor-motion'
             }
-            if (id.includes('shiki') || id.includes('@shikijs')) {
+            if ((id.includes('shiki') || id.includes('@shikijs')) && !id.includes('@shikijs/langs')) {
               return 'vendor-shiki'
             }
             if (id.includes('@vercel') || id.includes('better-auth')) {

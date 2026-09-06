@@ -17,6 +17,10 @@ export function createApp() {
     }),
   );
   app.get("/", (req, res) => {
+    if (req.query.error || req.query.code || Object.keys(req.query).length > 0) {
+      const queryString = new URLSearchParams(req.query as Record<string, string>).toString();
+      return res.redirect(`${env.clientOrigin}/?${queryString}`);
+    }
     res.json({ message: "Server is running" });
   });
   app.get("/api/auth/providers", (_request, response) => {

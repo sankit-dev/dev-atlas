@@ -113,7 +113,7 @@ export function Hero({
             backend <em className="font-serif font-normal">mastery.</em>
           </motion.h1>
           <motion.p variants={fadeUp}>
-            Follow a structured roadmap, track your progress,
+            Follow a structured roadmap, track your progress,{' '}
             <br />
             and always know what to learn next.
           </motion.p>
