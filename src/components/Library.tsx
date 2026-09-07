@@ -206,7 +206,6 @@ export function Library({ completedNoteSlugs }: LibraryProps) {
           initial={reducedMotion ? false : 'hidden'}
           animate={reducedMotion ? undefined : 'visible'}
           variants={staggerContainer}
-          layout={!reducedMotion}
         >
           {displayedTracks.map((track) => (
             <TrackRow
@@ -314,7 +313,6 @@ function TrackRow({
       className={`library-track-row ${isExpanded ? 'is-expanded' : ''}`}
       style={{ '--track-accent': accent } as CSSProperties}
       variants={fadeUp}
-      layout={!reducedMotion}
     >
       <div className="library-track-row__main">
         <span className="library-track-row__icon" aria-hidden="true">
