@@ -27,6 +27,23 @@ OAuth callback URLs:
 
 - GitHub: `http://localhost:4000/api/auth/callback/github`
 
+## Vercel + Render production deployment
+
+OAuth state must be stored on a first-party origin. This repository proxies
+`https://www.devatlas.site/api/auth/*` through Vercel to the Render API via
+[`vercel.json`](../vercel.json). Configure these production values before
+deploying:
+
+- Vercel `VITE_AUTH_ORIGIN=https://www.devatlas.site`
+- Render `BETTER_AUTH_URL=https://www.devatlas.site`
+- Render `CLIENT_ORIGIN=https://www.devatlas.site`
+- GitHub OAuth app callback URL:
+  `https://www.devatlas.site/api/auth/callback/github`
+
+Keep `VITE_API_ORIGIN` pointed at the Render API for the non-auth API routes.
+Do not use the Render URL as the OAuth callback URL: it makes the Better Auth
+state cookie third-party and browsers can reject it.
+
 ## Current Scope
 
 Implemented for review:
