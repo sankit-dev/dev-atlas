@@ -344,9 +344,11 @@ export function NoteReader({
   }
 
   const handleFocusToggle = (event: MouseEvent<HTMLButtonElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect()
-    const x = event.clientX || rect.left + rect.width / 2
-    const y = event.clientY || rect.top + rect.height / 2
+    // Pointer coordinates do not require a synchronous layout read. Keyboard
+    // activation has no pointer location, so start the effect at the viewport
+    // centre instead.
+    const x = event.clientX || window.innerWidth / 2
+    const y = event.clientY || window.innerHeight / 2
 
     setWaveOrigin({ x, y })
     setIsWaterWaving(true)
