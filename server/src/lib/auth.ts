@@ -16,14 +16,6 @@ const socialProviders = {
     : {}),
 };
 
-export async function connectAuthDatabase() {
-  await authClient.connect();
-}
-
-export async function disconnectAuthDatabase() {
-  await authClient.close();
-}
-
 export const auth = betterAuth({
   appName: "Dev Atlas",
   baseURL: env.betterAuthUrl,
@@ -35,11 +27,8 @@ export const auth = betterAuth({
   advanced: {
     storeStateStrategy: "database",
     defaultCookieAttributes: {
-      // OAuth is served through the frontend's same-origin /api/auth proxy in
-      // production. Lax permits GitHub's top-level callback without relying
-      // on third-party cookies, and also keeps local HTTP development usable.
-      sameSite: "lax",
-      secure: env.betterAuthUrl.startsWith("https://"),
+      sameSite: "none",
+      secure: true,
     },
   },
   trustedOrigins: [env.clientOrigin],
