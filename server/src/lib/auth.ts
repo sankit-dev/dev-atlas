@@ -35,9 +35,11 @@ export const auth = betterAuth({
   advanced: {
     storeStateStrategy: "database",
     defaultCookieAttributes: {
-      sameSite: "none",
-      secure: true,
-      partitioned: true,
+      // OAuth is served through the frontend's same-origin /api/auth proxy in
+      // production. Lax permits GitHub's top-level callback without relying
+      // on third-party cookies, and also keeps local HTTP development usable.
+      sameSite: "lax",
+      secure: env.betterAuthUrl.startsWith("https://"),
     },
   },
   trustedOrigins: [env.clientOrigin],

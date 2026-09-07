@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/auth/:path*",
+      "destination": "https://dev-atlas-vlw3.onrender.com/api/auth/:path*"
+    }
+  ]
+}
