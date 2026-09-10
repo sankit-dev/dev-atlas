@@ -67,7 +67,7 @@ export function Roadmap({ completedNoteSlugs }: RoadmapProps) {
                 </p>
                 <div className="roadmap-step__meta">
                   <span>{step.completedCount} of {step.noteCount} complete</span>
-                  {step.nextNote && <a href={`#/notes/${step.nextNote.slug}`}>Next: {step.nextNote.title}</a>}
+                  {step.nextNote && <a href={`/notes/${step.nextNote.slug}`}>Next: {step.nextNote.title}</a>}
                 </div>
               </motion.div>
             )

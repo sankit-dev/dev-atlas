@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createBundledHighlighter } from 'shiki/core'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 
@@ -31,16 +31,12 @@ const conceptSummaryCache = new Map<string, ConceptSummary | null>()
 const shikiLanguages = {
   bash: () => import('@shikijs/langs/bash'),
   c: () => import('@shikijs/langs/c'),
-  css: () => import('@shikijs/langs/css'),
   dockerfile: () => import('@shikijs/langs/dockerfile'),
   html: () => import('@shikijs/langs/html'),
   java: () => import('@shikijs/langs/java'),
   javascript: () => import('@shikijs/langs/javascript'),
   json: () => import('@shikijs/langs/json'),
-  python: () => import('@shikijs/langs/python'),
   sql: () => import('@shikijs/langs/sql'),
-  typescript: () => import('@shikijs/langs/typescript'),
-  xml: () => import('@shikijs/langs/xml'),
   yaml: () => import('@shikijs/langs/yaml'),
 }
 
@@ -76,21 +72,18 @@ function getShikiHighlighter(language: HighlightLanguage) {
 const languageAliases: Record<string, HighlightLanguage | undefined> = {
   bash: 'bash',
   c: 'c',
+  'c++': 'c',
   cpp: 'c',
-  css: 'css',
   dockerfile: 'dockerfile',
   html: 'html',
   java: 'java',
   javascript: 'javascript',
   js: 'javascript',
   json: 'json',
-  python: 'python',
+  jsx: 'javascript',
   sh: 'bash',
   shell: 'bash',
   sql: 'sql',
-  ts: 'typescript',
-  typescript: 'typescript',
-  xml: 'xml',
   yaml: 'yaml',
   yml: 'yaml',
 }
@@ -150,6 +143,7 @@ function isTitleRelevant(resultTitle: string, term: string): boolean {
 async function fetchWikipediaSummary(
   term: string,
   contextTrack?: string,
+  signal?: AbortSignal,
 ): Promise<ConceptSummary | null> {
   const normalizedTerm = term.trim()
   const cacheKey = `${normalizedTerm.toLowerCase()}:${(contextTrack || '').toLowerCase()}`
@@ -163,6 +157,7 @@ async function fetchWikipediaSummary(
       `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
         title.trim().replace(/\s+/g, '_'),
       )}`,
+      { signal },
     )
 
     if (!response.ok) {
@@ -205,6 +200,7 @@ async function fetchWikipediaSummary(
 
     const searchResponse = await fetch(
       `https://en.wikipedia.org/w/api.php?${searchParams.toString()}`,
+      { signal },
     )
 
     if (searchResponse.ok) {
@@ -232,7 +228,11 @@ async function fetchWikipediaSummary(
         }
       }
     }
-  } catch {
+  } catch (error) {
+    // Aborted hover fetches are expected; don't cache them as missing.
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw error
+    }
     // Ignore error
   }
 
@@ -246,6 +246,14 @@ function ConceptTerm({ context, term }: { context?: string; term: string }) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'missing'>(
     'idle',
   )
+  const abortRef = useRef<AbortController | null>(null)
+
+  useEffect(
+    () => () => {
+      abortRef.current?.abort()
+    },
+    [],
+  )
 
   function loadSummary() {
     if (status === 'loading' || status === 'ready' || status === 'missing') {
@@ -253,9 +261,13 @@ function ConceptTerm({ context, term }: { context?: string; term: string }) {
     }
 
     setStatus('loading')
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
 
-    fetchWikipediaSummary(term, context)
+    fetchWikipediaSummary(term, context, controller.signal)
       .then((data) => {
+        if (controller.signal.aborted) return
         if (!data) {
           setStatus('missing')
           return
@@ -264,7 +276,10 @@ function ConceptTerm({ context, term }: { context?: string; term: string }) {
         setSummary(data)
         setStatus('ready')
       })
-      .catch(() => {
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return
+        }
         setStatus('missing')
       })
   }
@@ -911,9 +926,16 @@ export function MarkdownRenderer({ context, markdown }: MarkdownRendererProps) {
     const image = getMarkdownImage(line)
 
     if (image) {
+      const alt = image.alt.trim() || 'Illustration for this note'
       nodes.push(
         <figure className="markdown-image" key={getBlockKey()}>
-          <img alt={image.alt} loading="lazy" src={image.src} />
+          <img
+            alt={alt}
+            decoding="async"
+            loading="lazy"
+            sizes="(max-width: 768px) 100vw, 768px"
+            src={image.src}
+          />
           {image.alt && <figcaption>{image.alt}</figcaption>}
         </figure>,
       )

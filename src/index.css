@@ -38,7 +38,11 @@
   --color-soft-line: var(--paper-300);
   --color-shadow: var(--paper-300);
   --color-accent: var(--accent-coral-deep);
-  --color-accent-strong: var(--accent-coral);
+  --color-accent-strong: #cf4a12;
+  /* Small-text variants that meet WCAG AA (4.5:1) on page/surface backgrounds. */
+  --color-accent-text: #c2410c;
+  --color-accent-inverse: var(--accent-coral-soft);
+  --color-success-text: #2c7a3f;
   --color-inverse-bg: var(--ink-800);
   --color-inverse-text: var(--paper-100);
   --color-inverse-muted: var(--ink-200);
@@ -66,7 +70,10 @@
   --color-soft-line: #252c38;
   --color-shadow: #05070b;
   --color-accent: var(--accent-coral-soft);
-  --color-accent-strong: var(--accent-coral);
+  --color-accent-strong: #cf4a12;
+  --color-accent-text: var(--accent-coral-soft);
+  --color-accent-inverse: #c2410c;
+  --color-success-text: var(--track-green);
   --color-accent-muted: color-mix(in srgb, var(--accent-coral-soft) 55%, var(--ink-300));
   --color-focus-ring: color-mix(in srgb, var(--accent-coral-soft) 14%, transparent);
   --color-inverse-bg: var(--ink-50);
@@ -124,7 +131,7 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-accent-strong);
+  outline: 2px solid var(--color-accent-text);
   outline-offset: 4px;
 }
 
@@ -173,7 +180,7 @@ button {
 }
 
 .site-nav-link:hover {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .site-nav-link[data-active='true'] {
@@ -395,7 +402,7 @@ button {
 
 .auth-dropdown__sign-out:hover {
   border-color: var(--color-accent);
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   background: color-mix(in srgb, var(--color-accent-strong) 5%, transparent);
 }
 
@@ -431,7 +438,7 @@ button {
 
 .auth-sign-out:hover {
   border-color: var(--color-accent);
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .auth-save-progress__hint {
@@ -484,7 +491,7 @@ button {
 
 .auth-login-button:hover {
   border-color: color-mix(in srgb, var(--color-accent-strong) 48%, var(--color-line));
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .auth-github-button__icon {
@@ -500,7 +507,7 @@ button {
   width: max-content;
   max-width: 220px;
   margin: 0;
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   font-size: 11px;
   font-weight: 750;
   line-height: 1.35;
@@ -548,7 +555,7 @@ button {
 .kicker {
   margin: 0;
   margin-bottom: 20px;
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .font-serif {
@@ -625,7 +632,7 @@ button {
 }
 
 .hero-landing__actions > a:not(.button-link):hover {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   text-decoration-color: currentColor;
 }
 
@@ -677,7 +684,7 @@ button {
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--color-accent-strong) 24%, var(--color-line));
   border-radius: 999px;
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   font-size: 15px;
   line-height: 1;
 }
@@ -729,7 +736,7 @@ button {
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-accent-strong) 10%, transparent);
   padding: 0 11px;
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px;
   font-weight: 900;
@@ -947,7 +954,7 @@ button {
 .hero-map-card__note {
   position: static;
   margin: 0 0 4px;
-  color: var(--color-accent-muted);
+  color: var(--color-accent-text);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px;
   font-style: normal;
@@ -980,7 +987,7 @@ button {
 }
 
 .hero-map-row:hover {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   transform: translateX(4px);
 }
 
@@ -1049,7 +1056,7 @@ button {
 
 .hero-next-card span,
 .hero-next-card em {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 9px;
   font-style: normal;
@@ -1433,7 +1440,29 @@ button {
   }
 }
 
+/* CSS-only hero entrance — replaces framer-motion on first paint.
+   vendor-motion chunk is then lazy-only (Library/Roadmap DSA routes). */
+.hero-reveal {
+  opacity: 0;
+  animation: heroMapIn 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  will-change: opacity, transform;
+}
+
+.markdown-image img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--color-soft-line);
+}
+
+.markdown-code-block__highlight {
+  min-height: 48px;
+  contain: content;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .hero-reveal,
   .button-link,
   .button-link::after,
   .learning-statement__body li,
@@ -1489,6 +1518,10 @@ button {
 
   .note-focus-burst {
     display: none;
+  }
+
+  .hero-reveal {
+    opacity: 1;
   }
 }
 
@@ -1677,7 +1710,7 @@ button {
 }
 
 .library-branches strong {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px;
   font-weight: 900;
@@ -2333,7 +2366,7 @@ button {
 }
 
 .roadmap-step__meta span {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .roadmap-step__meta a {
@@ -2342,7 +2375,7 @@ button {
 }
 
 .roadmap-step__meta a:hover {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .note-reader-shell {
@@ -2396,7 +2429,7 @@ button {
 
 .note-reader-sidebar__toggle:hover {
   border-color: var(--color-accent-strong);
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .note-sidebar-row {
@@ -2413,7 +2446,7 @@ button {
 }
 
 .note-reader-sidebar nav a:hover {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .note-sidebar-branch-toggle {
@@ -2438,7 +2471,7 @@ button {
 
 .note-sidebar-branch-toggle:hover {
   border-color: var(--color-accent-strong);
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .note-sidebar-link__content {
@@ -2468,7 +2501,7 @@ button {
 
 .note-sidebar-branch-progress[data-complete='true'] {
   border-color: color-mix(in srgb, var(--color-accent-strong) 60%, var(--color-line));
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .note-sidebar-branch-meter {
@@ -2497,7 +2530,7 @@ button {
   border: 1px solid color-mix(in srgb, var(--color-accent-strong) 55%, var(--color-line));
   border-radius: 999px;
   padding: 2px 7px;
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 8px;
   font-weight: 900;
@@ -2560,11 +2593,11 @@ button {
 }
 
 .note-breadcrumb a:hover {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .note-breadcrumb li[aria-current='page'] span {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .note-status-strip {
@@ -2592,7 +2625,7 @@ button {
 .note-status-strip span {
   border: 1px solid color-mix(in srgb, var(--color-accent-strong) 45%, var(--color-line));
   background: color-mix(in srgb, var(--color-accent-strong) 10%, transparent);
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .note-status-strip b {
@@ -2720,7 +2753,7 @@ button {
 
 .note-toc-desktop p {
   margin: 0 0 14px;
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px;
   font-weight: 800;
@@ -2769,7 +2802,7 @@ button {
 .note-toc-desktop button:hover,
 .note-toc-mobile a:hover,
 .note-toc-mobile button:hover {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .note-toc-mobile {
@@ -3059,6 +3092,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 .note-understand-panel button:hover {
   background: var(--color-accent-strong);
   box-shadow: 0 14px 34px color-mix(in srgb, var(--color-accent-strong) 24%, transparent);
+  color: var(--solid-white);
   transform: translateY(-1px);
 }
 
@@ -3067,7 +3101,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 }
 
 .note-sidebar-link[data-completed='true'] span:first-child {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .note-reader-content nav[aria-label='Previous and next notes'] a {
@@ -3197,7 +3231,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
   gap: 12px;
   border-top: 1px solid var(--color-line);
   padding-top: 28px;
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .markdown-body .markdown-interview-heading::before {
@@ -3209,7 +3243,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
   border: 1px solid color-mix(in srgb, var(--color-accent-strong) 58%, var(--color-line));
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-accent-strong) 12%, transparent);
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 13px;
   content: '?';
@@ -3282,7 +3316,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 .markdown-body .markdown-diagram__label {
   display: block;
   margin-bottom: 14px;
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11px;
   font-weight: 800;
@@ -3394,11 +3428,11 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 }
 
 .markdown-body li::marker {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .markdown-body a {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   font-weight: 800;
   background: linear-gradient(
     transparent 68%,
@@ -3440,7 +3474,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 .markdown-callout__label {
   display: block;
   margin-bottom: 8px;
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px;
   font-weight: 900;
@@ -3846,7 +3880,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 }
 
 .note-status-strip span {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .note-status-strip span::after {
@@ -4005,7 +4039,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
   border: 1px solid color-mix(in srgb, var(--color-accent-strong) 45%, transparent);
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-surface) 85%, transparent);
-  color: color-mix(in srgb, var(--color-accent-strong) 90%, var(--color-text));
+  color: var(--color-accent-text);
   font-family:
     Inter, -apple-system, BlinkMacSystemFont, 'SF Pro Text', ui-sans-serif,
     system-ui, 'Segoe UI', sans-serif;
@@ -4026,7 +4060,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 .markdown-concept-term:hover,
 .markdown-concept-term:focus-visible,
 .markdown-concept-term[data-pinned='true'] {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   outline: none;
 }
 
@@ -4139,7 +4173,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   font-size: 11px;
   font-weight: 800;
   background: none !important;
@@ -4499,7 +4533,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 
   .note-topic-drawer__header p {
     margin: 0;
-    color: var(--color-accent);
+    color: var(--color-accent-text);
     font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 10px;
     font-weight: 900;
@@ -4859,12 +4893,12 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 
 .dsa-crumb:hover,
 .dsa-text-link:hover {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .dsa-kicker {
   margin: 0 0 15px;
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11px;
   font-weight: 800;
@@ -5173,7 +5207,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 }
 
 .dsa-focus__rail > span:last-child {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   line-height: 1.5;
 }
 
@@ -5281,7 +5315,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 
 .dsa-bridge-card button:hover,
 .dsa-review-list button:hover {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .dsa-try-card {
@@ -5533,7 +5567,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
   justify-self: end;
   border: 0;
   background: transparent;
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   font-size: 13px;
   font-weight: 850;
 }
@@ -5581,7 +5615,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 }
 
 .dsa-review-list article span {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px;
   font-weight: 800;
@@ -5635,7 +5669,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
   place-items: center;
   border-radius: 50%;
   background: color-mix(in srgb, #9bd3b0 38%, transparent);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .dsa-review-empty p {
@@ -5692,7 +5726,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 }
 
 .dsa-section-card > header > div:first-child > span {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 10px;
   font-weight: 800;
@@ -5792,7 +5826,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 }
 
 .dsa-section-card li button:not(:disabled):hover strong {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .dsa-section-card li button:disabled {
@@ -5873,7 +5907,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 }
 
 .dsa-progress-note button:hover {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 :root.dark .dsa-hero h1 em,
@@ -6366,7 +6400,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
   place-items: center;
   border-radius: 999px;
   background: #5fb46f;
-  color: var(--solid-white);
+  color: var(--ink-900);
   font-size: 9px;
   font-weight: 900;
 }
@@ -6399,11 +6433,11 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 }
 
 .hero-roadmap-preview__item.is-completed small {
-  color: #429c55;
+  color: var(--color-success-text);
 }
 
 .hero-roadmap-preview__item.is-in-progress small {
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -6484,8 +6518,8 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 }
 
 :root.dark .button-link--accent:hover {
-  background: color-mix(in srgb, var(--color-accent-strong) 88%, #fff);
-  border-color: color-mix(in srgb, var(--color-accent-strong) 88%, #fff);
+  background: color-mix(in srgb, var(--color-accent-strong) 88%, #000);
+  border-color: color-mix(in srgb, var(--color-accent-strong) 88%, #000);
   color: var(--solid-white);
   transform: translateY(-1px);
 }
@@ -6527,7 +6561,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
   border: 1px solid var(--color-soft-line);
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-surface) 72%, transparent);
-  color: var(--color-accent-strong);
+  color: var(--color-accent-text);
 }
 
 .landing-method__grid svg {

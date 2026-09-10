@@ -136,7 +136,7 @@ export function FocusedLearningSection() {
                 </p>
               </div>
 
-              <ButtonLink href="#/notes/https" variant="accent">
+              <ButtonLink href="/notes/https" variant="accent">
                 Start lesson <span className="btn-arrow" aria-hidden="true">→</span>
               </ButtonLink>
             </div>
@@ -182,7 +182,7 @@ export function FocusedLearningSection() {
               After the backend notes, build problem-solving reps with curated
               DSA practice grouped by topic and pattern.
             </p>
-            <a className="dsa-practice-bridge__link" href="#/dsa">
+            <a className="dsa-practice-bridge__link" href="/dsa">
               Start practicing <span aria-hidden="true">→</span>
             </a>
           </div>
@@ -197,7 +197,7 @@ export function FocusedLearningSection() {
             {...motionConfig}
           >
             {dsaPatterns.map((pattern) => (
-              <motion.a href="#/dsa" key={pattern} variants={fadeUp}>
+              <motion.a href="/dsa" key={pattern} variants={fadeUp}>
                 <span>Pattern</span>
                 <strong>{pattern}</strong>
               </motion.a>

@@ -3,7 +3,7 @@ export function Brand() {
     <a
       aria-label="DevAtlas home"
       className="flex items-center gap-2 text-sm font-extrabold tracking-normal text-(--color-text)"
-      href="#top"
+      href="/"
     >
       <img
         alt=""
@@ -13,7 +13,7 @@ export function Brand() {
         width="28"
       />
       <span>
-        <span className="text-(--color-accent-strong)">Dev</span>
+        <span className="text-(--color-accent-text)">Dev</span>
         <span className="text-(--color-text)">Atlas</span>
       </span>
     </a>
