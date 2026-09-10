@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
 import type { Note } from '../data/tracks'
 import {
@@ -6,13 +5,7 @@ import {
   type HeroMilestoneStatus,
   type LearningPathStep,
 } from '../data/learningPath'
-import { useReducedMotion } from '../hooks/useReducedMotion'
 import { ButtonLink } from './Button'
-import {
-  fadeUp,
-  motionProps,
-  staggerContainer,
-} from './motion'
 import { Wrap } from './PageShell'
 
 type HeroProps = {
@@ -84,8 +77,6 @@ export function Hero({
   lastCompletedNote,
   overallProgress,
 }: HeroProps) {
-  const reducedMotion = useReducedMotion()
-  const motionConfig = motionProps(reducedMotion)
   const nextNote =
     currentStep.status === 'completed'
       ? undefined
@@ -98,43 +89,39 @@ export function Hero({
   return (
     <Wrap>
       <section className="hero-landing" id="top">
-        <motion.div
-          className="hero-landing__copy"
-          initial={reducedMotion ? false : 'hidden'}
-          animate={reducedMotion ? undefined : 'visible'}
-          variants={staggerContainer}
-        >
-          <motion.p className="kicker" variants={fadeUp}>
+        <div className="hero-landing__copy">
+          <p className="kicker hero-reveal" style={{ animationDelay: '0ms' }}>
             A structured backend learning platform
-          </motion.p>
-          <motion.h1 variants={fadeUp}>
+          </p>
+          <h1 className="hero-reveal" style={{ animationDelay: '60ms' }}>
             A clear path to
             <br />
             backend <em className="font-serif font-normal">mastery.</em>
-          </motion.h1>
-          <motion.p variants={fadeUp}>
+          </h1>
+          <p className="hero-reveal" style={{ animationDelay: '120ms' }}>
             Follow a structured roadmap, track your progress,{' '}
             <br />
             and always know what to learn next.
-          </motion.p>
-          <motion.div className="hero-landing__actions" variants={fadeUp}>
+          </p>
+          <div
+            className="hero-landing__actions hero-reveal"
+            style={{ animationDelay: '180ms' }}
+          >
             <ButtonLink
-              href={nextNote ? `#/notes/${nextNote.slug}` : '#/library'}
+              href={nextNote ? `/notes/${nextNote.slug}` : '/library'}
               variant="accent"
             >
               {overallProgress.completedCount > 0 ? 'Continue' : 'Start your journey'}
               <span className="btn-arrow" aria-hidden="true">→</span>
             </ButtonLink>
             <a href="#roadmap">Explore roadmap</a>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
-        <motion.aside
+        <aside
           aria-label="Backend development progress"
-          className="hero-map-card"
-          initial={reducedMotion ? false : { opacity: 0, y: 24 }}
-          animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: [0.2, 0.8, 0.2, 1], delay: 0.15 }}
+          className="hero-map-card hero-reveal"
+          style={{ animationDelay: '150ms' }}
         >
           <div className="hero-map-card__header">
             <h2>Backend Development</h2>
@@ -173,28 +160,26 @@ export function Hero({
               <i style={{ width: `${trackProgressPercent}%` }} />
             </div>
             {nextNote && (
-              <a className="hero-card-footer__button" href={`#/notes/${nextNote.slug}`}>
+              <a className="hero-card-footer__button" href={`/notes/${nextNote.slug}`}>
                 Continue <span aria-hidden="true">→</span>
               </a>
             )}
           </div>
-        </motion.aside>
+        </aside>
 
-        <motion.div
-          className="landing-method__grid"
-          initial={reducedMotion ? false : 'hidden'}
-          animate={reducedMotion ? undefined : 'visible'}
-          variants={staggerContainer}
-          {...motionConfig}
-        >
-          {methodSteps.map((step) => (
-            <motion.article key={step.title} variants={fadeUp}>
+        <div className="landing-method__grid">
+          {methodSteps.map((step, i) => (
+            <article
+              key={step.title}
+              className="hero-reveal"
+              style={{ animationDelay: `${200 + i * 70}ms` }}
+            >
               <span aria-hidden="true">{featureIcons[step.icon]}</span>
               <h3>{step.title}</h3>
               <p>{step.description}</p>
-            </motion.article>
+            </article>
           ))}
-        </motion.div>
+        </div>
       </section>
     </Wrap>
   )

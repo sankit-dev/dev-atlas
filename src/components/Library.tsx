@@ -269,7 +269,7 @@ function TrackRow({
     completedNoteSlugs,
   )
   const continueNote = nextNote ?? firstTopic
-  const continueHref = continueNote ? `#/notes/${continueNote.slug}` : '#roadmap'
+  const continueHref = continueNote ? `/notes/${continueNote.slug}` : '/#roadmap'
   const progressPercent = Math.round((completedCount / noteCount) * 100)
   const isCompleted = completedCount === noteCount
 
@@ -291,7 +291,7 @@ function TrackRow({
         <span className="library-topic-list__index">
           {topicComplete ? '✓' : isNext ? '→' : String(topicIndex + 1).padStart(2, '0')}
         </span>
-        <a href={`#/notes/${topic.slug}`}>
+        <a href={`/notes/${topic.slug}`}>
           <strong>{topic.title}</strong>
           <span>{topic.description}</span>
         </a>

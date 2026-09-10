@@ -112,41 +112,8 @@ function createStarterMarkdown(note: Note, track: Track, parentPath: Note[]) {
 }
 
 function playFocusReadingTone() {
-  const audioWindow = window as Window &
-    typeof globalThis & {
-      webkitAudioContext?: typeof AudioContext
-    }
-  const AudioContextConstructor =
-    audioWindow.AudioContext || audioWindow.webkitAudioContext
-
-  if (!AudioContextConstructor) {
-    return
-  }
-
-  const audioContext = new AudioContextConstructor()
-  const gain = audioContext.createGain()
-  const filter = audioContext.createBiquadFilter()
-
-  filter.type = 'lowpass'
-  filter.frequency.setValueAtTime(920, audioContext.currentTime)
-  gain.gain.setValueAtTime(0.0001, audioContext.currentTime)
-  gain.gain.exponentialRampToValueAtTime(0.035, audioContext.currentTime + 0.16)
-  gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 1.45)
-  filter.connect(gain)
-  gain.connect(audioContext.destination)
-
-  ;[220, 277.18, 329.63].forEach((frequency, index) => {
-    const oscillator = audioContext.createOscillator()
-    oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime)
-    oscillator.connect(filter)
-    oscillator.start(audioContext.currentTime + index * 0.08)
-    oscillator.stop(audioContext.currentTime + 1.55)
-  })
-
-  window.setTimeout(() => {
-    void audioContext.close()
-  }, 1700)
+  // Removed: AudioContext bleeps on navigation cost main-thread time
+  // and add no learning value. Kept as no-op for call-site compat.
 }
 
 function NoteTableOfContents({
@@ -451,11 +418,11 @@ export function NoteReader({
             className={`note-sidebar-link grid grid-cols-[24px_1fr] gap-2 border-t border-(--color-soft-line) py-3 text-[12px] leading-[1.35] transition-colors ${
               isActive
                 ? 'font-extrabold text-(--color-text)'
-                : 'text-(--color-muted) hover:text-(--color-accent-strong)'
+                : 'text-(--color-muted) hover:text-(--color-accent-text)'
             }`}
             data-completed={isCompleted}
             data-next-incomplete={isNextIncomplete}
-            href={`#/notes/${trackNote.slug}`}
+            href={`/notes/${trackNote.slug}`}
             onClick={(event) => handleNoteClick(event, trackNote)}
           >
             <span className="font-mono text-[10px]">
@@ -533,7 +500,7 @@ export function NoteReader({
           <aside className="note-reader-sidebar border-r border-(--color-line) pr-6 max-[980px]:border-r-0 max-[980px]:border-b max-[980px]:pr-0 max-[980px]:pb-6">
             <div className="note-reader-sidebar__summary">
               <div className="min-w-0">
-                <p className="eyebrow m-0 text-(--color-accent)">
+                <p className="eyebrow m-0 text-(--color-accent-text)">
                   {track.title}
                 </p>
                 <p className="m-0 mt-2 font-mono text-[11px] text-(--color-muted)">
@@ -581,8 +548,8 @@ export function NoteReader({
               </div>
 
               <a
-                className="mb-5 inline-block text-xs font-extrabold text-(--color-muted) transition-colors hover:text-(--color-accent-strong)"
-                href="#/library"
+                className="mb-5 inline-block text-xs font-extrabold text-(--color-muted) transition-colors hover:text-(--color-accent-text)"
+                href="/library"
               >
                 Back to library
               </a>
@@ -608,7 +575,7 @@ export function NoteReader({
               <nav className="note-breadcrumb" aria-label="Breadcrumb">
                 <ol>
                   <li>
-                    <a href="#/library">Library</a>
+                    <a href="/library">Library</a>
                   </li>
                   <li>
                     <span>{track.title}</span>
@@ -616,7 +583,7 @@ export function NoteReader({
                   {parentPath.map((pathNote) => (
                     <li key={pathNote.slug}>
                       <a
-                        href={`#/notes/${pathNote.slug}`}
+                        href={`/notes/${pathNote.slug}`}
                         onClick={(event) => handleNoteClick(event, pathNote)}
                       >
                         {pathNote.title}
@@ -712,7 +679,7 @@ export function NoteReader({
               {previousNote ? (
                 <a
                   className="rounded-lg border border-(--color-line) p-4 transition-colors hover:border-(--color-accent-strong)"
-                  href={`#/notes/${previousNote.slug}`}
+                  href={`/notes/${previousNote.slug}`}
                   onClick={(event) => handleNoteClick(event, previousNote)}
                 >
                   <span className="eyebrow text-(--color-muted)">
@@ -729,7 +696,7 @@ export function NoteReader({
               {nextNote ? (
                 <a
                   className="rounded-lg border border-(--color-line) p-4 text-right transition-colors hover:border-(--color-accent-strong) max-[640px]:text-left"
-                  href={`#/notes/${nextNote.slug}`}
+                  href={`/notes/${nextNote.slug}`}
                   onClick={(event) => handleNoteClick(event, nextNote)}
                 >
                   <span className="eyebrow text-(--color-muted)">Next</span>
@@ -740,7 +707,7 @@ export function NoteReader({
               ) : nextCourseNote && nextTrack ? (
                 <a
                   className="rounded-lg border border-(--color-line) p-4 text-right transition-colors hover:border-(--color-accent-strong) max-[640px]:text-left"
-                  href={`#/notes/${nextCourseNote.slug}`}
+                  href={`/notes/${nextCourseNote.slug}`}
                   onClick={(event) =>
                     handleNoteClick(event, nextCourseNote, {
                       animateCourseSwitch: true,
@@ -748,7 +715,7 @@ export function NoteReader({
                     })
                   }
                 >
-                  <span className="eyebrow text-(--color-accent)">
+                  <span className="eyebrow text-(--color-accent-text)">
                     Next course
                   </span>
                   <span className="mt-2 block text-sm font-extrabold">

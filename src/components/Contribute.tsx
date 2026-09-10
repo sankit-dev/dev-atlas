@@ -7,7 +7,7 @@ export function Contribute() {
       <Wrap>
         <div className="grid grid-cols-[1.25fr_0.75fr] gap-12.5 py-27.5 max-[760px]:grid-cols-1 max-[760px]:gap-7 max-[760px]:py-18.75">
           <div>
-            <p className="kicker text-(--color-accent)">Open notes, better together</p>
+            <p className="kicker text-(--color-accent-inverse)">Open notes, better together</p>
             <h2 className="text-[clamp(43px,5vw,65px)] font-bold leading-[0.9] tracking-normal">
               Have a clearer explanation?
               <br />

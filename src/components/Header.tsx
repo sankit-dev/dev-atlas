@@ -3,9 +3,9 @@ import { AuthControls } from './AuthControls'
 import { Brand } from './Brand'
 
 const navigationLinks = [
-  { label: 'Roadmap', href: '#roadmap' },
-  { label: 'Library', href: '#/library' },
-  { label: 'Practice', href: '#/dsa' },
+  { label: 'Roadmap', href: '/#roadmap' },
+  { label: 'Library', href: '/library' },
+  { label: 'Practice', href: '/dsa' },
 ] as const
 
 type HeaderProps = {
@@ -15,28 +15,28 @@ type HeaderProps = {
 
 export function Header({ onThemeToggle, theme }: HeaderProps) {
   const isDark = theme === 'dark'
-  const [activeHash, setActiveHash] = useState(() =>
-    typeof window === 'undefined' ? '' : window.location.hash,
+  const [activePath, setActivePath] = useState(() =>
+    typeof window === 'undefined' ? '/' : window.location.pathname,
   )
 
   useEffect(() => {
-    const syncActiveHash = () => setActiveHash(window.location.hash)
+    const syncActivePath = () => setActivePath(window.location.pathname)
 
-    window.addEventListener('hashchange', syncActiveHash)
+    window.addEventListener('popstate', syncActivePath)
 
-    return () => window.removeEventListener('hashchange', syncActiveHash)
+    return () => window.removeEventListener('popstate', syncActivePath)
   }, [])
 
   const getIsActive = (href: string) => {
-    if (href === '#/library') {
-      return activeHash === '#/library'
+    if (href === '/library') {
+      return activePath === '/library'
     }
 
-    if (href === '#/dsa') {
-      return activeHash === '#/dsa' || activeHash.startsWith('#/dsa/')
+    if (href === '/dsa') {
+      return activePath === '/dsa' || activePath.startsWith('/dsa/')
     }
 
-    return activeHash === href
+    return false
   }
 
   return (
