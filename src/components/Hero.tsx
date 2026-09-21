@@ -20,6 +20,8 @@ export function Hero({
   lastCompletedNote,
   overallProgress,
 }: HeroProps) {
+  const reducedMotion = useReducedMotion()
+  const motionConfig = motionProps(reducedMotion)
   const nextNote =
     currentStep.status === 'completed'
       ? undefined

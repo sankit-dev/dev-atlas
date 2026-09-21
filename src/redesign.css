@@ -157,6 +157,55 @@ h2 {
   opacity: 0.5;
 }
 
+.site-header-donate {
+  position: relative;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: color 160ms var(--motion-ease), border-color 160ms var(--motion-ease),
+    background-color 160ms var(--motion-ease), transform 160ms var(--motion-ease);
+}
+
+.site-header-donate:hover,
+.site-header-donate:focus-visible {
+  border-color: color-mix(in srgb, var(--color-accent-strong) 55%, var(--color-line));
+  background: color-mix(in srgb, var(--color-accent-strong) 12%, transparent);
+  color: var(--color-accent-text);
+  transform: translateY(-1px);
+}
+
+.site-header-donate::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  padding: 4px 9px;
+  border-radius: 7px;
+  background: var(--color-inverse-bg);
+  color: var(--color-inverse-text);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(-4px);
+  transition: opacity 140ms var(--motion-ease), transform 140ms var(--motion-ease);
+}
+
+.site-header-donate:hover::after,
+.site-header-donate:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 .theme-toggle {
   display: grid;
   width: 34px;
@@ -303,8 +352,13 @@ h2 {
 .hero__progress {
   min-width: 0;
   align-self: center;
-  border-top: 1px solid color-mix(in srgb, #fff 26%, transparent);
-  padding-top: 20px;
+  border: 1px solid color-mix(in srgb, #fff 18%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, #0b1020 62%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 24px 60px rgb(5 8 20 / 0.45);
+  padding: 22px 24px 20px;
   color: #f4eddb;
   text-shadow: 0 1px 16px rgb(5 8 20 / 0.7);
 }
@@ -1202,11 +1256,7 @@ h2 {
     align-self: start;
     width: auto;
     max-width: min(520px, calc(100vw - 32px));
-    border: 1px solid color-mix(in srgb, #fff 18%, transparent);
-    border-radius: 4px;
-    background: color-mix(in srgb, #0b1020 58%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    border-radius: 16px;
     padding: 18px 18px 16px;
   }
 
