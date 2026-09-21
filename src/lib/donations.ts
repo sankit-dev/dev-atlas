@@ -16,6 +16,15 @@ export const donationPresetsCents: number[] = presetSource
   .map((value) => Number(value.trim()))
   .filter((value) => Number.isInteger(value) && value > 0)
 
+export const donationCurrencySymbol = (() => {
+  const parts = new Intl.NumberFormat(undefined, {
+    currency: donationCurrency,
+    style: 'currency',
+  }).formatToParts(1)
+
+  return parts.find((part) => part.type === 'currency')?.value ?? ''
+})()
+
 export function formatDonationAmount(cents: number) {
   return new Intl.NumberFormat(undefined, {
     currency: donationCurrency,

@@ -10,6 +10,7 @@ import {
 import { DonationContext } from '../lib/donation'
 import {
   createDonationCheckout,
+  donationCurrencySymbol,
   donationMaxCents,
   donationMinCents,
   donationPresetsCents,
@@ -107,8 +108,27 @@ function DonationDialog({ open, onClose }: DonationDialogProps) {
       ref={dialogRef}
     >
       <form className="donate-form" onSubmit={handleSubmit}>
+        <div className="donate-dialog__head">
+          <p className="donate-eyebrow">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            </svg>
+            Support Dev Atlas
+          </p>
+          <button
+            aria-label="Close donation dialog"
+            className="donate-close"
+            onClick={() => dialogRef.current?.close()}
+            type="button"
+          >
+            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </div>
+
         <h2 id="donate-dialog-heading">Choose an amount</h2>
-        <p>
+        <p className="donate-lead">
           One-time payment. No account needed, and you can leave the amount blank
           on the next screen too.
         </p>
@@ -133,16 +153,23 @@ function DonationDialog({ open, onClose }: DonationDialogProps) {
 
         <div className="donate-custom">
           <label htmlFor={customInputId}>Or enter your own amount</label>
-          <input
-            id={customInputId}
-            inputMode="decimal"
-            min={donationMinCents / 100}
-            onChange={(event) => setCustomValue(event.target.value)}
-            placeholder={formatDonationAmount(donationPresetsCents[1] ?? 1000)}
-            step="1"
-            type="number"
-            value={customValue}
-          />
+          <div className="donate-field">
+            {donationCurrencySymbol && (
+              <span aria-hidden="true" className="donate-field__symbol">
+                {donationCurrencySymbol}
+              </span>
+            )}
+            <input
+              id={customInputId}
+              inputMode="decimal"
+              min={donationMinCents / 100}
+              onChange={(event) => setCustomValue(event.target.value)}
+              placeholder={String((donationPresetsCents[1] ?? 1000) / 100)}
+              step="1"
+              type="number"
+              value={customValue}
+            />
+          </div>
         </div>
 
         {error && <p className="donate-error">{error}</p>}

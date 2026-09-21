@@ -1056,18 +1056,76 @@ h2 {
 }
 
 .donate-dialog {
-  width: min(420px, calc(100vw - 32px));
+  position: relative;
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
   margin: auto;
+  overflow: auto;
   border: 1px solid var(--color-line);
-  border-radius: 16px;
+  border-radius: 20px;
   background: var(--color-surface);
   color: var(--color-text);
-  padding: 28px;
-  box-shadow: 0 30px 70px color-mix(in srgb, var(--color-shadow) 60%, transparent);
+  padding: 24px 26px 22px;
+  box-shadow: 0 28px 74px color-mix(in srgb, var(--color-shadow) 62%, transparent);
 }
 
 .donate-dialog::backdrop {
-  background: color-mix(in srgb, #05070c 62%, transparent);
+  background: color-mix(in srgb, #05070c 58%, transparent);
+  backdrop-filter: blur(3px);
+}
+
+.donate-dialog__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.donate-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--color-accent-strong);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.donate-eyebrow svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
+
+.donate-close {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: color 160ms var(--motion-ease), background 160ms var(--motion-ease),
+    border-color 160ms var(--motion-ease);
+}
+
+.donate-close svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.donate-close:hover,
+.donate-close:focus-visible {
+  border-color: var(--color-line);
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  color: var(--color-text);
 }
 
 @keyframes donateDialogIn {
@@ -1099,12 +1157,12 @@ h2 {
 }
 
 .donate-dialog h2 {
-  margin: 0;
+  margin: 12px 0 0;
   font-size: 30px;
   line-height: 1.05;
 }
 
-.donate-dialog > form > p {
+.donate-lead {
   margin: 10px 0 0;
   color: var(--color-muted);
   font-size: 14px;
@@ -1112,37 +1170,50 @@ h2 {
 }
 
 .donate-presets {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin-top: 22px;
 }
 
 .donate-presets button {
-  flex: 1;
-  min-height: 54px;
+  position: relative;
+  min-height: 58px;
   border: 1px solid var(--color-line);
-  border-radius: 10px;
-  background: transparent;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-page) 55%, transparent);
   color: var(--color-text);
   font-size: 16px;
   font-weight: 600;
-  transition:
-    border-color 160ms var(--motion-ease),
-    background 160ms var(--motion-ease);
+  cursor: pointer;
+  transition: border-color 160ms var(--motion-ease),
+    background 160ms var(--motion-ease), transform 160ms var(--motion-ease),
+    color 160ms var(--motion-ease);
 }
 
 .donate-presets button:hover {
-  border-color: color-mix(in srgb, var(--color-text) 40%, var(--color-line));
+  border-color: color-mix(in srgb, var(--color-accent-strong) 45%, var(--color-line));
+  transform: translateY(-1px);
 }
 
 .donate-presets button.is-active {
-  border-color: var(--color-inverse-bg);
-  background: color-mix(in srgb, var(--color-inverse-bg) 8%, transparent);
-  box-shadow: inset 0 0 0 1px var(--color-inverse-bg);
+  border-color: var(--color-accent-strong);
+  background: color-mix(in srgb, var(--color-accent-strong) 14%, transparent);
+  box-shadow: inset 0 0 0 1px var(--color-accent-strong);
+}
+
+.donate-presets button.is-active::after {
+  content: '✓';
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  color: var(--color-accent-strong);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .donate-custom {
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .donate-custom label {
@@ -1150,22 +1221,42 @@ h2 {
   margin-bottom: 8px;
   color: var(--color-muted);
   font-size: 13px;
+  font-weight: 500;
 }
 
-.donate-custom input {
-  width: 100%;
+.donate-field {
+  display: flex;
+  align-items: center;
+  gap: 2px;
   border: 1px solid var(--color-line);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--color-page);
-  padding: 12px 14px;
+  padding: 0 14px;
+  transition: border-color 160ms var(--motion-ease), box-shadow 160ms var(--motion-ease);
+}
+
+.donate-field:focus-within {
+  border-color: var(--color-accent-strong);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.donate-field__symbol {
+  color: var(--color-muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.donate-field input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 13px 0;
   color: var(--color-text);
   font-size: 15px;
 }
 
-.donate-custom input:focus-visible {
-  border-color: var(--color-accent-strong);
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: 1px;
+.donate-field input:focus {
+  outline: none;
 }
 
 .donate-error {
@@ -1176,43 +1267,54 @@ h2 {
 }
 
 .donate-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  display: grid;
+  gap: 10px;
   margin-top: 24px;
 }
 
 .donate-submit {
-  flex: 1;
-  min-height: 50px;
+  min-height: 52px;
   border: 1px solid var(--color-inverse-bg);
   border-radius: 999px;
   background: var(--color-inverse-bg);
   color: var(--color-inverse-text);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
-  box-shadow: 0 10px 26px color-mix(in srgb, var(--color-shadow) 40%, transparent);
-  transition: background 160ms var(--motion-ease), opacity 160ms var(--motion-ease);
+  cursor: pointer;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-shadow) 38%, transparent);
+  transition: transform 160ms var(--motion-ease), background 160ms var(--motion-ease),
+    opacity 160ms var(--motion-ease);
 }
 
-.donate-submit:hover {
+.donate-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
   background: color-mix(in srgb, var(--color-inverse-bg) 88%, var(--color-inverse-text));
+}
+
+.donate-submit:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .donate-submit:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+  box-shadow: none;
 }
 
 .donate-cancel {
-  border: 0;
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: 999px;
   background: none;
-  padding: 8px;
   color: var(--color-muted);
   font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 160ms var(--motion-ease), border-color 160ms var(--motion-ease);
 }
 
 .donate-cancel:hover {
+  border-color: var(--color-line);
   color: var(--color-text);
 }
 
@@ -1221,7 +1323,9 @@ h2 {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  margin: 18px 0 0;
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-soft-line);
   color: var(--color-muted);
   font-size: 12px;
 }
@@ -1353,18 +1457,30 @@ h2 {
   }
 
   .donate-dialog {
-    padding: 22px;
+    padding: 20px 18px 18px;
+  }
+
+  .donate-presets {
+    gap: 8px;
+  }
+
+  .donate-presets button {
+    min-height: 54px;
+    font-size: 15px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .support__cta,
   .donate-presets button,
-  .donate-submit {
+  .donate-submit,
+  .donate-close {
     transition: none;
   }
 
-  .support__cta:hover {
+  .support__cta:hover,
+  .donate-presets button:hover,
+  .donate-submit:hover:not(:disabled) {
     transform: none;
   }
 
