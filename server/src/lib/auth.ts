@@ -42,7 +42,7 @@ export const auth = betterAuth({
       secure: env.betterAuthUrl.startsWith("https://"),
     },
   },
-  trustedOrigins: [env.clientOrigin],
+  trustedOrigins: env.allowedOrigins,
   emailAndPassword: {
     enabled: true,
   },

@@ -1,9 +1,10 @@
 import cors from "cors";
 import express from "express";
-import { env } from "./config/env.js";
+import { env, normalizeOrigin } from "./config/env.js";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
 import { dsaProgressRouter } from "./routes/dsaProgress.js";
+import { donationsRouter, handleDonationWebhook } from "./routes/donations.js";
 import { healthRouter } from "./routes/health.js";
 import { noteProgressRouter } from "./routes/noteProgress.js";
 
@@ -12,8 +13,14 @@ export function createApp() {
 
   app.use(
     cors({
-      origin: env.clientOrigin,
       credentials: true,
+      origin(origin, callback) {
+        if (!origin || env.allowedOrigins.includes(normalizeOrigin(origin))) {
+          callback(null, true);
+          return;
+        }
+        callback(null, false);
+      },
     }),
   );
   app.get("/", (req, res) => {
@@ -34,9 +41,18 @@ export function createApp() {
   app.all("/api/auth", toNodeHandler(auth));
   app.all("/api/auth/*splat", toNodeHandler(auth));
 
+  // Signature verification needs the raw request body, so this route must be
+  // registered before the JSON body parser.
+  app.post(
+    "/api/donations/webhook",
+    express.raw({ type: "application/json" }),
+    handleDonationWebhook,
+  );
+
   app.use(express.json({ limit: "1mb" }));
 
   app.use("/api/health", healthRouter);
+  app.use("/api/donations", donationsRouter);
   app.use("/api/dsa/progress", dsaProgressRouter);
   app.use("/api/notes/progress", noteProgressRouter);
 

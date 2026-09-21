@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import {
   useEffect,
   useRef,
@@ -9,9 +10,9 @@ import type { Note, Track } from '../data/tracks'
 import { flattenNotes } from '../data/tracks'
 import { fetchMarkdownNote } from '../data/markdownNotes'
 import { getMarkdownToc, type MarkdownTocItem } from '../lib/markdownToc'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { Wrap } from './PageShell'
-import { WaterWaveEffect } from './WaterWaveEffect'
 
 type NoteReaderProps = {
   completedNoteSlugs: Set<string>
@@ -111,11 +112,6 @@ function createStarterMarkdown(note: Note, track: Track, parentPath: Note[]) {
   ].join('\n')
 }
 
-function playFocusReadingTone() {
-  // Removed: AudioContext bleeps on navigation cost main-thread time
-  // and add no learning value. Kept as no-op for call-site compat.
-}
-
 function NoteTableOfContents({
   items,
   variant,
@@ -173,6 +169,7 @@ export function NoteReader({
   onNavigateNote,
   track,
 }: NoteReaderProps) {
+  const reducedMotion = useReducedMotion()
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [expandedBranches, setExpandedBranches] = useState<Set<string>>(
     () => new Set(),
@@ -181,11 +178,7 @@ export function NoteReader({
     () => new Set(),
   )
   const [isFocusReading, setIsFocusReading] = useState(false)
-  const [isFocusBurstVisible, setIsFocusBurstVisible] = useState(false)
-  const [isWaterWaving, setIsWaterWaving] = useState(false)
-  const [waveOrigin, setWaveOrigin] = useState<{ x: number; y: number } | null>(null)
   const readerShellRef = useRef<HTMLElement>(null)
-  const focusBurstTimer = useRef<number | undefined>(undefined)
   const [fetchedBody, setFetchedBody] = useState<string | null>(null)
   const flatNotes = flattenNotes(track.topics)
   const notePath = getNotePath(track.topics, note.slug)
@@ -261,29 +254,9 @@ export function NoteReader({
     }
   }, [])
 
-  useEffect(
-    () => () => {
-      if (focusBurstTimer.current) {
-        window.clearTimeout(focusBurstTimer.current)
-      }
-    },
-    [],
-  )
-
   const enterFocusReading = async () => {
     setIsMobileSidebarOpen(false)
     setIsFocusReading(true)
-    setIsFocusBurstVisible(true)
-    playFocusReadingTone()
-
-    if (focusBurstTimer.current) {
-      window.clearTimeout(focusBurstTimer.current)
-    }
-
-    focusBurstTimer.current = window.setTimeout(() => {
-      setIsFocusBurstVisible(false)
-      focusBurstTimer.current = undefined
-    }, 1800)
 
     try {
       await readerShellRef.current?.requestFullscreen()
@@ -294,12 +267,6 @@ export function NoteReader({
 
   const exitFocusReading = async () => {
     setIsFocusReading(false)
-    setIsFocusBurstVisible(false)
-
-    if (focusBurstTimer.current) {
-      window.clearTimeout(focusBurstTimer.current)
-      focusBurstTimer.current = undefined
-    }
 
     if (document.fullscreenElement) {
       try {
@@ -310,16 +277,7 @@ export function NoteReader({
     }
   }
 
-  const handleFocusToggle = (event: MouseEvent<HTMLButtonElement>) => {
-    // Pointer coordinates do not require a synchronous layout read. Keyboard
-    // activation has no pointer location, so start the effect at the viewport
-    // centre instead.
-    const x = event.clientX || window.innerWidth / 2
-    const y = event.clientY || window.innerHeight / 2
-
-    setWaveOrigin({ x, y })
-    setIsWaterWaving(true)
-
+  const handleFocusToggle = () => {
     if (isFocusReading) {
       void exitFocusReading()
     } else {
@@ -477,24 +435,11 @@ export function NoteReader({
   }
 
   return (
-    <>
-      <WaterWaveEffect
-        isWaving={isWaterWaving}
-        origin={waveOrigin}
-        onWaveEnd={() => setIsWaterWaving(false)}
-      />
-      <main
-        className={`note-reader-shell ${isWaterWaving ? 'is-wavy-active' : ''}`}
-        data-focus-reading={isFocusReading}
-        ref={readerShellRef}
-      >
-      {isFocusBurstVisible && (
-        <div className="note-focus-burst" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
-      )}
+    <main
+      className="note-reader-shell"
+      data-focus-reading={isFocusReading}
+      ref={readerShellRef}
+    >
       <Wrap>
         <div className="note-reader-grid grid grid-cols-[260px_minmax(0,1fr)_190px] gap-12 max-[1180px]:grid-cols-[240px_minmax(0,1fr)] max-[980px]:grid-cols-1">
           <aside className="note-reader-sidebar border-r border-(--color-line) pr-6 max-[980px]:border-r-0 max-[980px]:border-b max-[980px]:pr-0 max-[980px]:pb-6">
@@ -570,7 +515,13 @@ export function NoteReader({
             )}
           </aside>
 
-          <article className="note-reader-content min-w-0">
+          <motion.article
+            className="note-reader-content min-w-0"
+            key={note.slug}
+            initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+            animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
+          >
             <header className="mb-10 max-w-205">
               <nav className="note-breadcrumb" aria-label="Breadcrumb">
                 <ol>
@@ -628,24 +579,20 @@ export function NoteReader({
                 )}
                 <span>{isFocusReading ? 'Focusing' : 'Focus'}</span>
               </button>
-              <div className="note-status-strip">
-                <span>
+              <div className="note-meta">
+                <b>
                   {completedNoteSlugs.has(note.slug)
                     ? 'Understood'
                     : nextIncompleteNote?.slug === note.slug
-                      ? 'Next recommended'
+                      ? 'Up next'
                       : 'In progress'}
-                </span>
-                <b>
-                  {completedTrackCount} / {flatNotes.length} understood in{' '}
-                  {track.shortTitle}
                 </b>
-              </div>
-              {note.priority && (
-                <span className="mt-5 inline-flex rounded-full border border-(--color-line) px-3 py-2 text-[11px] font-extrabold text-(--color-muted)">
-                  {note.priority}
+                <span>
+                  {completedTrackCount} of {flatNotes.length} understood in{' '}
+                  {track.shortTitle}
                 </span>
-              )}
+                {note.priority && <span>{note.priority}</span>}
+              </div>
             </header>
 
             <NoteTableOfContents items={tocItems} variant="mobile" />
@@ -736,12 +683,11 @@ export function NoteReader({
                 </div>
               )}
             </nav>
-          </article>
+          </motion.article>
 
           <NoteTableOfContents items={tocItems} variant="desktop" />
         </div>
       </Wrap>
     </main>
-    </>
   )
 }
