@@ -38,9 +38,16 @@ type DonationCheckoutResponse = {
   message?: unknown
 }
 
-export async function createDonationCheckout(amountCents: number) {
+export async function createDonationCheckout(
+  amountCents: number,
+  couponCode?: string,
+) {
+  const trimmedCoupon = couponCode?.trim()
   const response = await fetch(`${apiOrigin}/api/donations`, {
-    body: JSON.stringify({ amountCents }),
+    body: JSON.stringify({
+      amountCents,
+      ...(trimmedCoupon ? { couponCode: trimmedCoupon } : {}),
+    }),
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
@@ -60,4 +67,39 @@ export async function createDonationCheckout(amountCents: number) {
   }
 
   return data.checkoutUrl
+}
+
+export type DonationStatus = {
+  hasDonated: boolean
+  donationCount: number
+  totalAmountCents: number
+  currency: string | null
+  lastDonationAt: string | null
+}
+
+export async function fetchDonationStatus(): Promise<DonationStatus | null> {
+  const response = await fetch(`${apiOrigin}/api/donations/me`, {
+    credentials: 'include',
+  })
+
+  if (response.status === 401) {
+    return null
+  }
+
+  if (!response.ok) {
+    throw new Error('Unable to load donation status')
+  }
+
+  const data = (await response.json()) as Partial<DonationStatus>
+
+  return {
+    hasDonated: data.hasDonated === true,
+    donationCount:
+      typeof data.donationCount === 'number' ? data.donationCount : 0,
+    totalAmountCents:
+      typeof data.totalAmountCents === 'number' ? data.totalAmountCents : 0,
+    currency: typeof data.currency === 'string' ? data.currency : null,
+    lastDonationAt:
+      typeof data.lastDonationAt === 'string' ? data.lastDonationAt : null,
+  }
 }

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
+import { authClient } from '../lib/auth'
 import { useDonation } from '../lib/donation'
+import { fetchDonationStatus } from '../lib/donations'
 import { Wrap } from './PageShell'
-
-const donatedStorageKey = 'devatlas-has-donated'
 
 type DonationNotice = {
   kind: 'success' | 'cancelled'
@@ -37,33 +37,68 @@ function getInitialNotice(): DonationNotice | null {
   return null
 }
 
-function getInitialHasDonated() {
-  if (typeof window === 'undefined') {
-    return false
-  }
-
-  if (window.localStorage.getItem(donatedStorageKey) === 'true') {
-    return true
-  }
-
-  return getDonationParam() === 'success'
-}
-
 export function Support() {
   const { openDonation } = useDonation()
+  const { data: session, isPending: isSessionPending } = authClient.useSession()
   const [notice] = useState(getInitialNotice)
-  const [hasDonated] = useState(getInitialHasDonated)
+  const [returnedFromSuccess] = useState(() => getDonationParam() === 'success')
+  const [donation, setDonation] = useState<{
+    userId: string
+    hasDonated: boolean
+  } | null>(null)
+
+  const userId = session?.user?.id ?? null
+  const hasDonated = donation?.userId === userId ? donation.hasDonated : false
+
+  // Donation status is owned by the backend, not the browser.
+  useEffect(() => {
+    if (isSessionPending || !userId) {
+      return
+    }
+
+    let cancelled = false
+    let retryTimer: number | undefined
+
+    const load = async (attempt: number) => {
+      try {
+        const status = await fetchDonationStatus()
+
+        if (cancelled) {
+          return
+        }
+
+        setDonation({ userId, hasDonated: status?.hasDonated ?? false })
+
+        // The result may lag the redirect while the backend reconciles with
+        // Dodo, so retry a few times right after a successful checkout.
+        if (
+          status !== null &&
+          !status.hasDonated &&
+          returnedFromSuccess &&
+          attempt < 3
+        ) {
+          retryTimer = window.setTimeout(
+            () => void load(attempt + 1),
+            2000 * (attempt + 1),
+          )
+        }
+      } catch {
+        // Keep the last known value; the backend remains the source of truth.
+      }
+    }
+
+    void load(0)
+
+    return () => {
+      cancelled = true
+      if (retryTimer) {
+        window.clearTimeout(retryTimer)
+      }
+    }
+  }, [isSessionPending, returnedFromSuccess, userId])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-
-    if (params.get('donation') === 'success') {
-      try {
-        window.localStorage.setItem(donatedStorageKey, 'true')
-      } catch {
-        // Private mode can block storage; the in-memory state still applies.
-      }
-    }
 
     if (!params.has('donation')) {
       return

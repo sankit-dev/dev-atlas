@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://dev-atlas.vercel.app/sitemap.xml
+Sitemap: https://devatlas.site/sitemap.xml

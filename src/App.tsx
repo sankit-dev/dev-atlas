@@ -47,12 +47,6 @@ import { articleJsonLd, updateSeo } from './lib/seo'
 
 export type Theme = 'light' | 'dark'
 
-type Gtag = (
-  command: 'config',
-  targetId: string,
-  config?: { page_path?: string },
-) => void
-
 const themeStorageKey = 'learning-atlas-theme'
 const completedNotesStorageKey = 'learning-atlas-completed-notes'
 
@@ -222,21 +216,76 @@ function App() {
 
   useEffect(() => {
     const syncRoute = () => {
-      const nextHashRoute = getHashRoute()
-      setHashRoute(nextHashRoute)
-      const gtag = (window as unknown as { gtag?: Gtag }).gtag
-
-      if (typeof gtag === 'function') {
-        gtag('config', 'G-PB60C0LPF5', {
-          page_path: window.location.hash || '/',
-        })
-      }
+      // Catch legacy #/ links pasted/bookmarked after initial load.
+      const legacy = redirectLegacyHash()
+      setPathname(legacy ?? getPathname())
     }
 
-    window.addEventListener('hashchange', syncRoute)
+    window.addEventListener('popstate', syncRoute)
 
-    return () => window.removeEventListener('hashchange', syncRoute)
-  }, [session?.user])
+    return () => window.removeEventListener('popstate', syncRoute)
+  }, [])
+
+  // SPA navigation for same-origin <a href="/notes/..."> clicks.
+  // Keeps crawlable hrefs while avoiding full page reloads.
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0) return
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      const anchor = (event.target as HTMLElement).closest?.('a[href]')
+      if (!anchor) return
+      const href = anchor.getAttribute('href')
+      if (!href || !href.startsWith('/')) return
+      if (anchor.getAttribute('target') === '_blank') return
+      // Let in-page anchors (/#roadmap, /notes/x#heading) use native behavior.
+      if (href.includes('#')) return
+      event.preventDefault()
+      navigateTo(href)
+      scrollToPageTop()
+    }
+
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [])
+
+  // Per-route SEO: title, description, canonical, OG + page_view.
+  useEffect(() => {
+    if (activeNoteMatch) {
+      updateSeo({
+        title: activeNoteMatch.note.title,
+        description: activeNoteMatch.note.description,
+        path: `/notes/${activeNoteMatch.note.slug}`,
+        type: 'article',
+        jsonLd: articleJsonLd({
+          title: activeNoteMatch.note.title,
+          description: activeNoteMatch.note.description,
+          path: `/notes/${activeNoteMatch.note.slug}`,
+          track: activeNoteMatch.track.title,
+        }),
+      })
+    } else if (isLibrary) {
+      updateSeo({
+        title: 'Library',
+        description:
+          'Browse every Dev Atlas track — OS, networks, databases, JavaScript, Node, Express, MongoDB, Docker, AWS, Git and AI.',
+        path: '/library',
+      })
+    } else if (isDsa) {
+      updateSeo({
+        title: 'DSA Practice',
+        description:
+          'Practice data structures and algorithms by pattern — arrays, two pointers, sliding window, trees and graphs.',
+        path: pathname,
+      })
+    } else {
+      updateSeo({
+        title: 'Dev Atlas - Learn Backend Engineering',
+        description:
+          'Dev Atlas — clear backend engineering notes built for learning by doing.',
+        path: '/',
+      })
+    }
+  }, [pathname, activeNoteMatch, isLibrary, isDsa])
 
   useEffect(() => {
     if (!session?.user || hasLoadedRemoteProgress.current) {
