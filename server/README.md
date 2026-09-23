@@ -22,6 +22,39 @@ Optional environment variables:
 - `BETTER_AUTH_URL`: defaults to `http://localhost:4000`
 - `BETTER_AUTH_SECRET`: secret used by Better Auth; generate with `openssl rand -base64 32`
 - `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: enables GitHub login
+- `DODO_PAYMENTS_API_KEY`: Dodo Payments API key (Developer > API)
+- `DODO_DONATION_PRODUCT_ID`: product id of the Pay What You Want one-time product
+- `DODO_WEBHOOK_KEY`: webhook signing secret (Developer > Webhooks)
+- `DODO_PAYMENTS_ENVIRONMENT`: `test` uses `test.dodopayments.com`, otherwise `live.dodopayments.com`
+- `DODO_DONATION_MIN_CENTS` / `DODO_DONATION_MAX_CENTS`: allowed amount range in minor units (defaults `100` / `100000`)
+
+## One-time donations
+
+`POST /api/donations` with `{ "amountCents": 1000 }` creates a Dodo Payments
+checkout session for the configured Pay What You Want product and returns
+`{ "checkoutUrl": "..." }`. The client redirects the customer there and Dodo
+returns to `CLIENT_ORIGIN/?donation=success` (or `?donation=cancelled`).
+
+Each request also writes a `Donation` document with status `initiated`, a
+generated `reference`, and the checkout session id. The reference is sent to
+Dodo as checkout metadata so webhook events can be matched back to it.
+
+### Donation webhook
+
+`POST /api/donations/webhook` verifies the Standard Webhooks signature
+(`webhook-id`, `webhook-timestamp`, `webhook-signature`) against
+`DODO_WEBHOOK_KEY` and persists every `payment.*` / `refund.*` event on the
+matching `Donation`:
+
+- `payment.succeeded` → `succeeded` (sets `paidAt`)
+- `payment.failed` → `failed`
+- `payment.processing` → `processing`
+- `payment.cancelled` → `cancelled`
+- `refund.created` / `refund.succeeded` → `refunded`
+
+Events are appended to `events` (last 25 kept) and duplicates are ignored by
+`webhook-id`, so Dodo retries are safe. Configure the webhook URL in the Dodo
+dashboard as `https://<api-host>/api/donations/webhook`.
 
 OAuth callback URLs:
 

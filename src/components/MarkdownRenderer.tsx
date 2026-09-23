@@ -808,7 +808,7 @@ export function MarkdownRenderer({ context, markdown }: MarkdownRendererProps) {
   const seenConcepts = new Set<string>()
   const renderTextInline = (text: string) =>
     renderInline(text, context, seenConcepts)
-  const lines = markdown.split('\n')
+  const lines = markdown.replace(/\r\n?/g, '\n').split('\n')
   const nodes: ReactNode[] = []
   const seenHeadings = new Map<string, number>()
   let blockKey = 0

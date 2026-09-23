@@ -17,16 +17,11 @@ const Library = lazy(() =>
 const NoteReader = lazy(() =>
   import('./components/NoteReader').then((m) => ({ default: m.NoteReader })),
 )
-const FocusedLearningSection = lazy(() =>
-  import('./components/FocusedLearningSection').then((m) => ({
-    default: m.FocusedLearningSection,
-  })),
-)
 const Roadmap = lazy(() =>
   import('./components/Roadmap').then((m) => ({ default: m.Roadmap })),
 )
-const Contribute = lazy(() =>
-  import('./components/Contribute').then((m) => ({ default: m.Contribute })),
+const Support = lazy(() =>
+  import('./components/Support').then((m) => ({ default: m.Support })),
 )
 import {
   getCurrentLearningStep,
@@ -148,6 +143,7 @@ function App() {
   const currentLearningStep = getCurrentLearningStep(completedNoteSlugs)
   const lastCompletedNote = getLastCompletedNote(completedNoteSlugs)
   const overallProgress = getOverallProgress(completedNoteSlugs)
+  const isLanding = !isDsa && !isLibrary && !activeNoteMatch
 
   const navigateToNote = (
     targetNote: Note,
@@ -346,14 +342,16 @@ function App() {
 
   return (
     <PageShell variant={isDsa ? 'dsa' : 'default'}>
-      <Header
-        theme={theme}
-        onThemeToggle={() =>
-          setTheme((currentTheme) =>
-            currentTheme === 'light' ? 'dark' : 'light',
-          )
-        }
-      />
+      {!isLanding && (
+        <Header
+          theme={theme}
+          onThemeToggle={() =>
+            setTheme((currentTheme) =>
+              currentTheme === 'light' ? 'dark' : 'light',
+            )
+          }
+        />
+      )}
       {isDsa ? (
         <Suspense fallback={<div className="min-h-screen" />}>
           <DsaCourse
@@ -380,20 +378,30 @@ function App() {
           />
         </Suspense>
       ) : (
-        <main>
-          <Hero
-            completedNoteSlugs={completedNoteSlugs}
-            currentStep={currentLearningStep}
-            lastCompletedNote={lastCompletedNote}
-            overallProgress={overallProgress}
-          />
+        <>
+          <div className="page-hero-bg">
+            <Header
+              theme={theme}
+              onThemeToggle={() =>
+                setTheme((currentTheme) =>
+                  currentTheme === 'light' ? 'dark' : 'light',
+                )
+              }
+            />
+            <main>
+              <Hero
+                currentStep={currentLearningStep}
+                lastCompletedNote={lastCompletedNote}
+                overallProgress={overallProgress}
+              />
+            </main>
+          </div>
           <Suspense fallback={<div className="min-h-40" />}>
-            <FocusedLearningSection />
             <Roadmap completedNoteSlugs={completedNoteSlugs} />
-            <Contribute />
+            <Support />
           </Suspense>
           <Footer />
-        </main>
+        </>
       )}
       {transitionTitle && (
         <div className="note-route-transition" aria-live="polite">

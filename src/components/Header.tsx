@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AuthControls } from './AuthControls'
 import { Brand } from './Brand'
+import { useDonation } from '../lib/donation'
 
 const navigationLinks = [
   { label: 'Roadmap', href: '/#roadmap' },
@@ -14,6 +15,7 @@ type HeaderProps = {
 }
 
 export function Header({ onThemeToggle, theme }: HeaderProps) {
+  const { openDonation } = useDonation()
   const isDark = theme === 'dark'
   const [activePath, setActivePath] = useState(() =>
     typeof window === 'undefined' ? '/' : window.location.pathname,
@@ -40,10 +42,7 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
   }
 
   return (
-    <nav
-      aria-label="Primary navigation"
-      className="site-header-nav"
-    >
+    <nav aria-label="Primary navigation" className="site-header-nav">
       <Brand />
       <div className="site-header-links">
         {navigationLinks.map((link) => {
@@ -64,24 +63,35 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
       </div>
       <div className="site-header-actions">
         <button
+          aria-label="Support this work"
+          className="site-header-donate"
+          data-tooltip="Donate"
+          onClick={openDonation}
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            fill="none"
+            height="16"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+            viewBox="0 0 24 24"
+            width="16"
+          >
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+          </svg>
+        </button>
+        <button
           aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
           aria-pressed={isDark}
-          className="relative grid h-9 w-17 grid-cols-[28px_28px] place-items-center rounded-full border border-(--color-line) bg-(--color-surface) p-1 text-[15px] leading-none text-(--color-muted) shadow-none transition-[background-color,border-color,transform] duration-300"
+          className="theme-toggle"
           onClick={onThemeToggle}
           title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
           type="button"
         >
-          <span
-            className={`absolute top-1 left-1 size-7 rounded-full bg-(--color-inverse-bg) transition-transform ${
-              isDark ? 'translate-x-8' : 'translate-x-0'
-            }`}
-          />
-          <span className={`relative z-10 grid size-7 place-items-center ${isDark ? '' : 'text-(--color-inverse-text)'}`}>
-            ☀
-          </span>
-          <span className={`relative z-10 grid size-7 place-items-center ${isDark ? 'text-(--color-inverse-text)' : ''}`}>
-            ☾
-          </span>
+          <span aria-hidden="true">{isDark ? '☾' : '☀'}</span>
         </button>
         <div className="site-header-auth">
           <AuthControls />
