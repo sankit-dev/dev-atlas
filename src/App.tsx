@@ -17,16 +17,11 @@ const Library = lazy(() =>
 const NoteReader = lazy(() =>
   import('./components/NoteReader').then((m) => ({ default: m.NoteReader })),
 )
-const FocusedLearningSection = lazy(() =>
-  import('./components/FocusedLearningSection').then((m) => ({
-    default: m.FocusedLearningSection,
-  })),
-)
 const Roadmap = lazy(() =>
   import('./components/Roadmap').then((m) => ({ default: m.Roadmap })),
 )
-const Contribute = lazy(() =>
-  import('./components/Contribute').then((m) => ({ default: m.Contribute })),
+const Support = lazy(() =>
+  import('./components/Support').then((m) => ({ default: m.Support })),
 )
 import {
   getCurrentLearningStep,
@@ -39,42 +34,21 @@ import {
   markNoteComplete,
   syncCompletedNoteSlugs,
 } from './lib/noteProgress'
+import {
+  getDsaQuestIdFromPath,
+  getNoteSlugFromPath,
+  getPathname,
+  isDsaPath,
+  isLibraryPath,
+  navigateTo,
+  redirectLegacyHash,
+} from './lib/router'
+import { articleJsonLd, updateSeo } from './lib/seo'
 
 export type Theme = 'light' | 'dark'
 
 const themeStorageKey = 'learning-atlas-theme'
 const completedNotesStorageKey = 'learning-atlas-completed-notes'
-
-function getHashRoute() {
-  if (typeof window === 'undefined') {
-    return ''
-  }
-
-  return window.location.hash
-}
-
-function getNoteSlugFromHash(hashRoute: string) {
-  return hashRoute.startsWith('#/notes/')
-    ? hashRoute.replace('#/notes/', '')
-    : null
-}
-
-function getDsaQuestIdFromHash(hashRoute: string) {
-  if (!hashRoute.startsWith('#/dsa/')) {
-    return null
-  }
-
-  const questId = hashRoute.replace('#/dsa/', '').trim()
-  return questId || null
-}
-
-function isDsaRoute(hashRoute: string) {
-  return hashRoute === '#/dsa' || hashRoute.startsWith('#/dsa/')
-}
-
-function isLibraryRoute(hashRoute: string) {
-  return hashRoute === '#/library'
-}
 
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') {
@@ -118,38 +92,12 @@ function getInitialCompletedNotes() {
   }
 }
 
-function playTransitionTone() {
-  const audioWindow = window as Window &
-    typeof globalThis & {
-      webkitAudioContext?: typeof AudioContext
-    }
-  const AudioContextConstructor =
-    audioWindow.AudioContext || audioWindow.webkitAudioContext
-
-  if (!AudioContextConstructor) {
-    return
+function getInitialPathname() {
+  if (typeof window === 'undefined') {
+    return '/'
   }
 
-  const audioContext = new AudioContextConstructor()
-  const gain = audioContext.createGain()
-  gain.gain.setValueAtTime(0.0001, audioContext.currentTime)
-  gain.gain.exponentialRampToValueAtTime(0.045, audioContext.currentTime + 0.08)
-  gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 1.2)
-  gain.connect(audioContext.destination)
-
-  ;[261.63, 329.63, 392].forEach((frequency, index) => {
-    const oscillator = audioContext.createOscillator()
-    oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime)
-    oscillator.detune.setValueAtTime(index * 4, audioContext.currentTime)
-    oscillator.connect(gain)
-    oscillator.start(audioContext.currentTime + index * 0.04)
-    oscillator.stop(audioContext.currentTime + 1.25)
-  })
-
-  window.setTimeout(() => {
-    void audioContext.close()
-  }, 1400)
+  return redirectLegacyHash() ?? getPathname()
 }
 
 function scrollToPageTop() {
@@ -165,7 +113,7 @@ type NoteNavigationOptions = {
 function App() {
   const { data: session } = authClient.useSession()
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
-  const [hashRoute, setHashRoute] = useState(getHashRoute)
+  const [pathname, setPathname] = useState(getInitialPathname)
   const [completedNoteSlugs, setCompletedNoteSlugs] = useState(
     getInitialCompletedNotes,
   )
@@ -175,10 +123,10 @@ function App() {
   const syncedProgressSignature = useRef('')
   const savedRemoteNoteSlugs = useRef(new Set<string>())
 
-  const activeNoteSlug = getNoteSlugFromHash(hashRoute)
-  const activeDsaQuestId = getDsaQuestIdFromHash(hashRoute)
-  const isDsa = isDsaRoute(hashRoute)
-  const isLibrary = isLibraryRoute(hashRoute)
+  const activeNoteSlug = getNoteSlugFromPath(pathname)
+  const activeDsaQuestId = getDsaQuestIdFromPath(pathname)
+  const isDsa = isDsaPath(pathname)
+  const isLibrary = isLibraryPath(pathname)
   const activeNoteMatch = tracks
     .flatMap((track) =>
       flattenNotes(track.topics).map((note) => ({
@@ -195,6 +143,7 @@ function App() {
   const currentLearningStep = getCurrentLearningStep(completedNoteSlugs)
   const lastCompletedNote = getLastCompletedNote(completedNoteSlugs)
   const overallProgress = getOverallProgress(completedNoteSlugs)
+  const isLanding = !isDsa && !isLibrary && !activeNoteMatch
 
   const navigateToNote = (
     targetNote: Note,
@@ -210,16 +159,15 @@ function App() {
 
     if (!options.animateCourseSwitch) {
       setTransitionTitle(null)
-      window.location.hash = `#/notes/${targetNote.slug}`
+      navigateTo(`/notes/${targetNote.slug}`)
       scrollToPageTop()
       return
     }
 
     setTransitionTitle(options.transitionTitle ?? targetNote.title)
-    playTransitionTone()
 
     const routeTimer = window.setTimeout(() => {
-      window.location.hash = `#/notes/${targetNote.slug}`
+      navigateTo(`/notes/${targetNote.slug}`)
       scrollToPageTop()
     }, 420)
 
@@ -249,7 +197,7 @@ function App() {
   }
 
   const navigateToDsaQuest = (questId: string) => {
-    window.location.hash = `#/dsa/${questId}`
+    navigateTo(`/dsa/${questId}`)
     scrollToPageTop()
   }
 
@@ -268,19 +216,76 @@ function App() {
 
   useEffect(() => {
     const syncRoute = () => {
-      const nextHashRoute = getHashRoute()
-      setHashRoute(nextHashRoute)
-      if (typeof (window as unknown as { gtag?: Function }).gtag === 'function') {
-        ;(window as unknown as { gtag: Function }).gtag('config', 'G-PB60C0LPF5', {
-          page_path: window.location.hash || '/',
-        })
-      }
+      // Catch legacy #/ links pasted/bookmarked after initial load.
+      const legacy = redirectLegacyHash()
+      setPathname(legacy ?? getPathname())
     }
 
-    window.addEventListener('hashchange', syncRoute)
+    window.addEventListener('popstate', syncRoute)
 
-    return () => window.removeEventListener('hashchange', syncRoute)
-  }, [session?.user])
+    return () => window.removeEventListener('popstate', syncRoute)
+  }, [])
+
+  // SPA navigation for same-origin <a href="/notes/..."> clicks.
+  // Keeps crawlable hrefs while avoiding full page reloads.
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0) return
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      const anchor = (event.target as HTMLElement).closest?.('a[href]')
+      if (!anchor) return
+      const href = anchor.getAttribute('href')
+      if (!href || !href.startsWith('/')) return
+      if (anchor.getAttribute('target') === '_blank') return
+      // Let in-page anchors (/#roadmap, /notes/x#heading) use native behavior.
+      if (href.includes('#')) return
+      event.preventDefault()
+      navigateTo(href)
+      scrollToPageTop()
+    }
+
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [])
+
+  // Per-route SEO: title, description, canonical, OG + page_view.
+  useEffect(() => {
+    if (activeNoteMatch) {
+      updateSeo({
+        title: activeNoteMatch.note.title,
+        description: activeNoteMatch.note.description,
+        path: `/notes/${activeNoteMatch.note.slug}`,
+        type: 'article',
+        jsonLd: articleJsonLd({
+          title: activeNoteMatch.note.title,
+          description: activeNoteMatch.note.description,
+          path: `/notes/${activeNoteMatch.note.slug}`,
+          track: activeNoteMatch.track.title,
+        }),
+      })
+    } else if (isLibrary) {
+      updateSeo({
+        title: 'Library',
+        description:
+          'Browse every Dev Atlas track — OS, networks, databases, JavaScript, Node, Express, MongoDB, Docker, AWS, Git and AI.',
+        path: '/library',
+      })
+    } else if (isDsa) {
+      updateSeo({
+        title: 'DSA Practice',
+        description:
+          'Practice data structures and algorithms by pattern — arrays, two pointers, sliding window, trees and graphs.',
+        path: pathname,
+      })
+    } else {
+      updateSeo({
+        title: 'Dev Atlas - Learn Backend Engineering',
+        description:
+          'Dev Atlas — clear backend engineering notes built for learning by doing.',
+        path: '/',
+      })
+    }
+  }, [pathname, activeNoteMatch, isLibrary, isDsa])
 
   useEffect(() => {
     if (!session?.user || hasLoadedRemoteProgress.current) {
@@ -337,14 +342,16 @@ function App() {
 
   return (
     <PageShell variant={isDsa ? 'dsa' : 'default'}>
-      <Header
-        theme={theme}
-        onThemeToggle={() =>
-          setTheme((currentTheme) =>
-            currentTheme === 'light' ? 'dark' : 'light',
-          )
-        }
-      />
+      {!isLanding && (
+        <Header
+          theme={theme}
+          onThemeToggle={() =>
+            setTheme((currentTheme) =>
+              currentTheme === 'light' ? 'dark' : 'light',
+            )
+          }
+        />
+      )}
       {isDsa ? (
         <Suspense fallback={<div className="min-h-screen" />}>
           <DsaCourse
@@ -371,20 +378,30 @@ function App() {
           />
         </Suspense>
       ) : (
-        <main>
-          <Hero
-            completedNoteSlugs={completedNoteSlugs}
-            currentStep={currentLearningStep}
-            lastCompletedNote={lastCompletedNote}
-            overallProgress={overallProgress}
-          />
+        <>
+          <div className="page-hero-bg">
+            <Header
+              theme={theme}
+              onThemeToggle={() =>
+                setTheme((currentTheme) =>
+                  currentTheme === 'light' ? 'dark' : 'light',
+                )
+              }
+            />
+            <main>
+              <Hero
+                currentStep={currentLearningStep}
+                lastCompletedNote={lastCompletedNote}
+                overallProgress={overallProgress}
+              />
+            </main>
+          </div>
           <Suspense fallback={<div className="min-h-40" />}>
-            <FocusedLearningSection />
             <Roadmap completedNoteSlugs={completedNoteSlugs} />
-            <Contribute />
+            <Support />
           </Suspense>
           <Footer />
-        </main>
+        </>
       )}
       {transitionTitle && (
         <div className="note-route-transition" aria-live="polite">

@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { MongoClient } from "mongodb";
 import { env } from "../config/env.js";
+import { dash } from "@better-auth/infra";
 
 const authClient = new MongoClient(env.mongodbUri);
 
@@ -21,17 +22,17 @@ export const auth = betterAuth({
   baseURL: env.betterAuthUrl,
   basePath: "/api/auth",
   secret: env.betterAuthSecret || undefined,
+  plugins: [dash()],
   database: mongodbAdapter(authClient.db(), {
     client: authClient,
   }),
   advanced: {
-    storeStateStrategy: "database",
     defaultCookieAttributes: {
       sameSite: "none",
       secure: true,
     },
   },
-  trustedOrigins: [env.clientOrigin],
+  trustedOrigins: env.allowedOrigins,
   emailAndPassword: {
     enabled: true,
   },

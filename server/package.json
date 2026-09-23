@@ -10,13 +10,15 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@better-auth/infra": "^0.4.10",
     "@better-auth/mongo-adapter": "^1.6.28",
     "better-auth": "^1.6.28",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "mongodb": "^7.5.0",
-    "mongoose": "^9.0.1"
+    "mongoose": "^9.0.1",
+    "standardwebhooks": "^1.1.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

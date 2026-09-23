@@ -41,12 +41,10 @@ export const staggerContainer: Variants = {
 
 export const accordionContent: Variants = {
   collapsed: {
-    height: 0,
     opacity: 0,
     transition: { duration: 0.25, ease: motionEase },
   },
   expanded: {
-    height: 'auto',
     opacity: 1,
     transition: { duration: 0.35, ease: motionEase },
   },

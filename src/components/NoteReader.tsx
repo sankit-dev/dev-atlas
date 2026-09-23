@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import {
   useEffect,
   useRef,
@@ -9,9 +10,9 @@ import type { Note, Track } from '../data/tracks'
 import { flattenNotes } from '../data/tracks'
 import { fetchMarkdownNote } from '../data/markdownNotes'
 import { getMarkdownToc, type MarkdownTocItem } from '../lib/markdownToc'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 import { MarkdownRenderer } from './MarkdownRenderer'
 import { Wrap } from './PageShell'
-import { WaterWaveEffect } from './WaterWaveEffect'
 
 type NoteReaderProps = {
   completedNoteSlugs: Set<string>
@@ -111,44 +112,6 @@ function createStarterMarkdown(note: Note, track: Track, parentPath: Note[]) {
   ].join('\n')
 }
 
-function playFocusReadingTone() {
-  const audioWindow = window as Window &
-    typeof globalThis & {
-      webkitAudioContext?: typeof AudioContext
-    }
-  const AudioContextConstructor =
-    audioWindow.AudioContext || audioWindow.webkitAudioContext
-
-  if (!AudioContextConstructor) {
-    return
-  }
-
-  const audioContext = new AudioContextConstructor()
-  const gain = audioContext.createGain()
-  const filter = audioContext.createBiquadFilter()
-
-  filter.type = 'lowpass'
-  filter.frequency.setValueAtTime(920, audioContext.currentTime)
-  gain.gain.setValueAtTime(0.0001, audioContext.currentTime)
-  gain.gain.exponentialRampToValueAtTime(0.035, audioContext.currentTime + 0.16)
-  gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 1.45)
-  filter.connect(gain)
-  gain.connect(audioContext.destination)
-
-  ;[220, 277.18, 329.63].forEach((frequency, index) => {
-    const oscillator = audioContext.createOscillator()
-    oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime)
-    oscillator.connect(filter)
-    oscillator.start(audioContext.currentTime + index * 0.08)
-    oscillator.stop(audioContext.currentTime + 1.55)
-  })
-
-  window.setTimeout(() => {
-    void audioContext.close()
-  }, 1700)
-}
-
 function NoteTableOfContents({
   items,
   variant,
@@ -206,6 +169,7 @@ export function NoteReader({
   onNavigateNote,
   track,
 }: NoteReaderProps) {
+  const reducedMotion = useReducedMotion()
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [expandedBranches, setExpandedBranches] = useState<Set<string>>(
     () => new Set(),
@@ -214,11 +178,7 @@ export function NoteReader({
     () => new Set(),
   )
   const [isFocusReading, setIsFocusReading] = useState(false)
-  const [isFocusBurstVisible, setIsFocusBurstVisible] = useState(false)
-  const [isWaterWaving, setIsWaterWaving] = useState(false)
-  const [waveOrigin, setWaveOrigin] = useState<{ x: number; y: number } | null>(null)
   const readerShellRef = useRef<HTMLElement>(null)
-  const focusBurstTimer = useRef<number | undefined>(undefined)
   const [fetchedBody, setFetchedBody] = useState<string | null>(null)
   const flatNotes = flattenNotes(track.topics)
   const notePath = getNotePath(track.topics, note.slug)
@@ -294,29 +254,9 @@ export function NoteReader({
     }
   }, [])
 
-  useEffect(
-    () => () => {
-      if (focusBurstTimer.current) {
-        window.clearTimeout(focusBurstTimer.current)
-      }
-    },
-    [],
-  )
-
   const enterFocusReading = async () => {
     setIsMobileSidebarOpen(false)
     setIsFocusReading(true)
-    setIsFocusBurstVisible(true)
-    playFocusReadingTone()
-
-    if (focusBurstTimer.current) {
-      window.clearTimeout(focusBurstTimer.current)
-    }
-
-    focusBurstTimer.current = window.setTimeout(() => {
-      setIsFocusBurstVisible(false)
-      focusBurstTimer.current = undefined
-    }, 1800)
 
     try {
       await readerShellRef.current?.requestFullscreen()
@@ -327,12 +267,6 @@ export function NoteReader({
 
   const exitFocusReading = async () => {
     setIsFocusReading(false)
-    setIsFocusBurstVisible(false)
-
-    if (focusBurstTimer.current) {
-      window.clearTimeout(focusBurstTimer.current)
-      focusBurstTimer.current = undefined
-    }
 
     if (document.fullscreenElement) {
       try {
@@ -343,14 +277,7 @@ export function NoteReader({
     }
   }
 
-  const handleFocusToggle = (event: MouseEvent<HTMLButtonElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect()
-    const x = event.clientX || rect.left + rect.width / 2
-    const y = event.clientY || rect.top + rect.height / 2
-
-    setWaveOrigin({ x, y })
-    setIsWaterWaving(true)
-
+  const handleFocusToggle = () => {
     if (isFocusReading) {
       void exitFocusReading()
     } else {
@@ -449,11 +376,11 @@ export function NoteReader({
             className={`note-sidebar-link grid grid-cols-[24px_1fr] gap-2 border-t border-(--color-soft-line) py-3 text-[12px] leading-[1.35] transition-colors ${
               isActive
                 ? 'font-extrabold text-(--color-text)'
-                : 'text-(--color-muted) hover:text-(--color-accent-strong)'
+                : 'text-(--color-muted) hover:text-(--color-accent-text)'
             }`}
             data-completed={isCompleted}
             data-next-incomplete={isNextIncomplete}
-            href={`#/notes/${trackNote.slug}`}
+            href={`/notes/${trackNote.slug}`}
             onClick={(event) => handleNoteClick(event, trackNote)}
           >
             <span className="font-mono text-[10px]">
@@ -508,30 +435,17 @@ export function NoteReader({
   }
 
   return (
-    <>
-      <WaterWaveEffect
-        isWaving={isWaterWaving}
-        origin={waveOrigin}
-        onWaveEnd={() => setIsWaterWaving(false)}
-      />
-      <main
-        className={`note-reader-shell ${isWaterWaving ? 'is-wavy-active' : ''}`}
-        data-focus-reading={isFocusReading}
-        ref={readerShellRef}
-      >
-      {isFocusBurstVisible && (
-        <div className="note-focus-burst" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
-      )}
+    <main
+      className="note-reader-shell"
+      data-focus-reading={isFocusReading}
+      ref={readerShellRef}
+    >
       <Wrap>
         <div className="note-reader-grid grid grid-cols-[260px_minmax(0,1fr)_190px] gap-12 max-[1180px]:grid-cols-[240px_minmax(0,1fr)] max-[980px]:grid-cols-1">
           <aside className="note-reader-sidebar border-r border-(--color-line) pr-6 max-[980px]:border-r-0 max-[980px]:border-b max-[980px]:pr-0 max-[980px]:pb-6">
             <div className="note-reader-sidebar__summary">
               <div className="min-w-0">
-                <p className="eyebrow m-0 text-(--color-accent)">
+                <p className="eyebrow m-0 text-(--color-accent-text)">
                   {track.title}
                 </p>
                 <p className="m-0 mt-2 font-mono text-[11px] text-(--color-muted)">
@@ -579,8 +493,8 @@ export function NoteReader({
               </div>
 
               <a
-                className="mb-5 inline-block text-xs font-extrabold text-(--color-muted) transition-colors hover:text-(--color-accent-strong)"
-                href="#/library"
+                className="mb-5 inline-block text-xs font-extrabold text-(--color-muted) transition-colors hover:text-(--color-accent-text)"
+                href="/library"
               >
                 Back to library
               </a>
@@ -601,12 +515,18 @@ export function NoteReader({
             )}
           </aside>
 
-          <article className="note-reader-content min-w-0">
+          <motion.article
+            className="note-reader-content min-w-0"
+            key={note.slug}
+            initial={reducedMotion ? false : { opacity: 0, y: 12 }}
+            animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
+          >
             <header className="mb-10 max-w-205">
               <nav className="note-breadcrumb" aria-label="Breadcrumb">
                 <ol>
                   <li>
-                    <a href="#/library">Library</a>
+                    <a href="/library">Library</a>
                   </li>
                   <li>
                     <span>{track.title}</span>
@@ -614,7 +534,7 @@ export function NoteReader({
                   {parentPath.map((pathNote) => (
                     <li key={pathNote.slug}>
                       <a
-                        href={`#/notes/${pathNote.slug}`}
+                        href={`/notes/${pathNote.slug}`}
                         onClick={(event) => handleNoteClick(event, pathNote)}
                       >
                         {pathNote.title}
@@ -659,24 +579,20 @@ export function NoteReader({
                 )}
                 <span>{isFocusReading ? 'Focusing' : 'Focus'}</span>
               </button>
-              <div className="note-status-strip">
-                <span>
+              <div className="note-meta">
+                <b>
                   {completedNoteSlugs.has(note.slug)
                     ? 'Understood'
                     : nextIncompleteNote?.slug === note.slug
-                      ? 'Next recommended'
+                      ? 'Up next'
                       : 'In progress'}
-                </span>
-                <b>
-                  {completedTrackCount} / {flatNotes.length} understood in{' '}
-                  {track.shortTitle}
                 </b>
-              </div>
-              {note.priority && (
-                <span className="mt-5 inline-flex rounded-full border border-(--color-line) px-3 py-2 text-[11px] font-extrabold text-(--color-muted)">
-                  {note.priority}
+                <span>
+                  {completedTrackCount} of {flatNotes.length} understood in{' '}
+                  {track.shortTitle}
                 </span>
-              )}
+                {note.priority && <span>{note.priority}</span>}
+              </div>
             </header>
 
             <NoteTableOfContents items={tocItems} variant="mobile" />
@@ -710,7 +626,7 @@ export function NoteReader({
               {previousNote ? (
                 <a
                   className="rounded-lg border border-(--color-line) p-4 transition-colors hover:border-(--color-accent-strong)"
-                  href={`#/notes/${previousNote.slug}`}
+                  href={`/notes/${previousNote.slug}`}
                   onClick={(event) => handleNoteClick(event, previousNote)}
                 >
                   <span className="eyebrow text-(--color-muted)">
@@ -727,7 +643,7 @@ export function NoteReader({
               {nextNote ? (
                 <a
                   className="rounded-lg border border-(--color-line) p-4 text-right transition-colors hover:border-(--color-accent-strong) max-[640px]:text-left"
-                  href={`#/notes/${nextNote.slug}`}
+                  href={`/notes/${nextNote.slug}`}
                   onClick={(event) => handleNoteClick(event, nextNote)}
                 >
                   <span className="eyebrow text-(--color-muted)">Next</span>
@@ -738,7 +654,7 @@ export function NoteReader({
               ) : nextCourseNote && nextTrack ? (
                 <a
                   className="rounded-lg border border-(--color-line) p-4 text-right transition-colors hover:border-(--color-accent-strong) max-[640px]:text-left"
-                  href={`#/notes/${nextCourseNote.slug}`}
+                  href={`/notes/${nextCourseNote.slug}`}
                   onClick={(event) =>
                     handleNoteClick(event, nextCourseNote, {
                       animateCourseSwitch: true,
@@ -746,7 +662,7 @@ export function NoteReader({
                     })
                   }
                 >
-                  <span className="eyebrow text-(--color-accent)">
+                  <span className="eyebrow text-(--color-accent-text)">
                     Next course
                   </span>
                   <span className="mt-2 block text-sm font-extrabold">
@@ -767,12 +683,11 @@ export function NoteReader({
                 </div>
               )}
             </nav>
-          </article>
+          </motion.article>
 
           <NoteTableOfContents items={tocItems} variant="desktop" />
         </div>
       </Wrap>
     </main>
-    </>
   )
 }
