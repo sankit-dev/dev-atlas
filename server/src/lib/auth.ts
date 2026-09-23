@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { MongoClient } from "mongodb";
 import { env } from "../config/env.js";
+import { dash } from "@better-auth/infra";
 
 const authClient = new MongoClient(env.mongodbUri);
 
@@ -29,11 +30,11 @@ export const auth = betterAuth({
   baseURL: env.betterAuthUrl,
   basePath: "/api/auth",
   secret: env.betterAuthSecret || undefined,
+  plugins: [dash()],
   database: mongodbAdapter(authClient.db(), {
     client: authClient,
   }),
   advanced: {
-    storeStateStrategy: "database",
     defaultCookieAttributes: {
       // OAuth is served through the frontend's same-origin /api/auth proxy in
       // production. Lax permits GitHub's top-level callback without relying
