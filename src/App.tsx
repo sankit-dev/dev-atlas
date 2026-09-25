@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Analytics } from '@vercel/analytics/react'
 import type { Note } from './data/tracks'
+import { AuthError } from './components/AuthError'
 import { Footer } from './components/Footer'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
@@ -38,6 +39,7 @@ import {
   getDsaQuestIdFromPath,
   getNoteSlugFromPath,
   getPathname,
+  isAuthErrorPath,
   isDsaPath,
   isLibraryPath,
   navigateTo,
@@ -127,6 +129,7 @@ function App() {
   const activeDsaQuestId = getDsaQuestIdFromPath(pathname)
   const isDsa = isDsaPath(pathname)
   const isLibrary = isLibraryPath(pathname)
+  const isAuthError = isAuthErrorPath(pathname)
   const activeNoteMatch = tracks
     .flatMap((track) =>
       flattenNotes(track.topics).map((note) => ({
@@ -143,7 +146,7 @@ function App() {
   const currentLearningStep = getCurrentLearningStep(completedNoteSlugs)
   const lastCompletedNote = getLastCompletedNote(completedNoteSlugs)
   const overallProgress = getOverallProgress(completedNoteSlugs)
-  const isLanding = !isDsa && !isLibrary && !activeNoteMatch
+  const isLanding = !isDsa && !isLibrary && !activeNoteMatch && !isAuthError
 
   const navigateToNote = (
     targetNote: Note,
@@ -277,6 +280,13 @@ function App() {
           'Practice data structures and algorithms by pattern — arrays, two pointers, sliding window, trees and graphs.',
         path: pathname,
       })
+    } else if (isAuthError) {
+      updateSeo({
+        title: 'Sign-in error',
+        description: 'Something went wrong while signing in to Dev Atlas.',
+        path: '/auth/error',
+        noindex: true,
+      })
     } else {
       updateSeo({
         title: 'Dev Atlas - Learn Backend Engineering',
@@ -285,7 +295,7 @@ function App() {
         path: '/',
       })
     }
-  }, [pathname, activeNoteMatch, isLibrary, isDsa])
+  }, [pathname, activeNoteMatch, isLibrary, isDsa, isAuthError])
 
   useEffect(() => {
     if (!session?.user || hasLoadedRemoteProgress.current) {
@@ -352,7 +362,12 @@ function App() {
           }
         />
       )}
-      {isDsa ? (
+      {isAuthError ? (
+        <main>
+          <AuthError />
+          <Footer />
+        </main>
+      ) : isDsa ? (
         <Suspense fallback={<div className="min-h-screen" />}>
           <DsaCourse
             activeQuestId={activeDsaQuestId}

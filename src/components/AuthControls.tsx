@@ -16,6 +16,10 @@ function getCallbackURL() {
   return `${window.location.origin}${window.location.pathname}${window.location.search}${window.location.hash}`;
 }
 
+function getErrorCallbackURL() {
+  return `${window.location.origin}/auth/error`;
+}
+
 function getInitials(name: string | null | undefined, email: string | null | undefined) {
   if (name) {
     const parts = name.trim().split(/\s+/);
@@ -94,6 +98,7 @@ export function AuthControls() {
       await authClient.signIn.social({
         provider,
         callbackURL: getCallbackURL(),
+        errorCallbackURL: getErrorCallbackURL(),
       });
     } catch {
       setAuthError(`Could not start ${providerLabels[provider]} login.`);
@@ -103,12 +108,30 @@ export function AuthControls() {
   };
 
   const signOut = async () => {
+    if (isSigningOut) return;
     setIsSigningOut(true);
-    setDropdownOpen(false);
+    setAuthError("");
 
     try {
-      await authClient.signOut();
-    } finally {
+      const { error } = await authClient.signOut({
+        fetchOptions: {
+          credentials: "include",
+          signal: AbortSignal.timeout(10_000),
+        },
+      });
+
+      if (error) {
+        setAuthError(
+          error.message || "Could not sign out. Please try again.",
+        );
+        setIsSigningOut(false);
+        return;
+      }
+
+      // Force a full reload so every session consumer re-reads a clean state.
+      window.location.reload();
+    } catch {
+      setAuthError("Could not sign out. Please try again.");
       setIsSigningOut(false);
     }
   };
@@ -121,10 +144,14 @@ export function AuthControls() {
       <div className="auth-avatar-wrap" ref={dropdownRef}>
         <button
           aria-expanded={dropdownOpen}
-          aria-haspopup="true"
+          aria-haspopup="menu"
           aria-label="Open account menu"
           className="auth-avatar-btn"
-          onClick={() => setDropdownOpen((v) => !v)}
+          data-open={dropdownOpen}
+          onClick={() => {
+            setAuthError("");
+            setDropdownOpen((v) => !v);
+          }}
           type="button"
         >
           <span aria-hidden="true" className="auth-avatar-ring" />
@@ -139,6 +166,7 @@ export function AuthControls() {
               <span className="auth-avatar-initials">{initials}</span>
             )}
           </span>
+          <span aria-hidden="true" className="auth-avatar-status" />
         </button>
 
         {dropdownOpen && (
@@ -150,6 +178,7 @@ export function AuthControls() {
                 ) : (
                   <span>{initials}</span>
                 )}
+                <span aria-hidden="true" className="auth-dropdown__presence" />
               </div>
               <div className="auth-dropdown__info">
                 {name && <p className="auth-dropdown__name">{name}</p>}
@@ -158,14 +187,45 @@ export function AuthControls() {
             </div>
             <div className="auth-dropdown__divider" />
             <button
+              aria-disabled={isSigningOut}
               className="auth-dropdown__sign-out"
-              disabled={isSigningOut}
+              data-loading={isSigningOut}
               onClick={() => void signOut()}
               role="menuitem"
               type="button"
             >
-              {isSigningOut ? "Signing out…" : "Sign out"}
+              {isSigningOut ? (
+                <>
+                  <span aria-hidden="true" className="auth-spinner" />
+                  Signing out…
+                </>
+              ) : (
+                <>
+                  <svg
+                    aria-hidden="true"
+                    className="auth-dropdown__sign-out-icon"
+                    fill="none"
+                    height="14"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.9"
+                    viewBox="0 0 24 24"
+                    width="14"
+                  >
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <path d="m16 17 5-5-5-5" />
+                    <path d="M21 12H9" />
+                  </svg>
+                  Sign out
+                </>
+              )}
             </button>
+            {authError && (
+              <p className="auth-dropdown__error" role="alert">
+                {authError}
+              </p>
+            )}
           </div>
         )}
       </div>

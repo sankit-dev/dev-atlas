@@ -31,6 +31,12 @@ export const auth = betterAuth({
   basePath: "/api/auth",
   secret: env.betterAuthSecret || undefined,
   plugins: [dash()],
+  onAPIError: {
+    errorURL: `${env.clientOrigin}/auth/error`,
+    onError(error, ctx) {
+      ctx.logger.error("Better Auth API error", error);
+    },
+  },
   database: mongodbAdapter(authClient.db(), {
     client: authClient,
   }),
@@ -41,6 +47,9 @@ export const auth = betterAuth({
       // on third-party cookies, and also keeps local HTTP development usable.
       sameSite: "lax",
       secure: env.betterAuthUrl.startsWith("https://"),
+    },
+    ipAddress: {
+      ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"],
     },
   },
   trustedOrigins: env.allowedOrigins,

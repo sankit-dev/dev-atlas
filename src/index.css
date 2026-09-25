@@ -228,11 +228,60 @@ button {
 @keyframes dropdownIn {
   from {
     opacity: 0;
-    transform: translateY(-6px) scale(0.96);
+    transform: translateY(-7px) scale(0.95);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dropdownItemIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes presencePulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--track-green) 60%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes authSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes authShake {
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+  20%,
+  80% {
+    transform: translateX(2px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-3px);
+  }
+  40%,
+  60% {
+    transform: translateX(3px);
   }
 }
 
@@ -251,25 +300,39 @@ button {
   padding: 0;
   cursor: pointer;
   border-radius: 999px;
+  transition: transform 180ms var(--motion-ease);
+}
+
+.auth-avatar-btn:hover {
+  transform: translateY(-1px);
+}
+
+.auth-avatar-btn:active {
+  transform: scale(0.92);
 }
 
 .auth-avatar-ring {
   position: absolute;
   inset: 0;
   border-radius: 999px;
-  padding: 1px;
-  background: var(--color-accent-strong);
+  padding: 1.5px;
+  background: linear-gradient(135deg, var(--color-accent-strong), var(--color-accent));
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
-  transition: opacity 240ms ease;
+  transform: scale(0.9);
+  transition:
+    opacity 240ms ease,
+    transform 240ms var(--motion-ease);
 }
 
-.auth-avatar-btn:hover .auth-avatar-ring {
+.auth-avatar-btn:hover .auth-avatar-ring,
+.auth-avatar-btn[data-open='true'] .auth-avatar-ring {
   opacity: 1;
+  transform: scale(1);
 }
 
 .auth-avatar-inner {
@@ -284,10 +347,15 @@ button {
   border: none;
   overflow: hidden;
   transition: transform 180ms var(--motion-ease);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-line) 70%, transparent);
 }
 
 .auth-avatar-btn:hover .auth-avatar-inner {
   transform: scale(1.06);
+}
+
+.auth-avatar-btn[data-open='true'] .auth-avatar-inner {
+  transform: scale(1.04);
 }
 
 .auth-avatar-img {
@@ -306,6 +374,19 @@ button {
   user-select: none;
 }
 
+.auth-avatar-status {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  z-index: 2;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--track-green);
+  border: 2px solid var(--color-page);
+  animation: presencePulse 2.8s ease-out infinite;
+}
+
 /* ── Dropdown panel ─────────────────────────────────────────────── */
 
 .auth-dropdown {
@@ -313,13 +394,24 @@ button {
   top: calc(100% + 10px);
   right: 0;
   z-index: 100;
-  min-width: 216px;
+  min-width: 232px;
   border: 1px solid var(--color-soft-line);
-  border-radius: 12px;
-  background: var(--color-surface);
-  box-shadow: 0 18px 42px color-mix(in srgb, var(--color-shadow) 48%, transparent);
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-inverse-bg) 4%, transparent),
+      transparent 42%
+    ),
+    color-mix(in srgb, var(--color-surface) 88%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 6%, transparent) inset,
+    0 22px 48px color-mix(in srgb, var(--color-shadow) 55%, transparent);
   padding: 14px;
-  animation: dropdownIn 180ms var(--motion-ease) both;
+  transform-origin: top right;
+  animation: dropdownIn 200ms var(--motion-ease) both;
 }
 
 .auth-dropdown__header {
@@ -327,27 +419,42 @@ button {
   align-items: center;
   gap: 11px;
   padding-bottom: 12px;
+  animation: dropdownItemIn 260ms var(--motion-ease) both;
+  animation-delay: 40ms;
 }
 
 .auth-dropdown__avatar-lg {
+  position: relative;
   flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
   overflow: hidden;
-  background: var(--color-accent-strong);
+  background: linear-gradient(135deg, var(--color-accent-strong), var(--color-accent));
   display: grid;
   place-items: center;
   font-size: 12px;
   font-weight: 900;
   color: #fff;
   letter-spacing: 0.04em;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-accent-strong) 28%, transparent);
 }
 
 .auth-dropdown__avatar-lg img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.auth-dropdown__presence {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--track-green);
+  border: 2px solid var(--color-surface);
 }
 
 .auth-dropdown__info {
@@ -378,37 +485,129 @@ button {
   height: 1px;
   background: var(--color-soft-line);
   margin: 0 0 10px;
+  animation: dropdownItemIn 260ms var(--motion-ease) both;
+  animation-delay: 90ms;
 }
 
 .auth-dropdown__sign-out {
+  position: relative;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
+  overflow: hidden;
   border: 1px solid var(--color-line);
-  border-radius: 10px;
+  border-radius: 11px;
   background: transparent;
-  padding: 8px 12px;
+  padding: 9px 12px;
   font-size: 12px;
   font-weight: 800;
   color: var(--color-muted);
   cursor: pointer;
+  will-change: transform;
+  animation: dropdownItemIn 260ms var(--motion-ease) both;
+  animation-delay: 120ms;
   transition:
-    border-color 160ms ease,
-    color 160ms ease,
-    background 160ms ease;
+    border-color 180ms ease,
+    color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 160ms var(--motion-ease);
 }
 
-.auth-dropdown__sign-out:hover {
+.auth-dropdown__sign-out,
+.auth-dropdown__sign-out *,
+.auth-dropdown__sign-out svg,
+.auth-dropdown__sign-out span {
+  cursor: pointer;
+}
+
+.auth-dropdown__sign-out:active,
+.auth-dropdown__sign-out:focus,
+.auth-dropdown__sign-out:focus-visible {
+  cursor: pointer;
+}
+
+.auth-dropdown__sign-out::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    120deg,
+    transparent 20%,
+    color-mix(in srgb, var(--color-accent-strong) 12%, transparent),
+    transparent 80%
+  );
+  opacity: 0;
+  transform: translateX(-100%);
+  transition:
+    opacity 220ms ease,
+    transform 420ms var(--motion-ease);
+}
+
+.auth-dropdown__sign-out:focus-visible {
+  outline: 2px solid var(--color-accent-text);
+  outline-offset: 2px;
+}
+
+.auth-dropdown__sign-out:hover:not([data-loading='true']) {
   border-color: var(--color-accent);
   color: var(--color-accent-text);
-  background: color-mix(in srgb, var(--color-accent-strong) 5%, transparent);
+  background: color-mix(in srgb, var(--color-accent-strong) 6%, transparent);
+  box-shadow:
+    0 8px 20px color-mix(in srgb, var(--color-accent-strong) 16%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--color-accent-strong) 10%, transparent);
+  transform: translateY(-1.5px) scale(1.015);
 }
 
-.auth-dropdown__sign-out:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.auth-dropdown__sign-out:hover:not([data-loading='true'])::before {
+  opacity: 1;
+  transform: translateX(100%);
+}
+
+.auth-dropdown__sign-out:active:not([data-loading='true']) {
+  transform: translateY(0) scale(0.98);
+}
+
+.auth-dropdown__sign-out-icon {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  transition: transform 220ms var(--motion-ease);
+}
+
+.auth-dropdown__sign-out:hover:not([data-loading='true']) .auth-dropdown__sign-out-icon {
+  transform: translateX(2px);
+}
+
+.auth-dropdown__sign-out[data-loading='true'],
+.auth-dropdown__sign-out[data-loading='true'] * {
+  cursor: progress;
+}
+
+.auth-dropdown__sign-out[data-loading='true'] {
+  opacity: 0.72;
+}
+
+.auth-spinner {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, currentColor 28%, transparent);
+  border-top-color: currentColor;
+  animation: authSpin 700ms linear infinite;
+}
+
+.auth-dropdown__error {
+  margin: 9px 2px 0;
+  color: var(--color-accent-text);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+  animation: authShake 420ms var(--motion-ease) both;
 }
 
 .auth-sign-out,
@@ -513,6 +712,84 @@ button {
   line-height: 1.35;
   text-align: center;
   transform: translateX(-50%);
+}
+
+.auth-error {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: clamp(64px, 12vh, 148px) 0 96px;
+  text-align: center;
+}
+
+.auth-error__title {
+  margin: 0 0 14px;
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.auth-error__message {
+  margin: 0 auto 18px;
+  max-width: 46ch;
+  color: var(--color-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.auth-error__code {
+  margin: 0 0 26px;
+  color: var(--color-muted);
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.auth-error__code code {
+  color: var(--color-text);
+}
+
+.auth-error__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.auth-error__primary,
+.auth-error__secondary {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0 22px;
+  font-size: 13px;
+  font-weight: 800;
+  transition:
+    opacity 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.auth-error__primary {
+  border: 1px solid var(--color-inverse-bg);
+  background: var(--color-inverse-bg);
+  color: var(--color-inverse-text);
+}
+
+.auth-error__primary:hover {
+  opacity: 0.85;
+}
+
+.auth-error__secondary {
+  border: 1px solid var(--color-line);
+  background: transparent;
+  color: var(--color-text);
+}
+
+.auth-error__secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .button-link {
@@ -622,6 +899,13 @@ button {
 .page-hero-bg > * {
   position: relative;
   z-index: 0;
+}
+
+/* Keep the header above the hero so its account dropdown stays clickable.
+   Both children get z-index: 0 above, and main paints later, so without this
+   the hero section covers the open dropdown (clicks/hover hit the hero). */
+.page-hero-bg > .site-header-nav {
+  z-index: 20;
 }
 
 /* Fade the artwork into the page background so the hero's bottom edge
@@ -1515,6 +1799,15 @@ button {
   .site-nav-link,
   .auth-sign-out,
   .auth-github-button,
+  .auth-avatar-btn,
+  .auth-avatar-ring,
+  .auth-avatar-inner,
+  .auth-avatar-status,
+  .auth-dropdown,
+  .auth-dropdown__header,
+  .auth-dropdown__divider,
+  .auth-dropdown__sign-out,
+  .auth-dropdown__error,
   .focused-learning__steps li,
   .lesson-card__resources li,
   .dsa-practice-bridge__link,

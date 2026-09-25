@@ -4,6 +4,7 @@ type SeoInput = {
   path: string
   type?: 'website' | 'article'
   jsonLd?: Record<string, unknown> | Record<string, unknown>[]
+  noindex?: boolean
 }
 
 function getSiteOrigin() {
@@ -28,6 +29,23 @@ function upsertMeta(attr: 'name' | 'property', key: string, content: string) {
     document.head.appendChild(el)
   }
   el.setAttribute('content', content)
+}
+
+function upsertRobots(noindex: boolean) {
+  let el = document.head.querySelector<HTMLMetaElement>(
+    'meta[name="robots"][data-seo]',
+  )
+  if (noindex) {
+    if (!el) {
+      el = document.createElement('meta')
+      el.setAttribute('name', 'robots')
+      el.setAttribute('data-seo', '')
+      document.head.appendChild(el)
+    }
+    el.setAttribute('content', 'noindex, nofollow')
+  } else if (el) {
+    el.remove()
+  }
 }
 
 function upsertLink(rel: string, href: string) {
@@ -66,7 +84,14 @@ declare global {
   }
 }
 
-export function updateSeo({ title, description, path, type = 'website', jsonLd }: SeoInput) {
+export function updateSeo({
+  title,
+  description,
+  path,
+  type = 'website',
+  jsonLd,
+  noindex = false,
+}: SeoInput) {
   if (typeof document === 'undefined') return
   const origin = getSiteOrigin()
   const canonical = `${origin}${path}` || path
@@ -81,6 +106,7 @@ export function updateSeo({ title, description, path, type = 'website', jsonLd }
   upsertMeta('name', 'twitter:title', fullTitle)
   upsertMeta('name', 'twitter:description', description)
   upsertLink('canonical', canonical)
+  upsertRobots(noindex)
 
   if (jsonLd) {
     upsertJsonLd(jsonLd)

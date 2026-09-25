@@ -56,3 +56,7 @@ export function isDsaPath(pathname: string) {
 export function isLibraryPath(pathname: string) {
   return pathname === '/library'
 }
+
+export function isAuthErrorPath(pathname: string) {
+  return pathname === '/auth/error'
+}
