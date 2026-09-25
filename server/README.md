@@ -33,28 +33,48 @@ Optional environment variables:
 `POST /api/donations` with `{ "amountCents": 1000 }` creates a Dodo Payments
 checkout session for the configured Pay What You Want product and returns
 `{ "checkoutUrl": "..." }`. The client redirects the customer there and Dodo
-returns to `CLIENT_ORIGIN/?donation=success` (or `?donation=cancelled`).
+returns to `CLIENT_ORIGIN/?donation=success` (or `?donation=cancelled`) with a
+private donation reference.
 
 Each request also writes a `Donation` document with status `initiated`, a
 generated `reference`, and the checkout session id. The reference is sent to
 Dodo as checkout metadata so webhook events can be matched back to it.
 
-### Donation webhook
+### Payment webhooks
 
-`POST /api/donations/webhook` verifies the Standard Webhooks signature
-(`webhook-id`, `webhook-timestamp`, `webhook-signature`) against
-`DODO_WEBHOOK_KEY` and persists every `payment.*` / `refund.*` event on the
-matching `Donation`:
+`POST /api/donations/webhook` is the only webhook endpoint. It verifies the
+Standard Webhooks signature (`webhook-id`, `webhook-timestamp`,
+`webhook-signature`) against `DODO_WEBHOOK_KEY` using the official
+`dodopayments` SDK (`client.webhooks.unwrap`). Invalid signatures are rejected
+with `401`; unverified payloads are never written.
+
+Every verified event is stored in the `WebhookEvent` collection keyed by
+`webhook-id` (unique), which makes delivery idempotent under retries and keeps a
+full audit/replay log. Events that map to a donation are then projected onto the
+matching `Donation` (matched by `reference`, `paymentId`, or `checkoutSessionId`):
 
 - `payment.succeeded` → `succeeded` (sets `paidAt`)
-- `payment.failed` → `failed`
+- `payment.failed` → `failed` (stores `lastError`)
 - `payment.processing` → `processing`
 - `payment.cancelled` → `cancelled`
-- `refund.created` / `refund.succeeded` → `refunded`
+- `refund.succeeded` → `refunded` (stores `refundId`, `refundedAt`)
+- `refund.failed` → recorded, status unchanged
+- `dispute.*` → `disputeStatus`; `dispute.lost` → `charged_back`, `dispute.won` restores `succeeded`
 
-Events are appended to `events` (last 25 kept) and duplicates are ignored by
-`webhook-id`, so Dodo retries are safe. Configure the webhook URL in the Dodo
-dashboard as `https://<api-host>/api/donations/webhook`.
+Events that do not match a donation are still stored (with `matched: false`) and
+acknowledged. If a verified payment amount differs from the recorded amount, the
+donation is flagged with `amountMismatch` for review. Donation events are also
+appended to `events` (last 25 kept).
+
+Configure the webhook URL in the Dodo dashboard as
+`https://<api-host>/api/donations/webhook`. There is no unauthenticated webhook
+route.
+
+The frontend checks `GET /api/donations/status/:reference` after returning from
+checkout. A success redirect only starts verification; the UI displays a
+confirmed donation only after this endpoint reports `succeeded` from the
+verified webhook projection. The endpoint returns the donor name for that
+private reference but never exposes customer email.
 
 OAuth callback URLs:
 

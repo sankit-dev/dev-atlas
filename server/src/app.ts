@@ -4,10 +4,10 @@ import { env, normalizeOrigin } from "./config/env.js";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
 import { dsaProgressRouter } from "./routes/dsaProgress.js";
-import { donationsRouter, handleDonationWebhook } from "./routes/donations.js";
+import { donationsRouter } from "./routes/donations.js";
+import { handleDodoWebhook } from "./routes/dodoWebhook.js";
 import { healthRouter } from "./routes/health.js";
 import { noteProgressRouter } from "./routes/noteProgress.js";
-import { webhooksRouter } from "./routes/webhooks.js";
 
 export function createApp() {
   const app = express();
@@ -47,7 +47,7 @@ export function createApp() {
   app.post(
     "/api/donations/webhook",
     express.raw({ type: "application/json" }),
-    handleDonationWebhook,
+    handleDodoWebhook,
   );
 
   app.use(express.json({ limit: "1mb" }));
@@ -56,7 +56,6 @@ export function createApp() {
   app.use("/api/donations", donationsRouter);
   app.use("/api/dsa/progress", dsaProgressRouter);
   app.use("/api/notes/progress", noteProgressRouter);
-  app.use("/api/webhooks", webhooksRouter);
 
   app.use((_request, response) => {
     response.status(404).json({

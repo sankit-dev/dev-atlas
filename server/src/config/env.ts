@@ -24,6 +24,14 @@ const port = toPositiveInt(process.env.PORT, fallbackPort)
 const clientOrigin = normalizeOrigin(
   readEnv(process.env.CLIENT_ORIGIN, 'http://localhost:5173'),
 )
+const dodoEnvironment: 'test_mode' | 'live_mode' = readEnv(
+  process.env.DODO_PAYMENTS_ENVIRONMENT,
+  'live',
+)
+  .toLowerCase()
+  .startsWith('test')
+  ? 'test_mode'
+  : 'live_mode'
 
 const allowedOrigins = new Set([clientOrigin])
 
@@ -47,11 +55,11 @@ export const env = {
   dodoApiKey: readEnv(process.env.DODO_PAYMENTS_API_KEY, ''),
   dodoDonationProductId: readEnv(process.env.DODO_DONATION_PRODUCT_ID, ''),
   dodoWebhookKey: readEnv(process.env.DODO_WEBHOOK_KEY, ''),
-  dodoApiBase: readEnv(process.env.DODO_PAYMENTS_ENVIRONMENT, 'live')
-    .toLowerCase()
-    .startsWith('test')
-    ? 'https://test.dodopayments.com'
-    : 'https://live.dodopayments.com',
+  dodoApiBase:
+    dodoEnvironment === 'test_mode'
+      ? 'https://test.dodopayments.com'
+      : 'https://live.dodopayments.com',
+  dodoEnvironment,
   donationMinCents: toPositiveInt(process.env.DODO_DONATION_MIN_CENTS, 100),
   donationMaxCents: toPositiveInt(process.env.DODO_DONATION_MAX_CENTS, 100_000),
 }

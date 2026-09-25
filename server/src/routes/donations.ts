@@ -1,10 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { Router, type Request, type Response } from "express";
+import { Router } from "express";
 import { fromNodeHeaders } from "better-auth/node";
-import type { Collection as MongoCollection, Document } from "mongodb";
-import { Webhook } from "standardwebhooks";
 import { env } from "../config/env.js";
 import { auth } from "../lib/auth.js";
+import { dodo } from "../lib/dodo.js";
 import {
   requireAuth,
   type AuthenticatedRequest,
@@ -16,15 +15,6 @@ export const donationsRouter = Router();
 
 type UnknownRecord = Record<string, unknown>;
 
-const statusByEventType: Record<string, DonationStatus> = {
-  "payment.succeeded": "succeeded",
-  "payment.failed": "failed",
-  "payment.processing": "processing",
-  "payment.cancelled": "cancelled",
-  "refund.succeeded": "refunded",
-  "refund.created": "refunded",
-};
-
 function asRecord(value: unknown): UnknownRecord {
   return value !== null && typeof value === "object"
     ? (value as UnknownRecord)
@@ -35,8 +25,15 @@ function asString(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
-function asNumber(value: unknown) {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
+function getInitials(name: string) {
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+
+  return initials || "DA";
 }
 
 function getAmountCents(body: unknown) {
@@ -108,12 +105,6 @@ function getRuntimeMode() {
   return env.dodoApiBase.includes("test") ? "test" : "live";
 }
 
-function maskSecret(value: string) {
-  if (!value) return "(empty)";
-  if (value.length <= 8) return "***";
-  return `${value.slice(0, 4)}...${value.slice(-4)} (len=${value.length})`;
-}
-
 function mapPaymentStatus(value: unknown): DonationStatus | null {
   switch (asString(value)) {
     case "succeeded":
@@ -135,20 +126,15 @@ function mapPaymentStatus(value: unknown): DonationStatus | null {
 }
 
 async function fetchCheckoutSession(checkoutSessionId: string) {
-  const checkoutResponse = await fetch(
-    `${env.dodoApiBase}/checkouts/${encodeURIComponent(checkoutSessionId)}`,
-    { headers: { Authorization: `Bearer ${env.dodoApiKey}` } },
-  );
-
-  if (!checkoutResponse.ok) {
+  try {
+    return asRecord(await dodo.checkoutSessions.retrieve(checkoutSessionId));
+  } catch (error) {
     console.error("[donations] checkout session lookup failed", {
       checkoutSessionId,
-      status: checkoutResponse.status,
+      error,
     });
     return null;
   }
-
-  return asRecord(await checkoutResponse.json().catch(() => null));
 }
 
 // The webhook may not be configured (or may be delayed), so we also reconcile
@@ -280,15 +266,23 @@ donationsRouter.post(
         mode: getRuntimeMode(),
         amountCents,
         productId: env.dodoDonationProductId,
-        apiKey: maskSecret(env.dodoApiKey),
         couponCode,
         userId,
         reference,
       });
 
-      const checkoutResponse = await fetch(`${env.dodoApiBase}/checkouts`, {
-        body: JSON.stringify({
-          cancel_url: `${env.clientOrigin}/?donation=cancelled`,
+      await DonationModel.create({
+        amountCents,
+        mode: getRuntimeMode(),
+        productId: env.dodoDonationProductId,
+        reference,
+        status: "initiated",
+        userId,
+      });
+
+      try {
+        const session = await dodo.checkoutSessions.create({
+          cancel_url: `${env.clientOrigin}/?donation=cancelled&donation_reference=${encodeURIComponent(reference)}`,
           ...(couponCode ? { discount_codes: [couponCode] } : {}),
           metadata: {
             reference,
@@ -303,80 +297,37 @@ donationsRouter.post(
               quantity: 1,
             },
           ],
-          return_url: `${env.clientOrigin}/?donation=success`,
-        }),
-        headers: {
-          Authorization: `Bearer ${env.dodoApiKey}`,
-          "Content-Type": "application/json",
-        },
-        method: "POST",
-      });
+          return_url: `${env.clientOrigin}/?donation=success&donation_reference=${encodeURIComponent(reference)}`,
+        });
 
-      const rawCheckoutBody = await checkoutResponse.text().catch(() => "");
+        if (!session.checkout_url) {
+          throw new Error("Checkout link was not returned.");
+        }
 
-      console.log("[donations] dodo checkout response", {
-        url: `${env.dodoApiBase}/checkouts`,
-        status: checkoutResponse.status,
-        ok: checkoutResponse.ok,
-        contentType: checkoutResponse.headers.get("content-type"),
-        body: rawCheckoutBody,
-      });
-
-      if (!checkoutResponse.ok) {
-        console.error(
-          "Dodo checkout session failed",
-          checkoutResponse.status,
-          rawCheckoutBody,
+        await DonationModel.updateOne(
+          { reference },
+          { $set: { checkoutSessionId: session.session_id } },
         );
+
+        response.json({ checkoutUrl: session.checkout_url, reference });
+      } catch (checkoutError) {
+        await DonationModel.updateOne(
+          { reference },
+          {
+            $set: {
+              lastError:
+                checkoutError instanceof Error
+                  ? checkoutError.message
+                  : "Unable to create checkout.",
+              status: "failed",
+            },
+          },
+        );
+        console.error("[donations] checkout creation failed", checkoutError);
         response
           .status(502)
           .json({ message: "Could not start checkout. Please try again." });
-        return;
       }
-
-      let session: {
-        checkout_url?: unknown;
-        session_id?: unknown;
-      } = {};
-
-      try {
-        session = JSON.parse(rawCheckoutBody) as typeof session;
-      } catch (parseError) {
-        console.error("[donations] failed to parse checkout response", {
-          rawCheckoutBody,
-          parseError,
-        });
-        response
-          .status(502)
-          .json({ message: "Checkout response could not be read." });
-        return;
-      }
-
-      if (typeof session.checkout_url !== "string" || !session.checkout_url) {
-        response
-          .status(502)
-          .json({ message: "Checkout link was not returned." });
-        return;
-      }
-
-      // Record the attempt up front so a payment is never lost even if the
-      // webhook is delayed or the customer abandons checkout.
-      try {
-        await DonationModel.create({
-          amountCents,
-          checkoutSessionId:
-            typeof session.session_id === "string" ? session.session_id : null,
-          mode: getRuntimeMode(),
-          productId: env.dodoDonationProductId,
-          reference,
-          status: "initiated",
-          userId,
-        });
-      } catch (recordError) {
-        console.error("Failed to record pending donation", recordError);
-      }
-
-      response.json({ checkoutUrl: session.checkout_url, reference });
     } catch (error) {
       next(error);
     }
@@ -386,6 +337,38 @@ donationsRouter.post(
 // GET /api/donations/me — donation status for the signed-in user. Reconciles
 // pending donations with Dodo first so the result is correct even without a
 // configured webhook.
+donationsRouter.get(
+  "/sponsors",
+  rateLimit({
+    keyPrefix: "donation-sponsors",
+    limit: 60,
+    windowMs: 60_000,
+  }),
+  async (_request, response, next) => {
+    try {
+      const donations = await DonationModel.find({ status: "succeeded" })
+        .sort({ paidAt: -1 })
+        .limit(18)
+        .select("customerName paidAt")
+        .lean();
+
+      response.json({
+        sponsors: donations.map((donation) => {
+          const displayName = donation.customerName?.trim() || "A generous supporter";
+
+          return {
+            displayName,
+            donatedAt: donation.paidAt ?? null,
+            initials: getInitials(displayName),
+          };
+        }),
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
 donationsRouter.get(
   "/me",
   requireAuth,
@@ -410,162 +393,47 @@ donationsRouter.get(
   },
 );
 
-export async function handleDonationWebhook(
-  request: Request,
-  response: Response,
-) {
-  if (!env.dodoWebhookKey) {
-    console.error(
-      "[donations] webhook received but DODO_WEBHOOK_KEY is not set; set it in the Dodo dashboard (Developer > Webhooks) and the server env",
-    );
-    response.status(503).json({ message: "Webhook is not configured." });
-    return;
-  }
+donationsRouter.get(
+  "/status/:reference",
+  rateLimit({
+    keyPrefix: "donation-status",
+    limit: 30,
+    windowMs: 60_000,
+  }),
+  async (request, response, next) => {
+    try {
+      const rawReference = request.params.reference;
+      const reference =
+        typeof rawReference === "string" ? rawReference.trim() : null;
 
-  const rawBody = Buffer.isBuffer(request.body)
-    ? request.body.toString("utf8")
-    : typeof request.body === "string"
-      ? request.body
-      : "";
-
-  const webhookId = request.header("webhook-id") ?? "";
-
-  console.log("[donations] webhook received", {
-    bytes: rawBody.length,
-    hasWebhookId: Boolean(webhookId),
-    hasSignature: Boolean(request.header("webhook-signature")),
-    hasTimestamp: Boolean(request.header("webhook-timestamp")),
-  });
-
-  let event: unknown;
-
-  try {
-    event = new Webhook(env.dodoWebhookKey).verify(rawBody, {
-      "webhook-id": webhookId,
-      "webhook-signature": request.header("webhook-signature") ?? "",
-      "webhook-timestamp": request.header("webhook-timestamp") ?? "",
-    });
-  } catch (error) {
-    console.error("Invalid Dodo webhook signature", error, {
-      bodyPreview: rawBody.slice(0, 500),
-      webhookId,
-    });
-    response.status(401).json({ message: "Invalid signature." });
-    return;
-  }
-
-  try {
-    const eventRecord = asRecord(event);
-    const eventType = asString(eventRecord.type) ?? "unknown";
-
-    console.log("[donations] webhook event", { eventType, webhookId });
-
-    // Only payment lifecycle events are persisted; acknowledge everything else
-    // so Dodo does not retry unrelated events.
-    if (!eventType.startsWith("payment.") && !eventType.startsWith("refund.")) {
-      response.json({ received: true, ignored: true });
-      return;
-    }
-
-    if (webhookId) {
-      const alreadyStored = await DonationModel.exists({
-        "events.webhookId": webhookId,
-      });
-
-      if (alreadyStored) {
-        response.json({ received: true, duplicate: true });
+      if (!reference) {
+        response.status(400).json({ message: "Donation reference is required." });
         return;
       }
+
+      const donation = await DonationModel.findOne({ reference })
+        .select(
+          "reference status amountCents currency customerName paidAt refundedAt disputeStatus",
+        )
+        .lean();
+
+      if (!donation) {
+        response.status(404).json({ message: "Donation not found." });
+        return;
+      }
+
+      response.json({
+        amountCents: donation.amountCents,
+        currency: donation.currency,
+        disputeStatus: donation.disputeStatus,
+        donorName: donation.customerName,
+        paidAt: donation.paidAt,
+        reference: donation.reference,
+        refundedAt: donation.refundedAt,
+        status: donation.status,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    const data = asRecord(eventRecord.data);
-    const metadata = asRecord(data.metadata);
-    const reference = asString(metadata.reference);
-    const metadataUserId =
-      asString(metadata.userId) ?? asString(metadata.user_id);
-    const metadataCoupon =
-      asString(metadata.couponCode) ?? asString(metadata.coupon_code);
-    const paymentId = asString(data.payment_id) ?? asString(data.paymentId);
-    const checkoutSessionId =
-      asString(data.checkout_session_id) ?? asString(data.checkoutSessionId);
-    const status = statusByEventType[eventType];
-    const amountCents =
-      asNumber(data.total_amount) ?? asNumber(data.amount) ?? 0;
-    const currency =
-      asString(data.currency) ?? asString(asRecord(data.billing).currency);
-    const customer = asRecord(data.customer);
-    const email = asString(customer.email) ?? asString(data.customer_email);
-    const name = asString(customer.name) ?? asString(data.customer_name);
-    const paidAt = asString(data.created_at) ?? asString(data.paid_at);
-    const now = new Date();
-
-    const setFields: UnknownRecord = {
-      eventType,
-      lastWebhookAt: now,
-      mode: getRuntimeMode(),
-    };
-    const setOnInsert: UnknownRecord = {
-      productId: env.dodoDonationProductId || null,
-      reference: reference ?? paymentId ?? `wh-${webhookId || randomUUID()}`,
-    };
-
-    if (status) {
-      setFields.status = status;
-    } else {
-      setOnInsert.status = "initiated";
-    }
-
-    if (paymentId) setFields.paymentId = paymentId;
-    if (checkoutSessionId) setFields.checkoutSessionId = checkoutSessionId;
-    if (metadataUserId) setFields.userId = metadataUserId;
-    else setOnInsert.userId = null;
-    if (metadataCoupon) setFields.couponCode = metadataCoupon;
-    else setOnInsert.couponCode = null;
-    if (amountCents > 0) setFields.amountCents = amountCents;
-    else setOnInsert.amountCents = 0;
-    if (currency) setFields.currency = currency;
-    else setOnInsert.currency = null;
-    if (email) setFields.customerEmail = email;
-    if (name) setFields.customerName = name;
-    if (status === "succeeded") {
-      setFields.paidAt = paidAt ? new Date(paidAt) : now;
-    }
-
-    const filter: UnknownRecord = reference
-      ? { reference }
-      : paymentId
-        ? { paymentId }
-        : { checkoutSessionId: checkoutSessionId ?? `unknown-${randomUUID()}` };
-
-    const eventEntry = {
-      payload: event,
-      receivedAt: now,
-      type: eventType,
-      webhookId,
-    };
-
-    const collection =
-      DonationModel.collection as unknown as MongoCollection<Document>;
-
-    await collection.updateOne(
-      filter as Document,
-      {
-        $push: {
-          events: {
-            $each: [eventEntry],
-            $slice: -25,
-          },
-        },
-        $set: setFields,
-        $setOnInsert: setOnInsert,
-      } as Document,
-      { upsert: true },
-    );
-
-    response.json({ received: true });
-  } catch (error) {
-    console.error("Failed to record Dodo webhook", error);
-    response.status(500).json({ message: "Webhook could not be processed." });
-    return;
-  }
-}
+  },
+);

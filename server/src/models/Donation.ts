@@ -12,6 +12,7 @@ const donationStatuses = [
   'failed',
   'cancelled',
   'refunded',
+  'charged_back',
 ] as const
 
 const donationEventSchema = new Schema(
@@ -104,6 +105,44 @@ const donationSchema = new Schema(
     },
     paidAt: {
       type: Date,
+      default: null,
+    },
+    refundId: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    refundedAt: {
+      type: Date,
+      default: null,
+    },
+    refundAmountCents: {
+      type: Number,
+      default: null,
+    },
+    disputeId: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    disputeStatus: {
+      type: String,
+      trim: true,
+      default: null,
+      index: true,
+    },
+    disputedAt: {
+      type: Date,
+      default: null,
+    },
+    // Set when a verified payment amount disagrees with the recorded amount.
+    amountMismatch: {
+      type: Boolean,
+      default: false,
+    },
+    // Last provider-reported failure reason (payment.error_message).
+    lastError: {
+      type: String,
       default: null,
     },
     // Full history of every payment event (success or failure), oldest first.
