@@ -4,7 +4,6 @@ import {
   useId,
   useRef,
   useState,
-  type FormEvent,
   type PropsWithChildren,
 } from 'react'
 import { DonationContext } from '../lib/donation'
@@ -77,7 +76,7 @@ function DonationDialog({ open, onClose }: DonationDialogProps) {
     }
   }
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault()
 
     if (!isAmountValid || isSubmitting) {

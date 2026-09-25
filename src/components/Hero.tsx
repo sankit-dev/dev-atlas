@@ -9,6 +9,7 @@ import { Wrap } from './PageShell'
 type HeroProps = {
   currentStep: LearningPathStep
   lastCompletedNote?: Note
+  hasDonated?: boolean
   overallProgress: {
     completedCount: number
     totalCount: number
@@ -18,6 +19,7 @@ type HeroProps = {
 export function Hero({
   currentStep,
   lastCompletedNote,
+  hasDonated = false,
   overallProgress,
 }: HeroProps) {
   const reducedMotion = useReducedMotion()
@@ -47,9 +49,13 @@ export function Hero({
             <br />
             in the right order.
           </motion.h1>
-          <motion.p variants={fadeUp}>
-            One ordered path through networks, databases, APIs and deployment,
-            with notes short enough to actually finish.
+          <motion.p
+            className={hasDonated ? 'hero__subtext hero__subtext--thanks' : 'hero__subtext'}
+            variants={fadeUp}
+          >
+            {hasDonated
+              ? 'You are helping keep a clear path through backend engineering free for everyone.'
+              : 'One ordered path through networks, databases, APIs and deployment, with notes short enough to actually finish.'}
           </motion.p>
           <motion.div className="hero__actions" variants={fadeUp}>
             <ButtonLink

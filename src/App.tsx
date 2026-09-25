@@ -46,6 +46,7 @@ import {
   redirectLegacyHash,
 } from './lib/router'
 import { articleJsonLd, updateSeo } from './lib/seo'
+import { fetchDonationStatus } from './lib/donations'
 
 export type Theme = 'light' | 'dark'
 
@@ -120,6 +121,7 @@ function App() {
     getInitialCompletedNotes,
   )
   const [transitionTitle, setTransitionTitle] = useState<string | null>(null)
+  const [hasDonated, setHasDonated] = useState(false)
   const transitionTimers = useRef<number[]>([])
   const hasLoadedRemoteProgress = useRef(false)
   const syncedProgressSignature = useRef('')
@@ -320,6 +322,24 @@ function App() {
   }, [session?.user])
 
   useEffect(() => {
+    if (!session?.user) {
+      return
+    }
+
+    let cancelled = false
+
+    void fetchDonationStatus()
+      .then((status) => {
+        if (!cancelled) setHasDonated(status?.hasDonated === true)
+      })
+      .catch(() => undefined)
+
+    return () => {
+      cancelled = true
+    }
+  }, [session?.user])
+
+  useEffect(() => {
     if (!session?.user || completedNoteSlugs.size === 0) {
       return
     }
@@ -408,6 +428,7 @@ function App() {
                 currentStep={currentLearningStep}
                 lastCompletedNote={lastCompletedNote}
                 overallProgress={overallProgress}
+                hasDonated={Boolean(session?.user) && hasDonated}
               />
             </main>
           </div>
