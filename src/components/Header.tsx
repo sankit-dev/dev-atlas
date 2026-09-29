@@ -6,6 +6,7 @@ import { useDonation } from '../lib/donation'
 const navigationLinks = [
   { label: 'Roadmap', href: '/#roadmap' },
   { label: 'Library', href: '/library' },
+  { label: 'Revise', href: '/library?view=revise' },
   { label: 'Practice', href: '/dsa' },
 ] as const
 
@@ -18,11 +19,14 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
   const { openDonation } = useDonation()
   const isDark = theme === 'dark'
   const [activePath, setActivePath] = useState(() =>
-    typeof window === 'undefined' ? '/' : window.location.pathname,
+    typeof window === 'undefined'
+      ? '/'
+      : window.location.pathname + window.location.search,
   )
 
   useEffect(() => {
-    const syncActivePath = () => setActivePath(window.location.pathname)
+    const syncActivePath = () =>
+      setActivePath(window.location.pathname + window.location.search)
 
     window.addEventListener('popstate', syncActivePath)
 
@@ -30,6 +34,10 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
   }, [])
 
   const getIsActive = (href: string) => {
+    if (href === '/library?view=revise') {
+      return activePath === href
+    }
+
     if (href === '/library') {
       return activePath === '/library'
     }

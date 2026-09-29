@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Note, Track } from '../data/tracks'
 import { getTrackProgress } from '../data/learningPath'
 import { flattenNotes, tracks } from '../data/tracks'
@@ -12,6 +12,7 @@ import {
   viewportOnce,
 } from './motion'
 import { Wrap } from './PageShell'
+import { RevisionView } from './RevisionView'
 
 type LibraryBranch = {
   description: string
@@ -77,6 +78,13 @@ function getTrackSearchText(track: Track) {
     .toLowerCase()
 }
 
+const readReviseFromUrl = () =>
+  typeof window !== 'undefined' &&
+  new URLSearchParams(window.location.search).get('view') === 'revise'
+
+const getMustKnowNotes = (track: Track) =>
+  flattenNotes(track.topics).filter((note) => note.priority === 'Must Know')
+
 type LibraryProps = {
   completedNoteSlugs: Set<string>
 }
@@ -84,7 +92,28 @@ type LibraryProps = {
 export function Library({ completedNoteSlugs }: LibraryProps) {
   const reducedMotion = useReducedMotion()
   const motionConfig = motionProps(reducedMotion)
+  const [mustKnowOnly, setMustKnowOnly] = useState(readReviseFromUrl)
   const [query, setQuery] = useState('')
+
+  useEffect(() => {
+    const syncFromUrl = () => setMustKnowOnly(readReviseFromUrl())
+
+    window.addEventListener('popstate', syncFromUrl)
+
+    return () => window.removeEventListener('popstate', syncFromUrl)
+  }, [])
+
+  const selectMode = (revise: boolean) => {
+    if (revise === mustKnowOnly) return
+
+    window.history.replaceState(
+      null,
+      '',
+      revise ? '/library?view=revise' : '/library',
+    )
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    setExpandedTrack(null)
+  }
   const [activeBranch, setActiveBranch] = useState<string>(allBranchLabel)
   const [expandedTrack, setExpandedTrack] = useState<string | null>(null)
   const [isTrackListExpanded, setIsTrackListExpanded] = useState(false)
@@ -102,12 +131,18 @@ export function Library({ completedNoteSlugs }: LibraryProps) {
 
     return scopedTracks.filter((track) => {
       const matchesSearch = !term || getTrackSearchText(track).includes(term)
+      const matchesPriority =
+        !mustKnowOnly || getMustKnowNotes(track).length > 0
 
-      return matchesSearch
+      return matchesSearch && matchesPriority
     })
-  }, [activeBranchConfig, query])
+  }, [activeBranchConfig, query, mustKnowOnly])
   const visibleTrackLimit = 6
-  const hasMoreTracks = visibleTracks.length > visibleTrackLimit
+  const hasMoreTracks = !mustKnowOnly && visibleTracks.length > visibleTrackLimit
+  const mustKnowNotes = visibleTracks.flatMap(getMustKnowNotes)
+  const mustKnowDone = mustKnowNotes.filter((note) =>
+    completedNoteSlugs.has(note.slug),
+  ).length
   const displayedTracks = isTrackListExpanded
     ? visibleTracks
     : visibleTracks.slice(0, visibleTrackLimit)
@@ -129,10 +164,13 @@ export function Library({ completedNoteSlugs }: LibraryProps) {
           variants={fadeUp}
           {...motionConfig}
         >
-          <h1>Pick a track. Follow the order.</h1>
+          <h1>
+            {mustKnowOnly ? 'Quick revision.' : 'Pick a track. Follow the order.'}
+          </h1>
           <p>
-            Focused backend topics, arranged for learning, revision, and
-            interview prep.
+            {mustKnowOnly
+              ? `${mustKnowNotes.length} must-know notes across ${visibleTracks.length} tracks, ${mustKnowDone} revised so far. Skim these before an interview.`
+              : 'Focused backend topics, arranged for learning, revision, and interview prep.'}
           </p>
         </motion.header>
 
@@ -173,17 +211,39 @@ export function Library({ completedNoteSlugs }: LibraryProps) {
               </button>
             ))}
           </div>
+
+          <div className="lib-mode" role="group" aria-label="Library mode">
+            <button
+              aria-pressed={!mustKnowOnly}
+              onClick={() => selectMode(false)}
+              type="button"
+            >
+              Full library
+            </button>
+            <button
+              aria-pressed={mustKnowOnly}
+              onClick={() => selectMode(true)}
+              type="button"
+            >
+              Quick revision
+            </button>
+          </div>
         </motion.div>
 
         <motion.div
           className="library__list"
-          key={activeBranch + query}
+          key={activeBranch + query + mustKnowOnly}
           initial={reducedMotion ? false : 'hidden'}
           animate={reducedMotion ? undefined : 'visible'}
           variants={staggerContainer}
           {...motionConfig}
         >
-          {displayedTracks.map((track) => (
+          {mustKnowOnly ? (
+            <RevisionView
+              completedNoteSlugs={completedNoteSlugs}
+              tracks={visibleTracks}
+            />
+          ) : displayedTracks.map((track) => (
             <TrackRow
               completedNoteSlugs={completedNoteSlugs}
               isExpanded={expandedTrack === track.title}
