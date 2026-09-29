@@ -16,6 +16,8 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "geoip-country": "^5.0.202609260156",
     "mongodb": "^7.5.0",
     "mongoose": "^9.0.1",
     "standardwebhooks": "^1.1.1"
@@ -23,6 +25,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/geoip-country": "^5.0.0",
     "@types/node": "^24.13.3",
     "tsx": "^4.21.0",
     "typescript": "~6.0.2"

@@ -16,14 +16,30 @@ export const donationsRouter = Router();
 
 type UnknownRecord = Record<string, unknown>;
 
+// refund.created is deliberately absent: the refund can still fail, so only
+// refund.succeeded moves a donation to "refunded".
 const statusByEventType: Record<string, DonationStatus> = {
   "payment.succeeded": "succeeded",
   "payment.failed": "failed",
   "payment.processing": "processing",
   "payment.cancelled": "cancelled",
   "refund.succeeded": "refunded",
-  "refund.created": "refunded",
 };
+
+// Webhooks can arrive out of order, so a status may only move forward
+// (e.g. a late payment.processing must not undo payment.succeeded).
+const statusRank: Record<DonationStatus, number> = {
+  initiated: 0,
+  processing: 1,
+  failed: 2,
+  cancelled: 2,
+  succeeded: 3,
+  refunded: 4,
+};
+
+function canTransition(from: DonationStatus | null, to: DonationStatus) {
+  return from === null || statusRank[to] > statusRank[from];
+}
 
 function asRecord(value: unknown): UnknownRecord {
   return value !== null && typeof value === "object"
@@ -87,14 +103,12 @@ async function validateCoupon(couponCode: string): Promise<CouponValidation> {
     body: await couponResponse.text().catch(() => ""),
   });
 
-  if (couponResponse.status === 404) {
-    return { valid: false, message: "That coupon code was not found." };
-  }
-
-  if (couponResponse.status === 422) {
+  // One message for "not found" and "expired" so the endpoint can't be used
+  // to probe which codes exist.
+  if (couponResponse.status === 404 || couponResponse.status === 422) {
     return {
       valid: false,
-      message: "That coupon code has expired or reached its usage limit.",
+      message: "That coupon code is invalid or no longer available.",
     };
   }
 
@@ -249,7 +263,6 @@ donationsRouter.post(
           amountCents,
           min: env.donationMinCents,
           max: env.donationMaxCents,
-          rawBody: request.body,
         });
         response.status(400).json({
           message: `Choose an amount between ${env.donationMinCents / 100} and ${env.donationMaxCents / 100}.`,
@@ -319,7 +332,6 @@ donationsRouter.post(
         status: checkoutResponse.status,
         ok: checkoutResponse.ok,
         contentType: checkoutResponse.headers.get("content-type"),
-        body: rawCheckoutBody,
       });
 
       if (!checkoutResponse.ok) {
@@ -446,8 +458,9 @@ export async function handleDonationWebhook(
       "webhook-timestamp": request.header("webhook-timestamp") ?? "",
     });
   } catch (error) {
-    console.error("Invalid Dodo webhook signature", error, {
-      bodyPreview: rawBody.slice(0, 500),
+    console.error("Invalid Dodo webhook signature", {
+      error: error instanceof Error ? error.message : String(error),
+      bytes: rawBody.length,
       webhookId,
     });
     response.status(401).json({ message: "Invalid signature." });
@@ -467,36 +480,59 @@ export async function handleDonationWebhook(
       return;
     }
 
-    if (webhookId) {
-      const alreadyStored = await DonationModel.exists({
-        "events.webhookId": webhookId,
-      });
-
-      if (alreadyStored) {
-        response.json({ received: true, duplicate: true });
-        return;
-      }
-    }
-
     const data = asRecord(eventRecord.data);
     const metadata = asRecord(data.metadata);
     const reference = asString(metadata.reference);
+    const paymentId = asString(data.payment_id) ?? asString(data.paymentId);
+    const checkoutSessionId =
+      asString(data.checkout_session_id) ?? asString(data.checkoutSessionId);
+
+    const filter: UnknownRecord | null = reference
+      ? { reference }
+      : paymentId
+        ? { paymentId }
+        : checkoutSessionId
+          ? { checkoutSessionId }
+          : null;
+
+    const collection =
+      DonationModel.collection as unknown as MongoCollection<Document>;
+    const existing = filter
+      ? await collection.findOne(filter as Document, {
+          projection: { status: 1, events: { $elemMatch: { webhookId } } },
+        })
+      : null;
+
+    if (webhookId && Array.isArray(existing?.events) && existing.events.length) {
+      response.json({ received: true, duplicate: true });
+      return;
+    }
+
+    const isPaymentEvent = eventType.startsWith("payment.");
+
+    // Refund events for payments we never recorded have nothing to update;
+    // only payment events may create a new donation record.
+    if (!filter || (!existing && !isPaymentEvent)) {
+      console.warn("[donations] webhook could not be matched", {
+        eventType,
+        webhookId,
+      });
+      response.json({ received: true, unmatched: true });
+      return;
+    }
+
+    const currentStatus =
+      (existing?.status as DonationStatus | undefined) ?? null;
+    const eventStatus = statusByEventType[eventType];
+    const nextStatus =
+      eventStatus && canTransition(currentStatus, eventStatus)
+        ? eventStatus
+        : null;
+
     const metadataUserId =
       asString(metadata.userId) ?? asString(metadata.user_id);
     const metadataCoupon =
       asString(metadata.couponCode) ?? asString(metadata.coupon_code);
-    const paymentId = asString(data.payment_id) ?? asString(data.paymentId);
-    const checkoutSessionId =
-      asString(data.checkout_session_id) ?? asString(data.checkoutSessionId);
-    const status = statusByEventType[eventType];
-    const amountCents =
-      asNumber(data.total_amount) ?? asNumber(data.amount) ?? 0;
-    const currency =
-      asString(data.currency) ?? asString(asRecord(data.billing).currency);
-    const customer = asRecord(data.customer);
-    const email = asString(customer.email) ?? asString(data.customer_email);
-    const name = asString(customer.name) ?? asString(data.customer_name);
-    const paidAt = asString(data.created_at) ?? asString(data.paid_at);
     const now = new Date();
 
     const setFields: UnknownRecord = {
@@ -509,33 +545,39 @@ export async function handleDonationWebhook(
       reference: reference ?? paymentId ?? `wh-${webhookId || randomUUID()}`,
     };
 
-    if (status) {
-      setFields.status = status;
-    } else {
-      setOnInsert.status = "initiated";
-    }
+    if (nextStatus) setFields.status = nextStatus;
+    else if (!existing) setOnInsert.status = "initiated";
 
     if (paymentId) setFields.paymentId = paymentId;
     if (checkoutSessionId) setFields.checkoutSessionId = checkoutSessionId;
     if (metadataUserId) setFields.userId = metadataUserId;
-    else setOnInsert.userId = null;
+    else if (!existing) setOnInsert.userId = null;
     if (metadataCoupon) setFields.couponCode = metadataCoupon;
-    else setOnInsert.couponCode = null;
-    if (amountCents > 0) setFields.amountCents = amountCents;
-    else setOnInsert.amountCents = 0;
-    if (currency) setFields.currency = currency;
-    else setOnInsert.currency = null;
-    if (email) setFields.customerEmail = email;
-    if (name) setFields.customerName = name;
-    if (status === "succeeded") {
-      setFields.paidAt = paidAt ? new Date(paidAt) : now;
+    else if (!existing) setOnInsert.couponCode = null;
+
+    // Refund payloads carry the refund amount, not the donation amount, so
+    // only payment events may set amount and customer details.
+    if (isPaymentEvent) {
+      const amountCents =
+        asNumber(data.total_amount) ?? asNumber(data.amount) ?? 0;
+      const currency =
+        asString(data.currency) ?? asString(asRecord(data.billing).currency);
+      const customer = asRecord(data.customer);
+      const email = asString(customer.email) ?? asString(data.customer_email);
+      const name = asString(customer.name) ?? asString(data.customer_name);
+
+      if (amountCents > 0) setFields.amountCents = amountCents;
+      else if (!existing) setOnInsert.amountCents = 0;
+      if (currency) setFields.currency = currency;
+      else if (!existing) setOnInsert.currency = null;
+      if (email) setFields.customerEmail = email;
+      if (name) setFields.customerName = name;
     }
 
-    const filter: UnknownRecord = reference
-      ? { reference }
-      : paymentId
-        ? { paymentId }
-        : { checkoutSessionId: checkoutSessionId ?? `unknown-${randomUUID()}` };
+    if (nextStatus === "succeeded") {
+      const paidAt = asString(data.created_at) ?? asString(data.paid_at);
+      setFields.paidAt = paidAt ? new Date(paidAt) : now;
+    }
 
     const eventEntry = {
       payload: event,
@@ -544,11 +586,17 @@ export async function handleDonationWebhook(
       webhookId,
     };
 
-    const collection =
-      DonationModel.collection as unknown as MongoCollection<Document>;
+    // The webhookId guard makes the write itself idempotent, so two
+    // concurrent deliveries of the same event can't both be recorded.
+    const updateFilter: UnknownRecord = existing
+      ? {
+          _id: existing._id,
+          ...(webhookId ? { "events.webhookId": { $ne: webhookId } } : {}),
+        }
+      : filter;
 
     await collection.updateOne(
-      filter as Document,
+      updateFilter as Document,
       {
         $push: {
           events: {
@@ -557,10 +605,17 @@ export async function handleDonationWebhook(
           },
         },
         $set: setFields,
-        $setOnInsert: setOnInsert,
+        ...(existing ? {} : { $setOnInsert: setOnInsert }),
       } as Document,
-      { upsert: true },
+      { upsert: !existing },
     );
+
+    console.log("[donations] webhook applied", {
+      eventType,
+      webhookId,
+      from: currentStatus,
+      to: nextStatus ?? currentStatus,
+    });
 
     response.json({ received: true });
   } catch (error) {

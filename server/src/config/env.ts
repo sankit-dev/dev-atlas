@@ -25,6 +25,27 @@ const clientOrigin = normalizeOrigin(
   readEnv(process.env.CLIENT_ORIGIN, 'http://localhost:5173'),
 )
 
+function toCountryList(value: string | undefined) {
+  return (value ?? '')
+    .split(',')
+    .map((code) => code.trim().toUpperCase())
+    .filter((code) => /^[A-Z]{2}$/.test(code))
+}
+
+// Express "trust proxy": a hop count ("1"), "true"/"false", or a list of
+// subnets. Render sits one proxy hop in front of the app.
+function toTrustProxy(value: string | undefined): boolean | number | string {
+  const trimmed = value?.trim()
+
+  if (!trimmed) return 1
+  if (trimmed === 'true') return true
+  if (trimmed === 'false') return false
+
+  const hops = Number(trimmed)
+
+  return Number.isInteger(hops) && hops >= 0 ? hops : trimmed
+}
+
 const allowedOrigins = new Set([clientOrigin])
 
 // Treat the loopback hostnames as interchangeable so a trailing slash or a
@@ -54,6 +75,17 @@ export const env = {
     : 'https://live.dodopayments.com',
   donationMinCents: toPositiveInt(process.env.DODO_DONATION_MIN_CENTS, 100),
   donationMaxCents: toPositiveInt(process.env.DODO_DONATION_MAX_CENTS, 100_000),
+  trustProxy: toTrustProxy(process.env.TRUST_PROXY),
+  blockedCountries: toCountryList(process.env.BLOCKED_COUNTRIES),
+  geoCountryHeader: readEnv(process.env.GEO_COUNTRY_HEADER, '').toLowerCase(),
+  rateLimitWindowMs: toPositiveInt(process.env.RATE_LIMIT_WINDOW_MS, 60_000),
+  globalIpLimit: toPositiveInt(process.env.GLOBAL_IP_RATE_LIMIT, 10),
+  restrictedCountries: toCountryList(readEnv(process.env.RESTRICTED_COUNTRIES, 'PK')),
+  restrictedCountryIpLimit: toPositiveInt(process.env.RESTRICTED_COUNTRY_IP_LIMIT, 5),
+  restrictedCountryTotalLimit: toPositiveInt(
+    process.env.RESTRICTED_COUNTRY_TOTAL_LIMIT,
+    10,
+  ),
 }
 
 export function assertRequiredEnv() {
