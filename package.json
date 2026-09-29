@@ -13,10 +13,10 @@
     "server:typecheck": "npm --prefix server run typecheck"
   },
   "dependencies": {
-    "@better-auth/infra": "^0.4.10",
+    "@better-auth/infra": "^0.4.12",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
-    "better-auth": "^1.7.3",
+    "better-auth": "^1.7.6",
     "framer-motion": "^13.1.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
