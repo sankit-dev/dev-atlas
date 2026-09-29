@@ -157,7 +157,7 @@ button {
   gap: 12px;
   color: var(--color-muted);
   font-size: 13px;
-  font-weight: 750;
+  font-weight: 500;
 }
 
 .site-header-links {
@@ -479,7 +479,7 @@ button {
   padding: 0 13px;
   color: var(--color-text);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .auth-login-button span {
@@ -559,7 +559,7 @@ button {
 }
 
 .font-serif {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: var(--font-display);
 }
 
 .font-mono {
@@ -4946,7 +4946,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
   display: block;
   margin-top: 8px;
   color: #4e91a6;
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 1.06em;
   font-weight: 400;
   letter-spacing: -0.035em;
@@ -5211,7 +5211,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
 
 .dsa-focus__number {
   color: #4e91a6;
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 66px;
   line-height: 0.85;
 }
@@ -5515,7 +5515,7 @@ body.is-focus-reading nav[aria-label='Primary navigation'] {
   max-width: 720px;
   margin: 7px 0 0;
   color: var(--color-text);
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: var(--font-display);
   font-size: 20px;
   line-height: 1.25;
 }

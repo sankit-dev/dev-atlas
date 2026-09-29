@@ -2,7 +2,7 @@ export function Brand() {
   return (
     <a
       aria-label="DevAtlas home"
-      className="flex items-center gap-2 text-sm font-extrabold tracking-normal text-(--color-text)"
+      className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em] text-(--color-text)"
       href="/"
     >
       <img
