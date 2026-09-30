@@ -20,6 +20,21 @@ export function Footer() {
           <span aria-hidden="true">devatlas.site ↗</span>
         </a>
         <Brand />
+        <p className="site-footer__feedback">
+          Ideas or improvements? Send feedback on{' '}
+          <a
+            href="https://x.com/sankitdev"
+            rel="noreferrer"
+            target="_blank"
+          >
+            X @sankitdev
+          </a>{' '}
+          or email{' '}
+          <a href="mailto:sankitdev.official@gmail.com">
+            sankitdev.official@gmail.com
+          </a>
+          .
+        </p>
         <div className="site-footer__links">
           <a href="#/library">Library</a>
           <a href="#/dsa">Practice</a>

@@ -1277,6 +1277,17 @@ h2 {
   font-size: 15px;
 }
 
+.site-footer__feedback {
+  flex: 1 0 100%;
+  margin: 0;
+}
+
+.site-footer__feedback a {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .site-footer__links {
   display: flex;
   flex-wrap: wrap;
