@@ -7,7 +7,7 @@ const footerColumns = [
     title: 'Learn',
     links: [
       { label: 'Library', href: '#/library' },
-      { label: 'Practice', href: '#/dsa' },
+      { label: 'DSA', href: '#/dsa' },
     ],
   },
   {

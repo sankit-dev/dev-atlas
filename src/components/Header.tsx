@@ -7,7 +7,7 @@ const navigationLinks = [
   { label: 'Roadmap', href: '/#roadmap' },
   { label: 'Library', href: '/library' },
   { label: 'Revise', href: '/library?view=revise' },
-  { label: 'Practice', href: '/dsa' },
+  { label: 'DSA', href: '/dsa' },
 ] as const
 
 type HeaderProps = {

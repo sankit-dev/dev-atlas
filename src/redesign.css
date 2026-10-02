@@ -269,18 +269,18 @@ h2 {
   background:
     /* Copy-column scrim: keeps text readable over the tan ground. */
     radial-gradient(
-      ellipse 62% 78% at 20% 64%,
-      rgb(6 10 26 / 0.74) 0%,
-      rgb(6 10 26 / 0.5) 45%,
-      rgb(6 10 26 / 0) 78%
+      ellipse 66% 92% at 20% 72%,
+      rgb(6 10 26 / 0.8) 0%,
+      rgb(6 10 26 / 0.58) 48%,
+      rgb(6 10 26 / 0) 82%
     ),
     linear-gradient(
       180deg,
       rgb(6 10 26 / 0.8) 0%,
       rgb(6 10 26 / 0.64) 30%,
       rgb(6 10 26 / 0.56) 52%,
-      rgb(6 10 26 / 0.46) 70%,
-      rgb(6 10 26 / 0.16) 88%,
+      rgb(6 10 26 / 0.5) 72%,
+      rgb(6 10 26 / 0.36) 88%,
       rgb(6 10 26 / 0) 100%
     ),
     url('/a-surreal-vintage-print-illustration-11a1ed.png') center / cover no-repeat;
@@ -389,10 +389,10 @@ h2 {
 
 .hero__stats {
   margin: 10px 0 0;
-  color: #a3aac0;
+  color: #d3d8e6;
   font-size: 12.5px;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 1px 12px rgb(5 8 20 / 0.7);
+  text-shadow: 0 1px 14px rgb(5 8 20 / 0.9);
 }
 
 .hero__actions {
