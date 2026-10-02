@@ -7,6 +7,7 @@ import {
   supportPresetsCents,
   type SupportInterval,
 } from '../lib/donations'
+import { siteName } from '../lib/site'
 import { useSupportStatus } from '../lib/useSupportStatus'
 
 export type SupportNotice = {
@@ -76,11 +77,11 @@ export function SupportCard({
     }
 
     return (
-      <aside aria-label="Support Dev Atlas" className="support-inline">
+      <aside aria-label={`Support ${siteName}`} className="support-inline">
         <div className="support-inline__copy">
           <p className="support-inline__title">Finished this one?</p>
           <p>
-            Dev Atlas stays free because readers chip in. Even a coffee keeps
+            {siteName} stays free because readers chip in. Even a coffee keeps
             new notes coming.
           </p>
         </div>
@@ -90,7 +91,7 @@ export function SupportCard({
             onClick={() => openDonation({ interval: 'monthly' })}
             type="button"
           >
-            Support Dev Atlas
+            Support {siteName}
           </button>
           <button
             aria-label="Hide this message for two weeks"
@@ -118,7 +119,9 @@ export function SupportCard({
       </p>
 
       <h2 id="support-heading">
-        {isSupporter ? 'Thank you for supporting Dev Atlas.' : 'Support Dev Atlas.'}
+        {isSupporter
+          ? `Thank you for supporting ${siteName}.`
+          : `Support ${siteName}.`}
       </h2>
       <p className="support-card__lead">
         {isSupporter

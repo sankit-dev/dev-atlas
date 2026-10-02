@@ -1,3 +1,4 @@
+import { siteName } from '../lib/site'
 import { Brand } from './Brand'
 import { Wrap } from './PageShell'
 
@@ -7,11 +8,6 @@ const footerColumns = [
     links: [
       { label: 'Library', href: '#/library' },
       { label: 'Practice', href: '#/dsa' },
-      {
-        label: 'Backend stack picker',
-        href: 'https://devatlas.site',
-        external: true,
-      },
     ],
   },
   {
@@ -65,8 +61,24 @@ export function Footer() {
           </nav>
         </div>
 
+        <a
+          className="site-footer__feature"
+          href="https://devatlas.site"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <span className="site-footer__badge">New</span>
+          <span className="site-footer__feature-name">DevAtlas</span>
+          <span className="site-footer__feature-text">
+            Pick the right backend tools for your stack
+          </span>
+          <span aria-hidden="true" className="site-footer__feature-arrow">
+            ↗
+          </span>
+        </a>
+
         <div className="site-footer__base">
-          <span>© {new Date().getFullYear()} Dev Atlas</span>
+          <span>© {new Date().getFullYear()} {siteName}</span>
           <a href="#top">Back to top ↑</a>
         </div>
       </footer>
