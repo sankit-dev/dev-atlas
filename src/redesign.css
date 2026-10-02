@@ -1177,21 +1177,34 @@ h2 {
 .note-understand-panel button {
   min-height: 50px;
   border-radius: 999px;
-  border-color: var(--color-inverse-bg);
-  background: var(--color-inverse-bg);
+  border-color: #0b0d12;
+  background: #0b0d12;
   padding: 0 28px;
-  color: var(--color-inverse-text);
+  color: #fff;
   font-size: 14px;
   font-weight: 650;
   cursor: pointer;
   box-shadow: 0 12px 30px color-mix(in srgb, var(--color-shadow) 40%, transparent);
 }
 
-.note-understand-panel button:hover {
-  background: color-mix(in srgb, var(--color-inverse-bg) 88%, var(--color-inverse-text));
+:root.dark .note-understand-panel button {
+  border-color: var(--color-inverse-bg);
+  background: var(--color-inverse-bg);
   color: var(--color-inverse-text);
+}
+
+.note-understand-panel button:hover {
+  background: #232733;
+  border-color: #232733;
+  color: #fff;
   box-shadow: 0 16px 36px color-mix(in srgb, var(--color-shadow) 50%, transparent);
   transform: translateY(-1px);
+}
+
+:root.dark .note-understand-panel button:hover {
+  background: color-mix(in srgb, var(--color-inverse-bg) 88%, var(--color-inverse-text));
+  border-color: transparent;
+  color: var(--color-inverse-text);
 }
 
 .note-understand-panel button:active {
