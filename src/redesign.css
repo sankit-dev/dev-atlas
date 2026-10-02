@@ -1175,17 +1175,32 @@ h2 {
 }
 
 .note-understand-panel button {
+  min-height: 50px;
   border-radius: 999px;
-  background: var(--color-accent-strong);
-  border-color: var(--color-accent-strong);
-  color: #fff;
-  font-weight: 600;
+  border-color: var(--color-inverse-bg);
+  background: var(--color-inverse-bg);
+  padding: 0 28px;
+  color: var(--color-inverse-text);
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--color-shadow) 40%, transparent);
 }
 
 .note-understand-panel button:hover {
-  background: color-mix(in srgb, var(--color-accent-strong) 88%, #000);
-  box-shadow: none;
-  transform: none;
+  background: color-mix(in srgb, var(--color-inverse-bg) 88%, var(--color-inverse-text));
+  color: var(--color-inverse-text);
+  box-shadow: 0 16px 36px color-mix(in srgb, var(--color-shadow) 50%, transparent);
+  transform: translateY(-1px);
+}
+
+.note-understand-panel button:active {
+  transform: translateY(0);
+}
+
+.note-understand-panel button:focus-visible {
+  outline: 2px solid var(--color-accent-strong);
+  outline-offset: 3px;
 }
 
 .note-reader-content nav[aria-label='Previous and next notes'] a {
