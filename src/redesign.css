@@ -2150,6 +2150,63 @@ h2 {
   }
 }
 
+/* ── Mobile breathing room ────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .site-header-actions {
+    gap: 10px;
+  }
+
+  .note-understand-panel {
+    gap: 20px;
+    margin-top: 48px;
+  }
+
+  .note-understand-panel button {
+    width: 100%;
+  }
+
+  .support-inline {
+    gap: 18px;
+    margin-top: 56px;
+    padding: 22px 20px;
+  }
+
+  .support-inline__actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .support-inline__cta {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  .support-inline__dismiss {
+    width: 100%;
+    min-height: 40px;
+  }
+
+  .site-footer__feature {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    border-radius: 20px;
+    padding: 16px 18px;
+  }
+
+  .site-footer__feature-arrow {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+  }
+
+  .site-footer__base {
+    padding-top: 20px;
+  }
+}
+
 @media print {
   .site-header-nav,
   .site-footer {
