@@ -16,6 +16,32 @@ function getCallbackURL() {
   return `${window.location.origin}${window.location.pathname}${window.location.search}${window.location.hash}`;
 }
 
+// Better Auth appends ?error=<code> to errorCallbackURL (or errorURL) when an
+// OAuth flow fails.
+const authErrorMessages: Record<string, string> = {
+  access_denied: "GitHub login was cancelled.",
+  state_mismatch: "Login expired. Please try again.",
+  please_restart_the_process: "Login expired. Please try again.",
+};
+
+function readAuthErrorFromUrl() {
+  const code = new URLSearchParams(window.location.search).get("error");
+
+  if (!code) return "";
+
+  return authErrorMessages[code] ?? "Login failed. Please try again.";
+}
+
+function clearAuthErrorFromUrl() {
+  const url = new URL(window.location.href);
+
+  if (!url.searchParams.has("error")) return;
+
+  url.searchParams.delete("error");
+  url.searchParams.delete("error_description");
+  window.history.replaceState(window.history.state, "", url);
+}
+
 function getInitials(name: string | null | undefined, email: string | null | undefined) {
   if (name) {
     const parts = name.trim().split(/\s+/);
@@ -35,9 +61,11 @@ export function AuthControls() {
   const [enabledProviders, setEnabledProviders] = useState<SocialProvider[]>(
     ["github"],
   );
-  const [authError, setAuthError] = useState("");
+  const [authError, setAuthError] = useState(readAuthErrorFromUrl);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(clearAuthErrorFromUrl, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -94,6 +122,7 @@ export function AuthControls() {
       await authClient.signIn.social({
         provider,
         callbackURL: getCallbackURL(),
+        errorCallbackURL: getCallbackURL(),
       });
     } catch {
       setAuthError(`Could not start ${providerLabels[provider]} login.`);
