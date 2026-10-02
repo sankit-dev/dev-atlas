@@ -9,7 +9,7 @@ priority: "Must Know"
 ## Optimizing Data Management in React
 
 - **ReactDevTools Insight**: Inside ReactDevTools, we can see the Data Layer, which means we can inspect API data directly without needing to `console.log` it. This makes debugging and analyzing your application's data much easier.
-  ![alt text](/notes/namaste-react/data-is-the-new-oil/image.png)
+  ![alt text](/notes/namaste-react/data-is-the-new-oil/image.webp)
 
 ### Data Best Practices
 

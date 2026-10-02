@@ -106,13 +106,6 @@ h2 {
   color: var(--color-muted);
 }
 
-.section-heading {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(34px, 4.6vw, 58px);
-  line-height: 1.02;
-}
-
 .font-serif {
   font-family: var(--font-display);
 }
@@ -1227,10 +1220,6 @@ h2 {
   background: transparent;
   box-shadow: none;
   transform: none;
-}
-
-.note-focus-burst {
-  display: none;
 }
 
 .note-focus-reading-toggle {

@@ -280,7 +280,7 @@ Below is Output:-
 - Then render
 - After render componentDidMount Called. Thats why this is best place to make an API call.
 
-![Output 1](/notes/namaste-react/lets-get-classy/image-2.png)
+![Output 1](/notes/namaste-react/lets-get-classy/image-2.webp)
 
 Now lets add a child component inside our `About.jsx`
 ```javascript
@@ -346,7 +346,7 @@ export default ProfileClass
 
 - As soon as React encounters a `child component` within the parent, it temporarily `pauses` the parent’s lifecycle to fully process the child component's lifecycle methods. React ensures the child component is properly constructed, rendered, and mounted before resuming and completing the parent’s lifecycle.
 
-![Output 2](/notes/namaste-react/lets-get-classy/image-1.png)
+![Output 2](/notes/namaste-react/lets-get-classy/image-1.webp)
 
 - Here, as we can see, once React reaches the child component, it completes the child’s entire lifecycle before returning to the parent to complete its lifecycle methods. This order ensures that the child component is fully initialized and mounted before the parent component finishes mounting.
 
@@ -364,12 +364,12 @@ return (
     )
 }
 ```
-![Output 3](/notes/namaste-react/lets-get-classy/image.png)
+![Output 3](/notes/namaste-react/lets-get-classy/image.webp)
 
 #### Note: Sometimes `componentDidMount` will be rendered twice. So dont panice its noting wrong with React. Its just the `<strict>` mode doings.
 
 ## React's Two Phases of Rendering
-![React LifeCycle](/notes/namaste-react/lets-get-classy/image-3.png)
+![React LifeCycle](/notes/namaste-react/lets-get-classy/image-3.webp)
 - When React is rendering components, it does so in two distinct phases:
   - **Render Phase**
   - **Commit Phase**
@@ -436,7 +436,7 @@ class ProfileClass extends React.Component{
 
 export default ProfileClass
 ```
-![Output](/notes/namaste-react/lets-get-classy/image-4.png)
+![Output](/notes/namaste-react/lets-get-classy/image-4.webp)
 - The above `ProfileClass` component is nested inside a parent component to help us understand the React **Lifecycle** .
 - In the output, we can observe that the render process starts with the `ParentComponent`.
 - However, in the `ChildComponent`, due to an asynchronous API call, the `Parent - componentDidMount` is called before the `ChildComponent`'s `componentDidMount`. This occurs because the API operation is asynchronous.
@@ -499,19 +499,19 @@ class MyComponent extends React.Component {
 }
 
 ```
-![alt text](/notes/namaste-react/lets-get-classy/image-9.png)
+![alt text](/notes/namaste-react/lets-get-classy/image-9.webp)
 
 ### Never ever compare `class-based components` with `functional components` - Akshay Saini
 ### Here are some difference of codes between `class-based` and `functional Component`
 #### Functional Component
-![alt text](/notes/namaste-react/lets-get-classy/image-5.png)
+![alt text](/notes/namaste-react/lets-get-classy/image-5.webp)
 #### Class-based Component
-![alt text](/notes/namaste-react/lets-get-classy/image-6.png)
+![alt text](/notes/namaste-react/lets-get-classy/image-6.webp)
 
 #### Functional Component
-![alt text](/notes/namaste-react/lets-get-classy/image-7.png)
+![alt text](/notes/namaste-react/lets-get-classy/image-7.webp)
 #### Class-based Component
-![alt text](/notes/namaste-react/lets-get-classy/image-8.png)
+![alt text](/notes/namaste-react/lets-get-classy/image-8.webp)
 
 ### How Many Pages Does a SPA Have? (Website Built on React)
 

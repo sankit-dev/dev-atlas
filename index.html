@@ -4,35 +4,20 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Fonts: single non-blocking stylesheet, preconnect only -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-    <link
-      rel="preload"
-      as="font"
-      type="font/woff2"
-      crossorigin
-      href="https://fonts.gstatic.com/s/ibmplexmono/v20/-F63fjptAgt5VM-kVkqdyU8n1i8q1w.woff2"
-    />
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:opsz,wght@14..32,300..700&family=Newsreader:ital,opsz,wght@0,6..72,300..500;1,6..72,300..500&display=swap"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:opsz,wght@14..32,300..700&family=Newsreader:ital,opsz,wght@0,6..72,300..500;1,6..72,300..500&display=swap"
-      rel="stylesheet"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link
-        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:opsz,wght@14..32,300..700&family=Newsreader:ital,opsz,wght@0,6..72,300..500;1,6..72,300..500&display=swap"
-        rel="stylesheet"
-      />
-    </noscript>
+    <!-- Fonts are self-hosted (see src/fonts.css). The hero artwork is a CSS
+         background the browser would only discover after the stylesheet, so
+         preload it, on the home page only. -->
+    <script>
+      if (location.pathname === '/') {
+        var hero = document.createElement('link');
+        hero.rel = 'preload';
+        hero.as = 'image';
+        hero.type = 'image/webp';
+        hero.href = '/hero-night.webp';
+        hero.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(hero);
+      }
+    </script>
     <meta name="theme-color" content="#0f1730" />
     <meta
       name="description"

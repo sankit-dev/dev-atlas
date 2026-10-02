@@ -27,7 +27,7 @@ React ensures that your UI stays in sync with the state while being efficient an
 
 ### Monolith Architecture
 
-![Monolith Architecture ](/notes/namaste-react/exploring-the-world/Monolith.png)
+![Monolith Architecture ](/notes/namaste-react/exploring-the-world/Monolith.webp)
 
 - In monlith we have **Single Codebase** where all functionalites are bundled together in one large application.
 - Components are interdependent; a change in one part can impact the whole system.
@@ -35,7 +35,7 @@ React ensures that your UI stays in sync with the state while being efficient an
 
 ### MicroServices Architecture
 
-![MicroServices Architecture ](/notes/namaste-react/exploring-the-world/image.png)
+![MicroServices Architecture ](/notes/namaste-react/exploring-the-world/image.webp)
 
 - In **Microservices Architecture** , the whole application is divided into smaller, independent services, each handling a specific function.
 - Each smaller service can run on a different port on the same domain. While these services can have different domains, they are generally accessed through the same domain with different slugs or routes.
