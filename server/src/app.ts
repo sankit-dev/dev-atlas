@@ -10,6 +10,8 @@ import { donationsRouter, handleDonationWebhook } from "./routes/donations.js";
 import { healthRouter } from "./routes/health.js";
 import { noteProgressRouter } from "./routes/noteProgress.js";
 
+const WEBHOOK_IP_LIMIT = 120;
+
 export function createApp() {
   const app = express();
 
@@ -31,9 +33,15 @@ export function createApp() {
   );
   // Signature verification needs the raw request body, so this route must be
   // registered before the JSON body parser. It also sits before the geo block
-  // and global rate limit: Dodo's servers must always be able to reach it.
+  // and global rate limit: Dodo's servers must always be able to reach it, so
+  // it gets its own generous per-IP limit instead of the strict global one.
   app.post(
     "/api/donations/webhook",
+    rateLimit({
+      keyPrefix: "donation-webhook",
+      limit: WEBHOOK_IP_LIMIT,
+      windowMs: env.rateLimitWindowMs,
+    }),
     express.raw({ type: "application/json" }),
     handleDonationWebhook,
   );
