@@ -593,7 +593,7 @@ button {
      bright field without dimming the artwork as a whole. */
   background:
     radial-gradient(ellipse 62% 20% at 50% 38%, rgb(5 7 11 / 0.45), transparent 70%),
-    url('/a-surreal-vintage-print-illustration-11a1ed.png') center / cover no-repeat;
+    url('/hero-night.webp') center / cover no-repeat;
 
   /* The hero artwork is a night scene, so this region always uses the dark
      palette — text stays readable in both site themes. */
@@ -615,7 +615,7 @@ button {
   .page-hero-bg {
     background:
       radial-gradient(ellipse 62% 20% at 50% 38%, rgb(5 7 11 / 0.45), transparent 70%),
-      url('/a-surreal-vintage-print-illustration-11a1ed.png') center bottom / 138% auto no-repeat;
+      url('/hero-night.webp') center bottom / 138% auto no-repeat;
   }
 }
 
