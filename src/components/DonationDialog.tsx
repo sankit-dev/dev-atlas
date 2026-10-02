@@ -7,26 +7,48 @@ import {
   type FormEvent,
   type PropsWithChildren,
 } from 'react'
-import { DonationContext } from '../lib/donation'
+import { DonationContext, type OpenDonationOptions } from '../lib/donation'
 import {
   createDonationCheckout,
+  defaultPresetCents,
+  defaultSupportInterval,
   donationCurrencySymbol,
   donationMaxCents,
   donationMinCents,
-  donationPresetsCents,
   formatDonationAmount,
+  supportPresetsCents,
+  type SupportInterval,
 } from '../lib/donations'
 
 type DonationDialogProps = {
+  initial: OpenDonationOptions
   open: boolean
   onClose: () => void
 }
 
-function DonationDialog({ open, onClose }: DonationDialogProps) {
+const intervalLabels: Record<SupportInterval, string> = {
+  monthly: 'Monthly',
+  once: 'One-time',
+}
+
+function DonationDialog({ initial, open, onClose }: DonationDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const customInputId = useId()
-  const [presetCents, setPresetCents] = useState(donationPresetsCents[1] ?? 1000)
-  const [customValue, setCustomValue] = useState('')
+  const [interval, setInterval] = useState<SupportInterval>(
+    initial.interval ?? defaultSupportInterval,
+  )
+  const [presetCents, setPresetCents] = useState(
+    initial.amountCents ?? defaultPresetCents(interval),
+  )
+  const presets = supportPresetsCents[interval]
+  const [customValue, setCustomValue] = useState(() =>
+    initial.amountCents &&
+    !supportPresetsCents[initial.interval ?? defaultSupportInterval].includes(
+      initial.amountCents,
+    )
+      ? String(initial.amountCents / 100)
+      : '',
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -88,7 +110,9 @@ function DonationDialog({ open, onClose }: DonationDialogProps) {
     setError(null)
 
     try {
-      const checkoutUrl = await createDonationCheckout(amountCents)
+      const checkoutUrl = await createDonationCheckout(amountCents, {
+        interval,
+      })
       window.location.href = checkoutUrl
     } catch (submitError) {
       setError(
@@ -116,7 +140,7 @@ function DonationDialog({ open, onClose }: DonationDialogProps) {
             Support Dev Atlas
           </p>
           <button
-            aria-label="Close donation dialog"
+            aria-label="Close support dialog"
             className="donate-close"
             onClick={() => dialogRef.current?.close()}
             type="button"
@@ -127,14 +151,37 @@ function DonationDialog({ open, onClose }: DonationDialogProps) {
           </button>
         </div>
 
-        <h2 id="donate-dialog-heading">Choose an amount</h2>
+        <h2 id="donate-dialog-heading">Choose how to support</h2>
         <p className="donate-lead">
-          One-time payment. No account needed, and you can leave the amount blank
-          on the next screen too.
+          {interval === 'monthly'
+            ? 'A small monthly amount helps most. Cancel anytime.'
+            : 'A single payment. No account needed.'}
         </p>
 
+        <div
+          aria-label="Support frequency"
+          className="donate-interval"
+          role="group"
+        >
+          {(['monthly', 'once'] as const).map((value) => (
+            <button
+              aria-pressed={interval === value}
+              className={interval === value ? 'is-active' : ''}
+              key={value}
+              onClick={() => {
+                setInterval(value)
+                setPresetCents(defaultPresetCents(value))
+                setCustomValue('')
+              }}
+              type="button"
+            >
+              {intervalLabels[value]}
+            </button>
+          ))}
+        </div>
+
         <div className="donate-presets">
-          {donationPresetsCents.map((cents) => (
+          {presets.map((cents) => (
             <button
               className={
                 !customValue.trim() && presetCents === cents ? 'is-active' : ''
@@ -164,7 +211,7 @@ function DonationDialog({ open, onClose }: DonationDialogProps) {
               inputMode="decimal"
               min={donationMinCents / 100}
               onChange={(event) => setCustomValue(event.target.value)}
-              placeholder={String((donationPresetsCents[1] ?? 1000) / 100)}
+              placeholder={String(defaultPresetCents(interval) / 100)}
               step="1"
               type="number"
               value={customValue}
@@ -182,7 +229,11 @@ function DonationDialog({ open, onClose }: DonationDialogProps) {
           >
             {isSubmitting
               ? 'Opening checkout…'
-              : `Donate ${isAmountValid ? formatDonationAmount(amountCents) : ''}`}
+              : !isAmountValid
+                ? 'Support'
+                : interval === 'monthly'
+                  ? `Support ${formatDonationAmount(amountCents)}/month`
+                  : `Support ${formatDonationAmount(amountCents)}`}
           </button>
           <button
             className="donate-cancel"
@@ -207,14 +258,27 @@ function DonationDialog({ open, onClose }: DonationDialogProps) {
 
 export function DonationProvider({ children }: PropsWithChildren) {
   const [open, setOpen] = useState(false)
+  // Re-keyed on every open so the dialog starts from the requested plan/amount.
+  const [session, setSession] = useState<{
+    id: number
+    options: OpenDonationOptions
+  }>({ id: 0, options: {} })
 
-  const openDonation = useCallback(() => setOpen(true), [])
+  const openDonation = useCallback((options: OpenDonationOptions = {}) => {
+    setSession((current) => ({ id: current.id + 1, options }))
+    setOpen(true)
+  }, [])
   const closeDonation = useCallback(() => setOpen(false), [])
 
   return (
     <DonationContext.Provider value={{ openDonation }}>
       {children}
-      <DonationDialog open={open} onClose={closeDonation} />
+      <DonationDialog
+        initial={session.options}
+        key={session.id}
+        onClose={closeDonation}
+        open={open}
+      />
     </DonationContext.Provider>
   )
 }

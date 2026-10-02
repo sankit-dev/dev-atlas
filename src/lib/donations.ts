@@ -7,14 +7,39 @@ export const donationCurrency = String(
 export const donationMinCents = 100
 export const donationMaxCents = 100_000
 
-const presetSource = String(
-  import.meta.env.VITE_DONATION_PRESETS ?? '500,1000,2500',
-)
+export type SupportInterval = 'monthly' | 'once'
 
-export const donationPresetsCents: number[] = presetSource
-  .split(',')
-  .map((value) => Number(value.trim()))
-  .filter((value) => Number.isInteger(value) && value > 0)
+function parsePresets(source: string, fallback: number[]) {
+  const presets = source
+    .split(',')
+    .map((value) => Number(value.trim()))
+    .filter((value) => Number.isInteger(value) && value > 0)
+
+  return presets.length ? presets : fallback
+}
+
+export const supportPresetsCents: Record<SupportInterval, number[]> = {
+  monthly: parsePresets(
+    String(import.meta.env.VITE_SUPPORT_PRESETS_MONTHLY ?? ''),
+    [300, 500, 1000],
+  ),
+  once: parsePresets(
+    String(
+      import.meta.env.VITE_SUPPORT_PRESETS_ONCE ??
+        import.meta.env.VITE_DONATION_PRESETS ??
+        '',
+    ),
+    [500, 1000, 2500],
+  ),
+}
+
+export const defaultSupportInterval: SupportInterval = 'monthly'
+
+export function defaultPresetCents(interval: SupportInterval) {
+  const presets = supportPresetsCents[interval]
+
+  return presets[1] ?? presets[0] ?? 500
+}
 
 export const donationCurrencySymbol = (() => {
   const parts = new Intl.NumberFormat(undefined, {
@@ -40,12 +65,13 @@ type DonationCheckoutResponse = {
 
 export async function createDonationCheckout(
   amountCents: number,
-  couponCode?: string,
+  options: { couponCode?: string; interval?: SupportInterval } = {},
 ) {
-  const trimmedCoupon = couponCode?.trim()
+  const trimmedCoupon = options.couponCode?.trim()
   const response = await fetch(`${apiOrigin}/api/donations`, {
     body: JSON.stringify({
       amountCents,
+      interval: options.interval ?? 'once',
       ...(trimmedCoupon ? { couponCode: trimmedCoupon } : {}),
     }),
     credentials: 'include',
@@ -71,6 +97,7 @@ export async function createDonationCheckout(
 
 export type DonationStatus = {
   hasDonated: boolean
+  activeSubscription: boolean
   donationCount: number
   totalAmountCents: number
   currency: string | null
@@ -94,6 +121,7 @@ export async function fetchDonationStatus(): Promise<DonationStatus | null> {
 
   return {
     hasDonated: data.hasDonated === true,
+    activeSubscription: data.activeSubscription === true,
     donationCount:
       typeof data.donationCount === 'number' ? data.donationCount : 0,
     totalAmountCents:
