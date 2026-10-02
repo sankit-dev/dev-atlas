@@ -26,7 +26,7 @@ const lessonResources = [
   {
     number: '01',
     label: 'Learn',
-    title: 'DevAtlas Notes',
+    title: 'StudyAtlas Notes',
     description: 'Simple explanation of the core concept.',
   },
   {
