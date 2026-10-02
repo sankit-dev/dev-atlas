@@ -21,6 +21,7 @@ Optional environment variables:
 - `CLIENT_ORIGIN`: defaults to `http://localhost:5173`
 - `BETTER_AUTH_URL`: defaults to `http://localhost:4000`
 - `BETTER_AUTH_SECRET`: secret used by Better Auth; generate with `openssl rand -base64 32`
+- `BETTER_AUTH_JOINS`: optional; `true` enables Better Auth database joins (experimental)
 - `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: enables GitHub login
 - `DODO_PAYMENTS_API_KEY`: Dodo Payments API key (Developer > API)
 - `DODO_DONATION_PRODUCT_ID`: product id of the Pay What You Want one-time product

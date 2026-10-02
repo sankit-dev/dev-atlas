@@ -27,6 +27,11 @@ export const auth = betterAuth({
     client: authClient,
   }),
   advanced: {
+    // Fetch related rows in one $lookup query. Opt in per environment with
+    // BETTER_AUTH_JOINS=true.
+    database: {
+      joins: env.betterAuthJoins,
+    },
     defaultCookieAttributes: {
       sameSite: "none",
       secure: true,

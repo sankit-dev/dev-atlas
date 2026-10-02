@@ -63,6 +63,7 @@ export const env = {
     readEnv(process.env.BETTER_AUTH_URL, `http://localhost:${port}`),
   ),
   betterAuthSecret: readEnv(process.env.BETTER_AUTH_SECRET, ''),
+  betterAuthJoins: process.env.BETTER_AUTH_JOINS === 'true',
   githubClientId: readEnv(process.env.GITHUB_CLIENT_ID, ''),
   githubClientSecret: readEnv(process.env.GITHUB_CLIENT_SECRET, ''),
   dodoApiKey: readEnv(process.env.DODO_PAYMENTS_API_KEY, ''),
