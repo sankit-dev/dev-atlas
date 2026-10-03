@@ -21,7 +21,6 @@ const SITE_NAME = 'StudyAtlas'
 const SITE_TAGLINE = 'Learn Backend Engineering'
 const SITE_DESCRIPTION =
   'StudyAtlas — clear backend engineering notes built for learning by doing: OS, networks, databases, JavaScript, Node, Express, MongoDB, Docker, AWS, Git, AI and DSA practice.'
-const OG_IMAGE = `${siteUrl}/hero-night.webp`
 
 const escapeHtml = (value) =>
   String(value)
