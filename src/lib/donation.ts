@@ -1,7 +1,13 @@
 import { createContext, useContext } from 'react'
+import type { SupportInterval } from './donations'
+
+export type OpenDonationOptions = {
+  amountCents?: number
+  interval?: SupportInterval
+}
 
 export type DonationContextValue = {
-  openDonation: () => void
+  openDonation: (options?: OpenDonationOptions) => void
 }
 
 export const DonationContext = createContext<DonationContextValue | null>(null)

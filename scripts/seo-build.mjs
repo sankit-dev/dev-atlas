@@ -14,14 +14,14 @@ const dist = join(root, 'dist')
 const siteUrl = (
   process.env.SITE_URL ||
   process.env.VITE_SITE_URL ||
-  'https://www.devatlas.site'
+  'https://study.devatlas.site'
 ).replace(/\/$/, '')
 
-const SITE_NAME = 'Dev Atlas'
+const SITE_NAME = 'StudyAtlas'
 const SITE_TAGLINE = 'Learn Backend Engineering'
 const SITE_DESCRIPTION =
-  'Dev Atlas — clear backend engineering notes built for learning by doing: OS, networks, databases, JavaScript, Node, Express, MongoDB, Docker, AWS, Git, AI and DSA practice.'
-const OG_IMAGE = `${siteUrl}/a-surreal-vintage-print-illustration-11a1ed.png`
+  'StudyAtlas — clear backend engineering notes built for learning by doing: OS, networks, databases, JavaScript, Node, Express, MongoDB, Docker, AWS, Git, AI and DSA practice.'
+const OG_IMAGE = `${siteUrl}/hero-night.webp`
 
 const escapeHtml = (value) =>
   String(value)
@@ -126,7 +126,7 @@ const url = (path) => `${siteUrl}${path}`
 // ---------- page definitions ----------
 
 const LIBRARY_DESCRIPTION =
-  'Browse every Dev Atlas track — OS, networks, databases, JavaScript, Node, Express, MongoDB, Docker, AWS, Git and AI.'
+  'Browse every StudyAtlas track — OS, networks, databases, JavaScript, Node, Express, MongoDB, Docker, AWS, Git and AI.'
 const DSA_DESCRIPTION =
   'Practice data structures and algorithms by pattern — arrays, two pointers, sliding window, trees and graphs.'
 

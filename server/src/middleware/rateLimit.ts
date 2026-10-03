@@ -1,4 +1,5 @@
 import type { Request } from 'express'
+import { isIP } from 'node:net'
 import {
   ipKeyGenerator,
   rateLimit as expressRateLimit,
@@ -127,8 +128,26 @@ export function getIpKey(request: Request) {
   return ipKeyGenerator(getClientIp(request))
 }
 
+// /api/auth/* reaches us through the Vercel rewrite, where req.ip is Vercel's
+// egress address. Vercel puts the visitor's IP in x-vercel-forwarded-for.
+// Anyone can send that header straight to Render, so it is only honoured on
+// auth routes; everything else keeps the un-spoofable req.ip.
+function getVercelClientIp(request: Request) {
+  // originalUrl, not path: inside a router, path is relative to the mount.
+  if (!request.originalUrl.startsWith('/api/auth')) return null
+
+  const header = request.header('x-vercel-forwarded-for')?.split(',')[0]?.trim()
+
+  return header && isIP(header) ? header : null
+}
+
 export function getClientIp(request: Request) {
-  return request.ip ?? request.socket.remoteAddress ?? 'unknown'
+  return (
+    getVercelClientIp(request) ??
+    request.ip ??
+    request.socket.remoteAddress ??
+    'unknown'
+  )
 }
 
 export function rateLimit({

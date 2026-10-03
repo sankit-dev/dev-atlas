@@ -267,7 +267,7 @@ function App() {
       updateSeo({
         title: 'Library',
         description:
-          'Browse every Dev Atlas track — OS, networks, databases, JavaScript, Node, Express, MongoDB, Docker, AWS, Git and AI.',
+          'Browse every StudyAtlas track — OS, networks, databases, JavaScript, Node, Express, MongoDB, Docker, AWS, Git and AI.',
         path: '/library',
       })
     } else if (isDsa) {
@@ -279,9 +279,9 @@ function App() {
       })
     } else {
       updateSeo({
-        title: 'Dev Atlas - Learn Backend Engineering',
+        title: 'StudyAtlas - Learn Backend Engineering',
         description:
-          'Dev Atlas — clear backend engineering notes built for learning by doing.',
+          'StudyAtlas — clear backend engineering notes built for learning by doing.',
         path: '/',
       })
     }

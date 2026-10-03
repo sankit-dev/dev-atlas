@@ -70,7 +70,7 @@ export function updateSeo({ title, description, path, type = 'website', jsonLd }
   if (typeof document === 'undefined') return
   const origin = getSiteOrigin()
   const canonical = `${origin}${path}` || path
-  const fullTitle = title.includes('Dev Atlas') ? title : `${title} | Dev Atlas`
+  const fullTitle = title.includes('StudyAtlas') ? title : `${title} | StudyAtlas`
 
   document.title = fullTitle
   upsertMeta('name', 'description', description)
@@ -107,7 +107,7 @@ export function articleJsonLd(input: {
     headline: input.title,
     description: input.description,
     mainEntityOfPage: `${origin}${input.path}`,
-    author: { '@type': 'Organization', name: 'Dev Atlas' },
+    author: { '@type': 'Organization', name: 'StudyAtlas' },
     about: input.track,
   }
 }

@@ -58,7 +58,7 @@ As soon as we add these CDN links, we'll gain the superpower of React and ReactD
 
 We can check this by opening the browser console and typing `React` and `ReactDOM`. Below is what we should see:
 
-![React and ReactDOM in Console](/notes/namaste-react/react-inception/1.png)
+![React and ReactDOM in Console](/notes/namaste-react/react-inception/1.webp)
 
 Now we will write React code to render `Namaste React` on our webpage.
 

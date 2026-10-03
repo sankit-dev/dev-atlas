@@ -63,10 +63,15 @@ export const env = {
     readEnv(process.env.BETTER_AUTH_URL, `http://localhost:${port}`),
   ),
   betterAuthSecret: readEnv(process.env.BETTER_AUTH_SECRET, ''),
+  betterAuthJoins: process.env.BETTER_AUTH_JOINS === 'true',
   githubClientId: readEnv(process.env.GITHUB_CLIENT_ID, ''),
   githubClientSecret: readEnv(process.env.GITHUB_CLIENT_SECRET, ''),
   dodoApiKey: readEnv(process.env.DODO_PAYMENTS_API_KEY, ''),
   dodoDonationProductId: readEnv(process.env.DODO_DONATION_PRODUCT_ID, ''),
+  dodoSubscriptionProductId: readEnv(
+    process.env.DODO_SUBSCRIPTION_PRODUCT_ID,
+    '',
+  ),
   dodoWebhookKey: readEnv(process.env.DODO_WEBHOOK_KEY, ''),
   dodoApiBase: readEnv(process.env.DODO_PAYMENTS_ENVIRONMENT, 'live')
     .toLowerCase()
