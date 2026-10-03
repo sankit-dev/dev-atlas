@@ -158,7 +158,7 @@ const App = () => {
 ## Error Routes
 
 - As we already know if we go to any other route other than specified one we will get a error, not on console but on our page.
-  ![Error Page](/notes/namaste-react/finding-the-path/image.png)
+  ![Error Page](/notes/namaste-react/finding-the-path/image.webp)
 - The above skeleton is provided by the `react-router-dom` library.
 - But to provide a good user experience we will certainly need to customize the error page.
 - We can do this by creating a `Error.jsx` compoent and pass it inside the `approuter` to `errorElement`.
@@ -175,15 +175,15 @@ const appRouter = createBrowserRouter([
 
 - Whatever we have designed inside the `Error` component it will show now on any routing error.
 - But that will just be generic message whatever we will write.
-  ![Error page](/notes/namaste-react/finding-the-path/image-1.png)
+  ![Error page](/notes/namaste-react/finding-the-path/image-1.webp)
 - As in the above image it just a generic message which will not be useful for users.
 - So `react-router-dom` provides us with a useful hook`useRouteError`.
 - This hook give us info regarding the error.
-  ![alt text](/notes/namaste-react/finding-the-path/image-2.png)
+  ![alt text](/notes/namaste-react/finding-the-path/image-2.webp)
 - We can `console.log` to see the returned error.
-  ![alt text](/notes/namaste-react/finding-the-path/image-3.png)
+  ![alt text](/notes/namaste-react/finding-the-path/image-3.webp)
 - Then we can use the error info and embeed in our text to show useful info about the error.
-  ![alt text](/notes/namaste-react/finding-the-path/image-4.png)
+  ![alt text](/notes/namaste-react/finding-the-path/image-4.webp)
 - With this user will know what the reason behind the error.
 - We should always try to provide useful info of the error.
 

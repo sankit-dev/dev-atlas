@@ -1,7 +1,9 @@
+import { siteName, siteNameLead, siteNameRest } from '../lib/site'
+
 export function Brand() {
   return (
     <a
-      aria-label="DevAtlas home"
+      aria-label={`${siteName} home`}
       className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em] text-(--color-text)"
       href="/"
     >
@@ -13,8 +15,8 @@ export function Brand() {
         width="28"
       />
       <span>
-        <span className="text-(--color-accent-text)">Dev</span>
-        <span className="text-(--color-text)">Atlas</span>
+        <span className="text-(--color-accent-text)">{siteNameLead}</span>
+        <span className="text-(--color-text)">{siteNameRest}</span>
       </span>
     </a>
   )

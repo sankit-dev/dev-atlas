@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 
-const siteUrl = (process.env.VITE_SITE_URL || "https://devatlas.site").replace(
+const siteUrl = (process.env.VITE_SITE_URL || "https://study.devatlas.site").replace(
   /\/$/,
   "",
 );

@@ -18,7 +18,7 @@ const socialProviders = {
 };
 
 export const auth = betterAuth({
-  appName: "Dev Atlas",
+  appName: "StudyAtlas",
   baseURL: env.betterAuthUrl,
   basePath: "/api/auth",
   secret: env.betterAuthSecret || undefined,

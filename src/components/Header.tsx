@@ -7,7 +7,7 @@ const navigationLinks = [
   { label: 'Roadmap', href: '/#roadmap' },
   { label: 'Library', href: '/library' },
   { label: 'Revise', href: '/library?view=revise' },
-  { label: 'Practice', href: '/dsa' },
+  { label: 'DSA', href: '/dsa' },
 ] as const
 
 type HeaderProps = {
@@ -73,8 +73,7 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
         <button
           aria-label="Support this work"
           className="site-header-donate"
-          data-tooltip="Donate"
-          onClick={openDonation}
+          onClick={() => openDonation()}
           type="button"
         >
           <svg
@@ -90,6 +89,7 @@ export function Header({ onThemeToggle, theme }: HeaderProps) {
           >
             <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
           </svg>
+          <span>Support</span>
         </button>
         <button
           aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
