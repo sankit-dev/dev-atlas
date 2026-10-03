@@ -833,10 +833,28 @@ h2 {
 }
 
 .revision-card__list {
-  flex: 1;
+  /* Fixed window (about 6.5 rows, so the next row peeks out as a scroll hint)
+     keeps every card the same height and the CTA on one baseline. */
+  --revision-visible-rows: 6.5;
+  height: calc(var(--revision-visible-rows) * 44px);
+  flex: none;
   margin: 0;
-  padding: 0;
+  padding: 0 12px 0 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   list-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+
+.revision-card__list:focus-visible {
+  outline: 2px solid var(--color-accent-strong);
+  outline-offset: 4px;
+}
+
+.revision-card__list[data-scrollable='true'] {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
 }
 
 .revision-card__list li {
@@ -851,6 +869,11 @@ h2 {
 
 .revision-card__list li:last-child {
   border-bottom: 0;
+}
+
+.revision-card__list li {
+  min-height: 44px;
+  box-sizing: border-box;
 }
 
 .revision-card__list li > span {
