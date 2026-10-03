@@ -68,6 +68,10 @@ export const env = {
   githubClientSecret: readEnv(process.env.GITHUB_CLIENT_SECRET, ''),
   dodoApiKey: readEnv(process.env.DODO_PAYMENTS_API_KEY, ''),
   dodoDonationProductId: readEnv(process.env.DODO_DONATION_PRODUCT_ID, ''),
+  dodoSubscriptionProductId: readEnv(
+    process.env.DODO_SUBSCRIPTION_PRODUCT_ID,
+    '',
+  ),
   dodoWebhookKey: readEnv(process.env.DODO_WEBHOOK_KEY, ''),
   dodoApiBase: readEnv(process.env.DODO_PAYMENTS_ENVIRONMENT, 'live')
     .toLowerCase()

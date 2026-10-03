@@ -14,7 +14,7 @@ priority: "Must Know"
 
 - Before making any web app we must have wireframe in mind.
 - How will it look? And other planning. For example I created below wireframe for my app (inspired by Swiggy)
-  ![My App WireFrame](/notes/namaste-react/talk-is-cheap-show-me-the-code/UI.png)
+  ![My App WireFrame](/notes/namaste-react/talk-is-cheap-show-me-the-code/UI.webp)
 - After creating wireframe planning comes. We will plan regarding our project folder strucutre etc.
 
 ```bash

@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://devatlas.site/sitemap.xml
+Sitemap: https://study.devatlas.site/sitemap.xml

@@ -14,6 +14,10 @@ type RevisionTrack = {
   track: Track
 }
 
+// Rows visible before the list scrolls; keep in sync with
+// --revision-visible-rows in redesign.css.
+const VISIBLE_NOTE_ROWS = 6
+
 const toRevisionTrack = (
   track: Track,
   completedNoteSlugs: Set<string>,
@@ -43,6 +47,7 @@ export function RevisionView({ completedNoteSlugs, tracks }: RevisionViewProps) 
           (note) => !completedNoteSlugs.has(note.slug),
         )
         const percent = Math.round((done / notes.length) * 100)
+        const isScrollable = notes.length > VISIBLE_NOTE_ROWS
 
         return (
           <motion.article
@@ -59,7 +64,14 @@ export function RevisionView({ completedNoteSlugs, tracks }: RevisionViewProps) 
             <i className="revision-card__meter" aria-hidden="true">
               <b style={{ width: `${percent}%` }} />
             </i>
-            <ul className="revision-card__list">
+            <ul
+              aria-label={
+                isScrollable ? `${track.title} must-know notes` : undefined
+              }
+              className="revision-card__list"
+              data-scrollable={isScrollable}
+              tabIndex={isScrollable ? 0 : undefined}
+            >
               {notes.map((note) => {
                 const isDone = completedNoteSlugs.has(note.slug)
 
