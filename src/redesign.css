@@ -1545,50 +1545,6 @@ h2 {
   box-shadow: 0 18px 50px color-mix(in srgb, var(--color-shadow) 30%, transparent);
 }
 
-.support-card__interval,
-.donate-interval {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  border: 1px solid var(--color-line);
-  border-radius: 999px;
-  background: var(--color-page);
-  padding: 4px;
-}
-
-.support-card__interval button,
-.donate-interval button {
-  display: inline-flex;
-  min-height: 38px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--color-muted);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 160ms var(--motion-ease), color 160ms var(--motion-ease);
-}
-
-.support-card__interval button.is-active,
-.donate-interval button.is-active {
-  background: var(--color-inverse-bg);
-  color: var(--color-inverse-text);
-}
-
-.support-card__interval button span {
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--moss-600) 22%, transparent);
-  padding: 2px 8px;
-  white-space: nowrap;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
 .support-card__amounts {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1606,13 +1562,6 @@ h2 {
   cursor: pointer;
   transition: border-color 160ms var(--motion-ease), background 160ms var(--motion-ease),
     transform 160ms var(--motion-ease);
-}
-
-.support-card__amounts button small {
-  margin-left: 2px;
-  color: var(--color-muted);
-  font-size: 12px;
-  font-weight: 500;
 }
 
 .support-card__amounts button:hover {
@@ -1716,10 +1665,6 @@ h2 {
 
 .support-inline__dismiss:hover {
   color: var(--color-text);
-}
-
-.donate-interval {
-  margin-top: 18px;
 }
 
 .donate-dialog {
@@ -2108,10 +2053,6 @@ h2 {
 
   .support-card__panel {
     padding: 16px;
-  }
-
-  .support-card__interval button span {
-    display: none;
   }
 
   .support-inline__actions {

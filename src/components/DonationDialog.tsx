@@ -12,13 +12,11 @@ import { DonationContext, type OpenDonationOptions } from '../lib/donation'
 import {
   createDonationCheckout,
   defaultPresetCents,
-  defaultSupportInterval,
   donationCurrencySymbol,
   donationMaxCents,
   donationMinCents,
+  donationPresetsCents,
   formatDonationAmount,
-  supportPresetsCents,
-  type SupportInterval,
 } from '../lib/donations'
 
 type DonationDialogProps = {
@@ -27,26 +25,14 @@ type DonationDialogProps = {
   onClose: () => void
 }
 
-const intervalLabels: Record<SupportInterval, string> = {
-  monthly: 'Monthly',
-  once: 'One-time',
-}
-
 function DonationDialog({ initial, open, onClose }: DonationDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const customInputId = useId()
-  const [interval, setInterval] = useState<SupportInterval>(
-    initial.interval ?? defaultSupportInterval,
-  )
   const [presetCents, setPresetCents] = useState(
-    initial.amountCents ?? defaultPresetCents(interval),
+    initial.amountCents ?? defaultPresetCents,
   )
-  const presets = supportPresetsCents[interval]
   const [customValue, setCustomValue] = useState(() =>
-    initial.amountCents &&
-    !supportPresetsCents[initial.interval ?? defaultSupportInterval].includes(
-      initial.amountCents,
-    )
+    initial.amountCents && !donationPresetsCents.includes(initial.amountCents)
       ? String(initial.amountCents / 100)
       : '',
   )
@@ -111,9 +97,7 @@ function DonationDialog({ initial, open, onClose }: DonationDialogProps) {
     setError(null)
 
     try {
-      const checkoutUrl = await createDonationCheckout(amountCents, {
-        interval,
-      })
+      const checkoutUrl = await createDonationCheckout(amountCents)
       window.location.href = checkoutUrl
     } catch (submitError) {
       setError(
@@ -152,37 +136,13 @@ function DonationDialog({ initial, open, onClose }: DonationDialogProps) {
           </button>
         </div>
 
-        <h2 id="donate-dialog-heading">Choose how to support</h2>
+        <h2 id="donate-dialog-heading">Choose an amount</h2>
         <p className="donate-lead">
-          {interval === 'monthly'
-            ? 'A small monthly amount helps most. Cancel anytime.'
-            : 'A single payment. No account needed.'}
+          One-time payment. No account needed.
         </p>
 
-        <div
-          aria-label="Support frequency"
-          className="donate-interval"
-          role="group"
-        >
-          {(['monthly', 'once'] as const).map((value) => (
-            <button
-              aria-pressed={interval === value}
-              className={interval === value ? 'is-active' : ''}
-              key={value}
-              onClick={() => {
-                setInterval(value)
-                setPresetCents(defaultPresetCents(value))
-                setCustomValue('')
-              }}
-              type="button"
-            >
-              {intervalLabels[value]}
-            </button>
-          ))}
-        </div>
-
         <div className="donate-presets">
-          {presets.map((cents) => (
+          {donationPresetsCents.map((cents) => (
             <button
               className={
                 !customValue.trim() && presetCents === cents ? 'is-active' : ''
@@ -212,7 +172,7 @@ function DonationDialog({ initial, open, onClose }: DonationDialogProps) {
               inputMode="decimal"
               min={donationMinCents / 100}
               onChange={(event) => setCustomValue(event.target.value)}
-              placeholder={String(defaultPresetCents(interval) / 100)}
+              placeholder={String(defaultPresetCents / 100)}
               step="1"
               type="number"
               value={customValue}
@@ -230,11 +190,7 @@ function DonationDialog({ initial, open, onClose }: DonationDialogProps) {
           >
             {isSubmitting
               ? 'Opening checkout…'
-              : !isAmountValid
-                ? 'Support'
-                : interval === 'monthly'
-                  ? `Support ${formatDonationAmount(amountCents)}/month`
-                  : `Support ${formatDonationAmount(amountCents)}`}
+              : `Support ${isAmountValid ? formatDonationAmount(amountCents) : ''}`.trim()}
           </button>
           <button
             className="donate-cancel"
