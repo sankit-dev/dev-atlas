@@ -25,7 +25,6 @@ Optional environment variables:
 - `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`: enables GitHub login
 - `DODO_PAYMENTS_API_KEY`: Dodo Payments API key (Developer > API)
 - `DODO_DONATION_PRODUCT_ID`: product id of the Pay What You Want one-time product
-- `DODO_SUBSCRIPTION_PRODUCT_ID`: product id of the recurring monthly subscription product (optional; monthly support is unavailable when empty)
 - `DODO_WEBHOOK_KEY`: webhook signing secret (Developer > Webhooks)
 - `DODO_PAYMENTS_ENVIRONMENT`: `test` uses `test.dodopayments.com`, otherwise `live.dodopayments.com`
 - `DODO_DONATION_MIN_CENTS` / `DODO_DONATION_MAX_CENTS`: allowed amount range in minor units (defaults `100` / `100000`)

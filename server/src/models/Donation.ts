@@ -93,24 +93,6 @@ const donationSchema = new Schema(
       trim: true,
       default: null,
     },
-    // "once" for one-time support, "monthly" for a recurring subscription.
-    interval: {
-      type: String,
-      enum: ['once', 'monthly'],
-      default: 'once',
-    },
-    subscriptionId: {
-      type: String,
-      trim: true,
-      default: null,
-      index: true,
-    },
-    // Latest known state of the subscription (e.g. active, on_hold, cancelled).
-    subscriptionStatus: {
-      type: String,
-      trim: true,
-      default: null,
-    },
     eventType: {
       type: String,
       trim: true,

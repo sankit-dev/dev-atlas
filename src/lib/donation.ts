@@ -1,9 +1,7 @@
 import { createContext, useContext } from 'react'
-import type { SupportInterval } from './donations'
 
 export type OpenDonationOptions = {
   amountCents?: number
-  interval?: SupportInterval
 }
 
 export type DonationContextValue = {

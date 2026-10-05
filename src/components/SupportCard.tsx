@@ -2,10 +2,8 @@ import { useState } from 'react'
 import { useDonation } from '../lib/donation'
 import {
   defaultPresetCents,
-  defaultSupportInterval,
+  donationPresetsCents,
   formatDonationAmount,
-  supportPresetsCents,
-  type SupportInterval,
 } from '../lib/donations'
 import { siteName } from '../lib/site'
 import { useSupportStatus } from '../lib/useSupportStatus'
@@ -24,11 +22,6 @@ type SupportCardProps = {
 const snoozeKey = 'devatlas:support-snoozed-until'
 const snoozeMs = 14 * 24 * 60 * 60 * 1000
 
-const intervalLabels: Record<SupportInterval, string> = {
-  monthly: 'Monthly',
-  once: 'One-time',
-}
-
 function readSnoozed() {
   try {
     return Number(window.localStorage.getItem(snoozeKey) ?? 0) > Date.now()
@@ -45,31 +38,15 @@ function writeSnooze() {
   }
 }
 
-function formatCta(cents: number, interval: SupportInterval) {
-  const amount = formatDonationAmount(cents)
-
-  return interval === 'monthly' ? `Support ${amount}/month` : `Support ${amount}`
-}
-
 export function SupportCard({
   notice = null,
   returnedFromSuccess = false,
   variant,
 }: SupportCardProps) {
   const { openDonation } = useDonation()
-  const { activeSubscription, isSupporter } =
-    useSupportStatus(returnedFromSuccess)
-  const [interval, setInterval] = useState<SupportInterval>(
-    defaultSupportInterval,
-  )
-  const [amounts, setAmounts] = useState<Record<SupportInterval, number>>({
-    monthly: defaultPresetCents('monthly'),
-    once: defaultPresetCents('once'),
-  })
+  const { isSupporter } = useSupportStatus(returnedFromSuccess)
+  const [amountCents, setAmountCents] = useState(defaultPresetCents)
   const [isSnoozed, setIsSnoozed] = useState(readSnoozed)
-
-  const amountCents = amounts[interval]
-  const presets = supportPresetsCents[interval]
 
   if (variant === 'inline') {
     if (isSupporter || isSnoozed) {
@@ -88,7 +65,7 @@ export function SupportCard({
         <div className="support-inline__actions">
           <button
             className="support-inline__cta"
-            onClick={() => openDonation({ interval: 'monthly' })}
+            onClick={() => openDonation()}
             type="button"
           >
             Support {siteName}
@@ -125,9 +102,7 @@ export function SupportCard({
       </h2>
       <p className="support-card__lead">
         {isSupporter
-          ? activeSubscription
-            ? 'Your monthly support pays for hosting and new notes. You can add a one-time boost whenever you like.'
-            : 'Your support pays for hosting and new notes. A monthly plan helps the most.'
+          ? 'Your support pays for hosting and new notes. You can chip in again whenever you like.'
           : 'Every note is free and written in the open. Support covers hosting and the time it takes to write new notes and practice problems.'}
       </p>
 
@@ -136,52 +111,30 @@ export function SupportCard({
       )}
 
       <div className="support-card__panel">
-        <div
-          aria-label="Support frequency"
-          className="support-card__interval"
-          role="group"
-        >
-          {(['monthly', 'once'] as const).map((value) => (
-            <button
-              aria-pressed={interval === value}
-              className={interval === value ? 'is-active' : ''}
-              key={value}
-              onClick={() => setInterval(value)}
-              type="button"
-            >
-              {intervalLabels[value]}
-              {value === 'monthly' && <span>Most helpful</span>}
-            </button>
-          ))}
-        </div>
-
         <div className="support-card__amounts">
-          {presets.map((cents) => (
+          {donationPresetsCents.map((cents) => (
             <button
               aria-pressed={amountCents === cents}
               className={amountCents === cents ? 'is-active' : ''}
               key={cents}
-              onClick={() =>
-                setAmounts((current) => ({ ...current, [interval]: cents }))
-              }
+              onClick={() => setAmountCents(cents)}
               type="button"
             >
               {formatDonationAmount(cents)}
-              {interval === 'monthly' && <small>/mo</small>}
             </button>
           ))}
         </div>
 
         <button
           className="support-card__cta"
-          onClick={() => openDonation({ amountCents, interval })}
+          onClick={() => openDonation({ amountCents })}
           type="button"
         >
-          {formatCta(amountCents, interval)}
+          {isSupporter ? 'Support again' : 'Support'}{' '}
+          {formatDonationAmount(amountCents)}
         </button>
         <p className="support-card__fine">
-          {interval === 'monthly' ? 'Cancel anytime. ' : 'No account needed. '}
-          Secure checkout by Dodo Payments.
+          One-time payment. No account needed. Secure checkout by Dodo Payments.
         </p>
       </div>
     </div>

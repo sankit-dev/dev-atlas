@@ -3,14 +3,10 @@ import { authClient } from './auth'
 import { fetchDonationStatus } from './donations'
 
 type SupportStatus = {
-  activeSubscription: boolean
   hasDonated: boolean
 }
 
-const noSupport: SupportStatus = {
-  activeSubscription: false,
-  hasDonated: false,
-}
+const noSupport: SupportStatus = { hasDonated: false }
 
 // Support status is owned by the backend, not the browser. When the user has
 // just returned from a successful checkout the result may lag the redirect
@@ -40,7 +36,6 @@ export function useSupportStatus(returnedFromSuccess = false) {
         }
 
         setStatus({
-          activeSubscription: result?.activeSubscription ?? false,
           hasDonated: result?.hasDonated ?? false,
           userId,
         })
@@ -73,8 +68,5 @@ export function useSupportStatus(returnedFromSuccess = false) {
 
   const current = status?.userId === userId ? status : noSupport
 
-  return {
-    activeSubscription: current.activeSubscription,
-    isSupporter: current.hasDonated || current.activeSubscription,
-  }
+  return { isSupporter: current.hasDonated }
 }

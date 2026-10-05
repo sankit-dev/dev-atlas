@@ -69,28 +69,6 @@ function getAmountCents(body: unknown) {
   return value;
 }
 
-type SupportInterval = "once" | "monthly";
-
-function getInterval(body: unknown): SupportInterval {
-  if (!body || typeof body !== "object" || !("interval" in body)) {
-    return "once";
-  }
-
-  return (body as { interval: unknown }).interval === "monthly"
-    ? "monthly"
-    : "once";
-}
-
-// subscription.* events carry no payment, only the state of the recurring plan.
-const subscriptionStatusByEventType: Record<string, string> = {
-  "subscription.active": "active",
-  "subscription.renewed": "active",
-  "subscription.on_hold": "on_hold",
-  "subscription.failed": "failed",
-  "subscription.cancelled": "cancelled",
-  "subscription.expired": "expired",
-};
-
 function getCouponCode(body: unknown) {
   if (!body || typeof body !== "object" || !("couponCode" in body)) {
     return null;
@@ -241,15 +219,8 @@ async function buildDonationSummary(userId: string) {
     .lean();
 
   const latest = succeeded[0];
-  const activeSubscription =
-    (await DonationModel.exists({
-      subscriptionStatus: "active",
-      userId,
-    })) !== null;
-
   return {
     hasDonated: succeeded.length > 0,
-    activeSubscription,
     donationCount: succeeded.length,
     totalAmountCents: succeeded.reduce(
       (sum, d) => sum + (d.amountCents ?? 0),
@@ -269,24 +240,14 @@ donationsRouter.post(
   }),
   async (request, response, next) => {
     try {
-      const interval = getInterval(request.body);
-      const productId =
-        interval === "monthly"
-          ? env.dodoSubscriptionProductId
-          : env.dodoDonationProductId;
-
-      if (!env.dodoApiKey || !productId) {
+      if (!env.dodoApiKey || !env.dodoDonationProductId) {
         console.error("[donations] missing config", {
           hasApiKey: Boolean(env.dodoApiKey),
-          hasProductId: Boolean(productId),
-          interval,
+          hasProductId: Boolean(env.dodoDonationProductId),
         });
-        response.status(503).json({
-          message:
-            interval === "monthly"
-              ? "Monthly support isn't available right now."
-              : "Support isn't available right now.",
-        });
+        response
+          .status(503)
+          .json({ message: "Support isn't available right now." });
         return;
       }
 
@@ -330,8 +291,7 @@ donationsRouter.post(
         apiBase: env.dodoApiBase,
         mode: getRuntimeMode(),
         amountCents,
-        productId,
-        interval,
+        productId: env.dodoDonationProductId,
         apiKey: maskSecret(env.dodoApiKey),
         couponCode,
         userId,
@@ -344,7 +304,6 @@ donationsRouter.post(
           ...(couponCode ? { discount_codes: [couponCode] } : {}),
           metadata: {
             reference,
-            interval,
             source: "DevAtlas",
             ...(userId ? { userId } : {}),
             ...(couponCode ? { couponCode } : {}),
@@ -352,7 +311,7 @@ donationsRouter.post(
           product_cart: [
             {
               amount: amountCents,
-              product_id: productId,
+              product_id: env.dodoDonationProductId,
               quantity: 1,
             },
           ],
@@ -418,9 +377,8 @@ donationsRouter.post(
           amountCents,
           checkoutSessionId:
             typeof session.session_id === "string" ? session.session_id : null,
-          interval,
           mode: getRuntimeMode(),
-          productId,
+          productId: env.dodoDonationProductId,
           reference,
           status: "initiated",
           userId,
@@ -514,47 +472,6 @@ export async function handleDonationWebhook(
 
     console.log("[donations] webhook event", { eventType, webhookId });
 
-    const subscriptionStatus = subscriptionStatusByEventType[eventType];
-
-    if (subscriptionStatus) {
-      const subData = asRecord(eventRecord.data);
-      const subMetadata = asRecord(subData.metadata);
-      const subscriptionId =
-        asString(subData.subscription_id) ?? asString(subData.subscriptionId);
-      const subReference = asString(subMetadata.reference);
-      const subUserId =
-        asString(subMetadata.userId) ?? asString(subMetadata.user_id);
-
-      if (!subscriptionId) {
-        response.json({ received: true, unmatched: true });
-        return;
-      }
-
-      const fields: UnknownRecord = {
-        interval: "monthly",
-        subscriptionId,
-        subscriptionStatus,
-      };
-
-      // Link the originating checkout record to the subscription first, then
-      // keep every record of that subscription in sync. All writes are plain
-      // $set, so webhook redeliveries are harmless.
-      if (subReference) {
-        await DonationModel.updateOne(
-          { reference: subReference },
-          { $set: { ...fields, ...(subUserId ? { userId: subUserId } : {}) } },
-        );
-      }
-
-      await DonationModel.updateMany(
-        { subscriptionId },
-        { $set: { subscriptionStatus } },
-      );
-
-      response.json({ received: true, subscriptionStatus });
-      return;
-    }
-
     // Only payment lifecycle events are persisted; acknowledge everything else
     // so Dodo does not retry unrelated events.
     if (!eventType.startsWith("payment.") && !eventType.startsWith("refund.")) {
@@ -630,32 +547,9 @@ export async function handleDonationWebhook(
     if (nextStatus) setFields.status = nextStatus;
     else if (!existing) setOnInsert.status = "initiated";
 
-    const subscriptionId =
-      asString(data.subscription_id) ?? asString(data.subscriptionId);
-    // Renewal payments may arrive without our checkout metadata; inherit the
-    // signed-in user from the first record of the same subscription.
-    const inheritedUserId =
-      !metadataUserId && subscriptionId
-        ? asString(
-            (
-              await DonationModel.findOne({
-                subscriptionId,
-                userId: { $ne: null },
-              })
-                .select("userId")
-                .lean()
-            )?.userId,
-          )
-        : null;
-    const resolvedUserId = metadataUserId ?? inheritedUserId;
-
     if (paymentId) setFields.paymentId = paymentId;
     if (checkoutSessionId) setFields.checkoutSessionId = checkoutSessionId;
-    if (subscriptionId) {
-      setFields.subscriptionId = subscriptionId;
-      setFields.interval = "monthly";
-    }
-    if (resolvedUserId) setFields.userId = resolvedUserId;
+    if (metadataUserId) setFields.userId = metadataUserId;
     else if (!existing) setOnInsert.userId = null;
     if (metadataCoupon) setFields.couponCode = metadataCoupon;
     else if (!existing) setOnInsert.couponCode = null;
